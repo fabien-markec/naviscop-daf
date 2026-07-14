@@ -1,0 +1,134 @@
+'use client';
+
+import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { usePlanAction, type StatutAction } from '@/lib/use-plan-action';
+import { PageHeader, Section } from '@/components/ui';
+
+const STATUTS: { valeur: StatutAction; label: string; classe: string }[] = [
+  { valeur: 'a_faire', label: 'À faire', classe: 'bg-slate-100 text-slate-700' },
+  { valeur: 'en_cours', label: 'En cours', classe: 'bg-amber-100 text-amber-600' },
+  { valeur: 'fait', label: 'Fait', classe: 'bg-emerald-100 text-emerald-600' },
+];
+
+export default function PlanActionPage() {
+  const { items, ajouter, majStatut, supprimer } = usePlanAction();
+  const [action, setAction] = useState('');
+  const [responsable, setResponsable] = useState('');
+  const [echeance, setEcheance] = useState('');
+  const [impact, setImpact] = useState('');
+
+  const soumettre = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!action.trim()) return;
+    ajouter({ action: action.trim(), responsable: responsable.trim(), echeance, impact: impact.trim() });
+    setAction('');
+    setResponsable('');
+    setEcheance('');
+    setImpact('');
+  };
+
+  const champClasse =
+    'rounded-xl border border-navy/10 bg-white/60 px-3 py-2 text-sm text-navy outline-none focus:border-brand/50';
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Plan d’action"
+        subtitle="Transformer l’analyse en décisions suivies : action, responsable, échéance, impact attendu."
+      />
+
+      <Section title="Nouvelle action">
+        <form onSubmit={soumettre} className="grid grid-cols-1 gap-3 md:grid-cols-12">
+          <input
+            className={`${champClasse} md:col-span-4`}
+            placeholder="Action à mener"
+            value={action}
+            onChange={(e) => setAction(e.target.value)}
+          />
+          <input
+            className={`${champClasse} md:col-span-3`}
+            placeholder="Responsable"
+            value={responsable}
+            onChange={(e) => setResponsable(e.target.value)}
+          />
+          <input
+            type="date"
+            className={`${champClasse} md:col-span-2`}
+            value={echeance}
+            onChange={(e) => setEcheance(e.target.value)}
+          />
+          <input
+            className={`${champClasse} md:col-span-2`}
+            placeholder="Impact attendu"
+            value={impact}
+            onChange={(e) => setImpact(e.target.value)}
+          />
+          <button
+            type="submit"
+            className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft md:col-span-1"
+          >
+            Ajouter
+          </button>
+        </form>
+      </Section>
+
+      <Section title={`Actions (${items.length})`}>
+        {items.length === 0 ? (
+          <p className="text-sm text-slate-500">Aucune action pour l’instant. Ajoutez la première décision à suivre.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>Responsable</th>
+                  <th>Échéance</th>
+                  <th>Impact</th>
+                  <th>Statut</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((it) => (
+                  <tr key={it.id}>
+                    <td className="font-medium text-slate-800">{it.action}</td>
+                    <td className="text-slate-500">{it.responsable || '—'}</td>
+                    <td className="text-slate-500">
+                      {it.echeance ? new Date(it.echeance).toLocaleDateString('fr-FR') : '—'}
+                    </td>
+                    <td className="text-slate-500">{it.impact || '—'}</td>
+                    <td>
+                      <select
+                        value={it.statut}
+                        onChange={(e) => majStatut(it.id, e.target.value as StatutAction)}
+                        className={`rounded-md px-2 py-1 text-xs outline-none ${
+                          STATUTS.find((s) => s.valeur === it.statut)?.classe
+                        }`}
+                      >
+                        {STATUTS.map((s) => (
+                          <option key={s.valeur} value={s.valeur} className="bg-white text-navy">
+                            {s.label}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="!text-right">
+                      <button
+                        onClick={() => supprimer(it.id)}
+                        className="text-slate-500 hover:text-rose-600"
+                        aria-label="Supprimer"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Section>
+    </div>
+  );
+}

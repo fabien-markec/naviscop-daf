@@ -1,0 +1,396 @@
+JournalCode	JournalLib	EcritureNum	EcritureDate	CompteNum	CompteLib	CompAuxNum	CompAuxLib	PieceRef	PieceDate	EcritureLib	Debit	Credit	EcritureLet	DateLet	ValidDate	Montantdevise	Idevise
+AN	A-nouveaux	1	20250101	512000	Banque			AN2025	20250101	Report a nouveau	15000,00				20250101		
+AN	A-nouveaux	1	20250101	101000	Capital social			AN2025	20250101	Report a nouveau		10000,00			20250101		
+AN	A-nouveaux	1	20250101	164000	Emprunts etablissements credit			AN2025	20250101	Report a nouveau		32000,00			20250101		
+AN	A-nouveaux	1	20250101	106000	Reserves			AN2025	20250101	Report a nouveau					20250101		
+AN	A-nouveaux	1	20250101	110000	Report a nouveau			AN2025	20250101	Report a nouveau	27000,00				20250101		
+VE	Ventes	2	20250105	411000	Clients	C965	Cabinet Martin	FV011	20250105	Facture Cabinet Martin	11520,00				20250105		
+VE	Ventes	2	20250105	701000	Ventes de produits finis			FV011	20250105	Facture Cabinet Martin		9600,00			20250105		
+VE	Ventes	2	20250105	445710	TVA collectee			FV011	20250105	Facture Cabinet Martin		1920,00			20250105		
+VE	Ventes	3	20250117	411000	Clients	C650	Dubois SARL	FV012	20250117	Facture Dubois SARL	7680,00				20250117		
+VE	Ventes	3	20250117	701000	Ventes de produits finis			FV012	20250117	Facture Dubois SARL		6400,00			20250117		
+VE	Ventes	3	20250117	445710	TVA collectee			FV012	20250117	Facture Dubois SARL		1280,00			20250117		
+HA	Achats	4	20250103	601000	Achats matieres premieres			FA01	20250103	Achat matieres Peintures Girard	6720,00				20250103		
+HA	Achats	4	20250103	445660	TVA deductible			FA01	20250103	Achat matieres Peintures Girard	1344,00				20250103		
+HA	Achats	4	20250103	401000	Fournisseurs	P509	Peintures Girard	FA01	20250103	Achat matieres Peintures Girard		8064,00			20250103		
+BQ	Banque	5	20250105	613200	Locations immobilieres			LOY01	20250105	Loyer atelier	1200,00				20250105		
+BQ	Banque	5	20250105	512000	Banque			LOY01	20250105	Loyer atelier		1200,00			20250105		
+BQ	Banque	6	20250108	606100	Fournitures non stockables			EDF01	20250108	Electricite et telecom	380,00				20250108		
+BQ	Banque	6	20250108	626000	Frais postaux et telecom			EDF01	20250108	Electricite et telecom	90,00				20250108		
+BQ	Banque	6	20250108	512000	Banque			EDF01	20250108	Electricite et telecom		470,00			20250108		
+BQ	Banque	7	20250110	616000	Primes assurances			ASS01	20250110	Assurance pro	260,00				20250110		
+BQ	Banque	7	20250110	512000	Banque			ASS01	20250110	Assurance pro		260,00			20250110		
+OD	Operations diverses	8	20250128	641100	Remunerations du personnel			SAL01	20250128	Salaires du mois	5200,00				20250128		
+OD	Operations diverses	8	20250128	421000	Personnel remunerations dues			SAL01	20250128	Salaires du mois		5200,00			20250128		
+BQ	Banque	9	20250128	421000	Personnel remunerations dues			SALV01	20250128	Virement salaires	5200,00				20250128		
+BQ	Banque	9	20250128	512000	Banque			SALV01	20250128	Virement salaires		5200,00			20250128		
+BQ	Banque	10	20250115	645000	Charges de securite sociale			URS01	20250115	Charges sociales URSSAF	2600,00				20250115		
+BQ	Banque	10	20250115	512000	Banque			URS01	20250115	Charges sociales URSSAF		2600,00			20250115		
+BQ	Banque	11	20250120	164000	Emprunts etablissements credit			EMP01	20250120	Echeance emprunt	800,00				20250120		
+BQ	Banque	11	20250120	661100	Interets des emprunts			EMP01	20250120	Echeance emprunt	79,20				20250120		
+BQ	Banque	11	20250120	512000	Banque			EMP01	20250120	Echeance emprunt		879,20			20250120		
+VE	Ventes	12	20250205	411000	Clients	C588	Mairie de Vaux	FV021	20250205	Facture Mairie de Vaux	13680,00				20250205		
+VE	Ventes	12	20250205	701000	Ventes de produits finis			FV021	20250205	Facture Mairie de Vaux		11400,00			20250205		
+VE	Ventes	12	20250205	445710	TVA collectee			FV021	20250205	Facture Mairie de Vaux		2280,00			20250205		
+VE	Ventes	13	20250217	411000	Clients	C588	Mairie de Vaux	FV022	20250217	Facture Mairie de Vaux	9120,00				20250217		
+VE	Ventes	13	20250217	701000	Ventes de produits finis			FV022	20250217	Facture Mairie de Vaux		7600,00			20250217		
+VE	Ventes	13	20250217	445710	TVA collectee			FV022	20250217	Facture Mairie de Vaux		1520,00			20250217		
+HA	Achats	14	20250203	601000	Achats matieres premieres			FA02	20250203	Achat matieres Quincaillerie Pro	7980,00				20250203		
+HA	Achats	14	20250203	445660	TVA deductible			FA02	20250203	Achat matieres Quincaillerie Pro	1596,00				20250203		
+HA	Achats	14	20250203	401000	Fournisseurs	Q207	Quincaillerie Pro	FA02	20250203	Achat matieres Quincaillerie Pro		9576,00			20250203		
+BQ	Banque	15	20250205	613200	Locations immobilieres			LOY02	20250205	Loyer atelier	1200,00				20250205		
+BQ	Banque	15	20250205	512000	Banque			LOY02	20250205	Loyer atelier		1200,00			20250205		
+BQ	Banque	16	20250208	606100	Fournitures non stockables			EDF02	20250208	Electricite et telecom	380,00				20250208		
+BQ	Banque	16	20250208	626000	Frais postaux et telecom			EDF02	20250208	Electricite et telecom	90,00				20250208		
+BQ	Banque	16	20250208	512000	Banque			EDF02	20250208	Electricite et telecom		470,00			20250208		
+BQ	Banque	17	20250210	616000	Primes assurances			ASS02	20250210	Assurance pro	260,00				20250210		
+BQ	Banque	17	20250210	512000	Banque			ASS02	20250210	Assurance pro		260,00			20250210		
+OD	Operations diverses	18	20250228	641100	Remunerations du personnel			SAL02	20250228	Salaires du mois	5200,00				20250228		
+OD	Operations diverses	18	20250228	421000	Personnel remunerations dues			SAL02	20250228	Salaires du mois		5200,00			20250228		
+BQ	Banque	19	20250228	421000	Personnel remunerations dues			SALV02	20250228	Virement salaires	5200,00				20250228		
+BQ	Banque	19	20250228	512000	Banque			SALV02	20250228	Virement salaires		5200,00			20250228		
+BQ	Banque	20	20250215	645000	Charges de securite sociale			URS02	20250215	Charges sociales URSSAF	2600,00				20250215		
+BQ	Banque	20	20250215	512000	Banque			URS02	20250215	Charges sociales URSSAF		2600,00			20250215		
+BQ	Banque	21	20250220	164000	Emprunts etablissements credit			EMP02	20250220	Echeance emprunt	800,00				20250220		
+BQ	Banque	21	20250220	661100	Interets des emprunts			EMP02	20250220	Echeance emprunt	78,40				20250220		
+BQ	Banque	21	20250220	512000	Banque			EMP02	20250220	Echeance emprunt		878,40			20250220		
+VE	Ventes	22	20250305	411000	Clients	C965	Cabinet Martin	FV031	20250305	Facture Cabinet Martin	17280,00				20250305		
+VE	Ventes	22	20250305	701000	Ventes de produits finis			FV031	20250305	Facture Cabinet Martin		14400,00			20250305		
+VE	Ventes	22	20250305	445710	TVA collectee			FV031	20250305	Facture Cabinet Martin		2880,00			20250305		
+VE	Ventes	23	20250317	411000	Clients	C921	Ecole Ste-Marie	FV032	20250317	Facture Ecole Ste-Marie	11520,00				20250317		
+VE	Ventes	23	20250317	701000	Ventes de produits finis			FV032	20250317	Facture Ecole Ste-Marie		9600,00			20250317		
+VE	Ventes	23	20250317	445710	TVA collectee			FV032	20250317	Facture Ecole Ste-Marie		1920,00			20250317		
+HA	Achats	24	20250303	601000	Achats matieres premieres			FA03	20250303	Achat matieres Scierie du Val	10080,00				20250303		
+HA	Achats	24	20250303	445660	TVA deductible			FA03	20250303	Achat matieres Scierie du Val	2016,00				20250303		
+HA	Achats	24	20250303	401000	Fournisseurs	F556	Scierie du Val	FA03	20250303	Achat matieres Scierie du Val		12096,00			20250303		
+BQ	Banque	25	20250305	613200	Locations immobilieres			LOY03	20250305	Loyer atelier	1200,00				20250305		
+BQ	Banque	25	20250305	512000	Banque			LOY03	20250305	Loyer atelier		1200,00			20250305		
+BQ	Banque	26	20250308	606100	Fournitures non stockables			EDF03	20250308	Electricite et telecom	380,00				20250308		
+BQ	Banque	26	20250308	626000	Frais postaux et telecom			EDF03	20250308	Electricite et telecom	90,00				20250308		
+BQ	Banque	26	20250308	512000	Banque			EDF03	20250308	Electricite et telecom		470,00			20250308		
+BQ	Banque	27	20250310	616000	Primes assurances			ASS03	20250310	Assurance pro	260,00				20250310		
+BQ	Banque	27	20250310	512000	Banque			ASS03	20250310	Assurance pro		260,00			20250310		
+OD	Operations diverses	28	20250328	641100	Remunerations du personnel			SAL03	20250328	Salaires du mois	5200,00				20250328		
+OD	Operations diverses	28	20250328	421000	Personnel remunerations dues			SAL03	20250328	Salaires du mois		5200,00			20250328		
+BQ	Banque	29	20250328	421000	Personnel remunerations dues			SALV03	20250328	Virement salaires	5200,00				20250328		
+BQ	Banque	29	20250328	512000	Banque			SALV03	20250328	Virement salaires		5200,00			20250328		
+BQ	Banque	30	20250315	645000	Charges de securite sociale			URS03	20250315	Charges sociales URSSAF	2600,00				20250315		
+BQ	Banque	30	20250315	512000	Banque			URS03	20250315	Charges sociales URSSAF		2600,00			20250315		
+BQ	Banque	31	20250320	164000	Emprunts etablissements credit			EMP03	20250320	Echeance emprunt	800,00				20250320		
+BQ	Banque	31	20250320	661100	Interets des emprunts			EMP03	20250320	Echeance emprunt	77,60				20250320		
+BQ	Banque	31	20250320	512000	Banque			EMP03	20250320	Echeance emprunt		877,60			20250320		
+VE	Ventes	32	20250405	411000	Clients	C185	SCI Bellevue	FV041	20250405	Facture SCI Bellevue	19440,00				20250405		
+VE	Ventes	32	20250405	701000	Ventes de produits finis			FV041	20250405	Facture SCI Bellevue		16200,00			20250405		
+VE	Ventes	32	20250405	445710	TVA collectee			FV041	20250405	Facture SCI Bellevue		3240,00			20250405		
+VE	Ventes	33	20250417	411000	Clients	C250	Boulangerie Petit	FV042	20250417	Facture Boulangerie Petit	12960,00				20250417		
+VE	Ventes	33	20250417	701000	Ventes de produits finis			FV042	20250417	Facture Boulangerie Petit		10800,00			20250417		
+VE	Ventes	33	20250417	445710	TVA collectee			FV042	20250417	Facture Boulangerie Petit		2160,00			20250417		
+HA	Achats	34	20250403	601000	Achats matieres premieres			FA04	20250403	Achat matieres Scierie du Val	11340,00				20250403		
+HA	Achats	34	20250403	445660	TVA deductible			FA04	20250403	Achat matieres Scierie du Val	2268,00				20250403		
+HA	Achats	34	20250403	401000	Fournisseurs	F556	Scierie du Val	FA04	20250403	Achat matieres Scierie du Val		13608,00			20250403		
+BQ	Banque	35	20250405	613200	Locations immobilieres			LOY04	20250405	Loyer atelier	1200,00				20250405		
+BQ	Banque	35	20250405	512000	Banque			LOY04	20250405	Loyer atelier		1200,00			20250405		
+BQ	Banque	36	20250408	606100	Fournitures non stockables			EDF04	20250408	Electricite et telecom	380,00				20250408		
+BQ	Banque	36	20250408	626000	Frais postaux et telecom			EDF04	20250408	Electricite et telecom	90,00				20250408		
+BQ	Banque	36	20250408	512000	Banque			EDF04	20250408	Electricite et telecom		470,00			20250408		
+BQ	Banque	37	20250410	616000	Primes assurances			ASS04	20250410	Assurance pro	260,00				20250410		
+BQ	Banque	37	20250410	512000	Banque			ASS04	20250410	Assurance pro		260,00			20250410		
+OD	Operations diverses	38	20250428	641100	Remunerations du personnel			SAL04	20250428	Salaires du mois	5200,00				20250428		
+OD	Operations diverses	38	20250428	421000	Personnel remunerations dues			SAL04	20250428	Salaires du mois		5200,00			20250428		
+BQ	Banque	39	20250428	421000	Personnel remunerations dues			SALV04	20250428	Virement salaires	5200,00				20250428		
+BQ	Banque	39	20250428	512000	Banque			SALV04	20250428	Virement salaires		5200,00			20250428		
+BQ	Banque	40	20250415	645000	Charges de securite sociale			URS04	20250415	Charges sociales URSSAF	2600,00				20250415		
+BQ	Banque	40	20250415	512000	Banque			URS04	20250415	Charges sociales URSSAF		2600,00			20250415		
+BQ	Banque	41	20250420	164000	Emprunts etablissements credit			EMP04	20250420	Echeance emprunt	800,00				20250420		
+BQ	Banque	41	20250420	661100	Interets des emprunts			EMP04	20250420	Echeance emprunt	76,80				20250420		
+BQ	Banque	41	20250420	512000	Banque			EMP04	20250420	Echeance emprunt		876,80			20250420		
+VE	Ventes	42	20250505	411000	Clients	C650	Dubois SARL	FV051	20250505	Facture Dubois SARL	15840,00				20250505		
+VE	Ventes	42	20250505	701000	Ventes de produits finis			FV051	20250505	Facture Dubois SARL		13200,00			20250505		
+VE	Ventes	42	20250505	445710	TVA collectee			FV051	20250505	Facture Dubois SARL		2640,00			20250505		
+VE	Ventes	43	20250517	411000	Clients	C965	Cabinet Martin	FV052	20250517	Facture Cabinet Martin	10560,00				20250517		
+VE	Ventes	43	20250517	701000	Ventes de produits finis			FV052	20250517	Facture Cabinet Martin		8800,00			20250517		
+VE	Ventes	43	20250517	445710	TVA collectee			FV052	20250517	Facture Cabinet Martin		1760,00			20250517		
+HA	Achats	44	20250503	601000	Achats matieres premieres			FA05	20250503	Achat matieres Quincaillerie Pro	9240,00				20250503		
+HA	Achats	44	20250503	445660	TVA deductible			FA05	20250503	Achat matieres Quincaillerie Pro	1848,00				20250503		
+HA	Achats	44	20250503	401000	Fournisseurs	Q207	Quincaillerie Pro	FA05	20250503	Achat matieres Quincaillerie Pro		11088,00			20250503		
+BQ	Banque	45	20250505	613200	Locations immobilieres			LOY05	20250505	Loyer atelier	1200,00				20250505		
+BQ	Banque	45	20250505	512000	Banque			LOY05	20250505	Loyer atelier		1200,00			20250505		
+BQ	Banque	46	20250508	606100	Fournitures non stockables			EDF05	20250508	Electricite et telecom	380,00				20250508		
+BQ	Banque	46	20250508	626000	Frais postaux et telecom			EDF05	20250508	Electricite et telecom	90,00				20250508		
+BQ	Banque	46	20250508	512000	Banque			EDF05	20250508	Electricite et telecom		470,00			20250508		
+BQ	Banque	47	20250510	616000	Primes assurances			ASS05	20250510	Assurance pro	260,00				20250510		
+BQ	Banque	47	20250510	512000	Banque			ASS05	20250510	Assurance pro		260,00			20250510		
+OD	Operations diverses	48	20250528	641100	Remunerations du personnel			SAL05	20250528	Salaires du mois	5200,00				20250528		
+OD	Operations diverses	48	20250528	421000	Personnel remunerations dues			SAL05	20250528	Salaires du mois		5200,00			20250528		
+BQ	Banque	49	20250528	421000	Personnel remunerations dues			SALV05	20250528	Virement salaires	5200,00				20250528		
+BQ	Banque	49	20250528	512000	Banque			SALV05	20250528	Virement salaires		5200,00			20250528		
+BQ	Banque	50	20250515	645000	Charges de securite sociale			URS05	20250515	Charges sociales URSSAF	2600,00				20250515		
+BQ	Banque	50	20250515	512000	Banque			URS05	20250515	Charges sociales URSSAF		2600,00			20250515		
+BQ	Banque	51	20250520	164000	Emprunts etablissements credit			EMP05	20250520	Echeance emprunt	800,00				20250520		
+BQ	Banque	51	20250520	661100	Interets des emprunts			EMP05	20250520	Echeance emprunt	76,00				20250520		
+BQ	Banque	51	20250520	512000	Banque			EMP05	20250520	Echeance emprunt		876,00			20250520		
+VE	Ventes	52	20250605	411000	Clients	C588	Mairie de Vaux	FV061	20250605	Facture Mairie de Vaux	12960,00				20250605		
+VE	Ventes	52	20250605	701000	Ventes de produits finis			FV061	20250605	Facture Mairie de Vaux		10800,00			20250605		
+VE	Ventes	52	20250605	445710	TVA collectee			FV061	20250605	Facture Mairie de Vaux		2160,00			20250605		
+VE	Ventes	53	20250617	411000	Clients	C921	Ecole Ste-Marie	FV062	20250617	Facture Ecole Ste-Marie	8640,00				20250617		
+VE	Ventes	53	20250617	701000	Ventes de produits finis			FV062	20250617	Facture Ecole Ste-Marie		7200,00			20250617		
+VE	Ventes	53	20250617	445710	TVA collectee			FV062	20250617	Facture Ecole Ste-Marie		1440,00			20250617		
+HA	Achats	54	20250603	601000	Achats matieres premieres			FA06	20250603	Achat matieres Scierie du Val	7560,00				20250603		
+HA	Achats	54	20250603	445660	TVA deductible			FA06	20250603	Achat matieres Scierie du Val	1512,00				20250603		
+HA	Achats	54	20250603	401000	Fournisseurs	F556	Scierie du Val	FA06	20250603	Achat matieres Scierie du Val		9072,00			20250603		
+BQ	Banque	55	20250605	613200	Locations immobilieres			LOY06	20250605	Loyer atelier	1200,00				20250605		
+BQ	Banque	55	20250605	512000	Banque			LOY06	20250605	Loyer atelier		1200,00			20250605		
+BQ	Banque	56	20250608	606100	Fournitures non stockables			EDF06	20250608	Electricite et telecom	380,00				20250608		
+BQ	Banque	56	20250608	626000	Frais postaux et telecom			EDF06	20250608	Electricite et telecom	90,00				20250608		
+BQ	Banque	56	20250608	512000	Banque			EDF06	20250608	Electricite et telecom		470,00			20250608		
+BQ	Banque	57	20250610	616000	Primes assurances			ASS06	20250610	Assurance pro	260,00				20250610		
+BQ	Banque	57	20250610	512000	Banque			ASS06	20250610	Assurance pro		260,00			20250610		
+OD	Operations diverses	58	20250628	641100	Remunerations du personnel			SAL06	20250628	Salaires du mois	5200,00				20250628		
+OD	Operations diverses	58	20250628	421000	Personnel remunerations dues			SAL06	20250628	Salaires du mois		5200,00			20250628		
+BQ	Banque	59	20250628	421000	Personnel remunerations dues			SALV06	20250628	Virement salaires	5200,00				20250628		
+BQ	Banque	59	20250628	512000	Banque			SALV06	20250628	Virement salaires		5200,00			20250628		
+BQ	Banque	60	20250615	645000	Charges de securite sociale			URS06	20250615	Charges sociales URSSAF	2600,00				20250615		
+BQ	Banque	60	20250615	512000	Banque			URS06	20250615	Charges sociales URSSAF		2600,00			20250615		
+BQ	Banque	61	20250620	164000	Emprunts etablissements credit			EMP06	20250620	Echeance emprunt	800,00				20250620		
+BQ	Banque	61	20250620	661100	Interets des emprunts			EMP06	20250620	Echeance emprunt	75,20				20250620		
+BQ	Banque	61	20250620	512000	Banque			EMP06	20250620	Echeance emprunt		875,20			20250620		
+VE	Ventes	62	20250705	411000	Clients	C921	Ecole Ste-Marie	FV071	20250705	Facture Ecole Ste-Marie	8640,00				20250705		
+VE	Ventes	62	20250705	701000	Ventes de produits finis			FV071	20250705	Facture Ecole Ste-Marie		7200,00			20250705		
+VE	Ventes	62	20250705	445710	TVA collectee			FV071	20250705	Facture Ecole Ste-Marie		1440,00			20250705		
+VE	Ventes	63	20250717	411000	Clients	C588	Mairie de Vaux	FV072	20250717	Facture Mairie de Vaux	5760,00				20250717		
+VE	Ventes	63	20250717	701000	Ventes de produits finis			FV072	20250717	Facture Mairie de Vaux		4800,00			20250717		
+VE	Ventes	63	20250717	445710	TVA collectee			FV072	20250717	Facture Mairie de Vaux		960,00			20250717		
+HA	Achats	64	20250703	601000	Achats matieres premieres			FA07	20250703	Achat matieres TransportExpress	5040,00				20250703		
+HA	Achats	64	20250703	445660	TVA deductible			FA07	20250703	Achat matieres TransportExpress	1008,00				20250703		
+HA	Achats	64	20250703	401000	Fournisseurs	T510	TransportExpress	FA07	20250703	Achat matieres TransportExpress		6048,00			20250703		
+BQ	Banque	65	20250705	613200	Locations immobilieres			LOY07	20250705	Loyer atelier	1200,00				20250705		
+BQ	Banque	65	20250705	512000	Banque			LOY07	20250705	Loyer atelier		1200,00			20250705		
+BQ	Banque	66	20250708	606100	Fournitures non stockables			EDF07	20250708	Electricite et telecom	380,00				20250708		
+BQ	Banque	66	20250708	626000	Frais postaux et telecom			EDF07	20250708	Electricite et telecom	90,00				20250708		
+BQ	Banque	66	20250708	512000	Banque			EDF07	20250708	Electricite et telecom		470,00			20250708		
+BQ	Banque	67	20250710	616000	Primes assurances			ASS07	20250710	Assurance pro	260,00				20250710		
+BQ	Banque	67	20250710	512000	Banque			ASS07	20250710	Assurance pro		260,00			20250710		
+OD	Operations diverses	68	20250728	641100	Remunerations du personnel			SAL07	20250728	Salaires du mois	5200,00				20250728		
+OD	Operations diverses	68	20250728	421000	Personnel remunerations dues			SAL07	20250728	Salaires du mois		5200,00			20250728		
+BQ	Banque	69	20250728	421000	Personnel remunerations dues			SALV07	20250728	Virement salaires	5200,00				20250728		
+BQ	Banque	69	20250728	512000	Banque			SALV07	20250728	Virement salaires		5200,00			20250728		
+BQ	Banque	70	20250715	645000	Charges de securite sociale			URS07	20250715	Charges sociales URSSAF	2600,00				20250715		
+BQ	Banque	70	20250715	512000	Banque			URS07	20250715	Charges sociales URSSAF		2600,00			20250715		
+BQ	Banque	71	20250720	164000	Emprunts etablissements credit			EMP07	20250720	Echeance emprunt	800,00				20250720		
+BQ	Banque	71	20250720	661100	Interets des emprunts			EMP07	20250720	Echeance emprunt	74,40				20250720		
+BQ	Banque	71	20250720	512000	Banque			EMP07	20250720	Echeance emprunt		874,40			20250720		
+VE	Ventes	72	20250805	411000	Clients	C588	Mairie de Vaux	FV081	20250805	Facture Mairie de Vaux	6480,00				20250805		
+VE	Ventes	72	20250805	701000	Ventes de produits finis			FV081	20250805	Facture Mairie de Vaux		5400,00			20250805		
+VE	Ventes	72	20250805	445710	TVA collectee			FV081	20250805	Facture Mairie de Vaux		1080,00			20250805		
+VE	Ventes	73	20250817	411000	Clients	C616	Garage Central	FV082	20250817	Facture Garage Central	4320,00				20250817		
+VE	Ventes	73	20250817	701000	Ventes de produits finis			FV082	20250817	Facture Garage Central		3600,00			20250817		
+VE	Ventes	73	20250817	445710	TVA collectee			FV082	20250817	Facture Garage Central		720,00			20250817		
+HA	Achats	74	20250803	601000	Achats matieres premieres			FA08	20250803	Achat matieres Peintures Girard	3780,00				20250803		
+HA	Achats	74	20250803	445660	TVA deductible			FA08	20250803	Achat matieres Peintures Girard	756,00				20250803		
+HA	Achats	74	20250803	401000	Fournisseurs	P509	Peintures Girard	FA08	20250803	Achat matieres Peintures Girard		4536,00			20250803		
+BQ	Banque	75	20250805	613200	Locations immobilieres			LOY08	20250805	Loyer atelier	1200,00				20250805		
+BQ	Banque	75	20250805	512000	Banque			LOY08	20250805	Loyer atelier		1200,00			20250805		
+BQ	Banque	76	20250808	606100	Fournitures non stockables			EDF08	20250808	Electricite et telecom	380,00				20250808		
+BQ	Banque	76	20250808	626000	Frais postaux et telecom			EDF08	20250808	Electricite et telecom	90,00				20250808		
+BQ	Banque	76	20250808	512000	Banque			EDF08	20250808	Electricite et telecom		470,00			20250808		
+BQ	Banque	77	20250810	616000	Primes assurances			ASS08	20250810	Assurance pro	260,00				20250810		
+BQ	Banque	77	20250810	512000	Banque			ASS08	20250810	Assurance pro		260,00			20250810		
+OD	Operations diverses	78	20250828	641100	Remunerations du personnel			SAL08	20250828	Salaires du mois	5200,00				20250828		
+OD	Operations diverses	78	20250828	421000	Personnel remunerations dues			SAL08	20250828	Salaires du mois		5200,00			20250828		
+BQ	Banque	79	20250828	421000	Personnel remunerations dues			SALV08	20250828	Virement salaires	5200,00				20250828		
+BQ	Banque	79	20250828	512000	Banque			SALV08	20250828	Virement salaires		5200,00			20250828		
+BQ	Banque	80	20250815	645000	Charges de securite sociale			URS08	20250815	Charges sociales URSSAF	2600,00				20250815		
+BQ	Banque	80	20250815	512000	Banque			URS08	20250815	Charges sociales URSSAF		2600,00			20250815		
+BQ	Banque	81	20250820	164000	Emprunts etablissements credit			EMP08	20250820	Echeance emprunt	800,00				20250820		
+BQ	Banque	81	20250820	661100	Interets des emprunts			EMP08	20250820	Echeance emprunt	73,60				20250820		
+BQ	Banque	81	20250820	512000	Banque			EMP08	20250820	Echeance emprunt		873,60			20250820		
+VE	Ventes	82	20250905	411000	Clients	C650	Dubois SARL	FV091	20250905	Facture Dubois SARL	15120,00				20250905		
+VE	Ventes	82	20250905	701000	Ventes de produits finis			FV091	20250905	Facture Dubois SARL		12600,00			20250905		
+VE	Ventes	82	20250905	445710	TVA collectee			FV091	20250905	Facture Dubois SARL		2520,00			20250905		
+VE	Ventes	83	20250917	411000	Clients	C322	Hotel du Parc	FV092	20250917	Facture Hotel du Parc	10080,00				20250917		
+VE	Ventes	83	20250917	701000	Ventes de produits finis			FV092	20250917	Facture Hotel du Parc		8400,00			20250917		
+VE	Ventes	83	20250917	445710	TVA collectee			FV092	20250917	Facture Hotel du Parc		1680,00			20250917		
+HA	Achats	84	20250903	601000	Achats matieres premieres			FA09	20250903	Achat matieres TransportExpress	8820,00				20250903		
+HA	Achats	84	20250903	445660	TVA deductible			FA09	20250903	Achat matieres TransportExpress	1764,00				20250903		
+HA	Achats	84	20250903	401000	Fournisseurs	T510	TransportExpress	FA09	20250903	Achat matieres TransportExpress		10584,00			20250903		
+BQ	Banque	85	20250905	613200	Locations immobilieres			LOY09	20250905	Loyer atelier	1200,00				20250905		
+BQ	Banque	85	20250905	512000	Banque			LOY09	20250905	Loyer atelier		1200,00			20250905		
+BQ	Banque	86	20250908	606100	Fournitures non stockables			EDF09	20250908	Electricite et telecom	380,00				20250908		
+BQ	Banque	86	20250908	626000	Frais postaux et telecom			EDF09	20250908	Electricite et telecom	90,00				20250908		
+BQ	Banque	86	20250908	512000	Banque			EDF09	20250908	Electricite et telecom		470,00			20250908		
+BQ	Banque	87	20250910	616000	Primes assurances			ASS09	20250910	Assurance pro	260,00				20250910		
+BQ	Banque	87	20250910	512000	Banque			ASS09	20250910	Assurance pro		260,00			20250910		
+OD	Operations diverses	88	20250928	641100	Remunerations du personnel			SAL09	20250928	Salaires du mois	5200,00				20250928		
+OD	Operations diverses	88	20250928	421000	Personnel remunerations dues			SAL09	20250928	Salaires du mois		5200,00			20250928		
+BQ	Banque	89	20250928	421000	Personnel remunerations dues			SALV09	20250928	Virement salaires	5200,00				20250928		
+BQ	Banque	89	20250928	512000	Banque			SALV09	20250928	Virement salaires		5200,00			20250928		
+BQ	Banque	90	20250915	645000	Charges de securite sociale			URS09	20250915	Charges sociales URSSAF	2600,00				20250915		
+BQ	Banque	90	20250915	512000	Banque			URS09	20250915	Charges sociales URSSAF		2600,00			20250915		
+BQ	Banque	91	20250920	164000	Emprunts etablissements credit			EMP09	20250920	Echeance emprunt	800,00				20250920		
+BQ	Banque	91	20250920	661100	Interets des emprunts			EMP09	20250920	Echeance emprunt	72,80				20250920		
+BQ	Banque	91	20250920	512000	Banque			EMP09	20250920	Echeance emprunt		872,80			20250920		
+VE	Ventes	92	20251005	411000	Clients	C525	Residence Les Tilleuls	FV101	20251005	Facture Residence Les Tilleuls	18720,00				20251005		
+VE	Ventes	92	20251005	701000	Ventes de produits finis			FV101	20251005	Facture Residence Les Tilleuls		15600,00			20251005		
+VE	Ventes	92	20251005	445710	TVA collectee			FV101	20251005	Facture Residence Les Tilleuls		3120,00			20251005		
+VE	Ventes	93	20251017	411000	Clients	C684	M. et Mme Leroy	FV102	20251017	Facture M. et Mme Leroy	12480,00				20251017		
+VE	Ventes	93	20251017	701000	Ventes de produits finis			FV102	20251017	Facture M. et Mme Leroy		10400,00			20251017		
+VE	Ventes	93	20251017	445710	TVA collectee			FV102	20251017	Facture M. et Mme Leroy		2080,00			20251017		
+HA	Achats	94	20251003	601000	Achats matieres premieres			FA10	20251003	Achat matieres Quincaillerie Pro	10920,00				20251003		
+HA	Achats	94	20251003	445660	TVA deductible			FA10	20251003	Achat matieres Quincaillerie Pro	2184,00				20251003		
+HA	Achats	94	20251003	401000	Fournisseurs	Q207	Quincaillerie Pro	FA10	20251003	Achat matieres Quincaillerie Pro		13104,00			20251003		
+BQ	Banque	95	20251005	613200	Locations immobilieres			LOY10	20251005	Loyer atelier	1200,00				20251005		
+BQ	Banque	95	20251005	512000	Banque			LOY10	20251005	Loyer atelier		1200,00			20251005		
+BQ	Banque	96	20251008	606100	Fournitures non stockables			EDF10	20251008	Electricite et telecom	380,00				20251008		
+BQ	Banque	96	20251008	626000	Frais postaux et telecom			EDF10	20251008	Electricite et telecom	90,00				20251008		
+BQ	Banque	96	20251008	512000	Banque			EDF10	20251008	Electricite et telecom		470,00			20251008		
+BQ	Banque	97	20251010	616000	Primes assurances			ASS10	20251010	Assurance pro	260,00				20251010		
+BQ	Banque	97	20251010	512000	Banque			ASS10	20251010	Assurance pro		260,00			20251010		
+OD	Operations diverses	98	20251028	641100	Remunerations du personnel			SAL10	20251028	Salaires du mois	5200,00				20251028		
+OD	Operations diverses	98	20251028	421000	Personnel remunerations dues			SAL10	20251028	Salaires du mois		5200,00			20251028		
+BQ	Banque	99	20251028	421000	Personnel remunerations dues			SALV10	20251028	Virement salaires	5200,00				20251028		
+BQ	Banque	99	20251028	512000	Banque			SALV10	20251028	Virement salaires		5200,00			20251028		
+BQ	Banque	100	20251015	645000	Charges de securite sociale			URS10	20251015	Charges sociales URSSAF	2600,00				20251015		
+BQ	Banque	100	20251015	512000	Banque			URS10	20251015	Charges sociales URSSAF		2600,00			20251015		
+BQ	Banque	101	20251020	164000	Emprunts etablissements credit			EMP10	20251020	Echeance emprunt	800,00				20251020		
+BQ	Banque	101	20251020	661100	Interets des emprunts			EMP10	20251020	Echeance emprunt	72,00				20251020		
+BQ	Banque	101	20251020	512000	Banque			EMP10	20251020	Echeance emprunt		872,00			20251020		
+VE	Ventes	102	20251105	411000	Clients	C588	Mairie de Vaux	FV111	20251105	Facture Mairie de Vaux	16560,00				20251105		
+VE	Ventes	102	20251105	701000	Ventes de produits finis			FV111	20251105	Facture Mairie de Vaux		13800,00			20251105		
+VE	Ventes	102	20251105	445710	TVA collectee			FV111	20251105	Facture Mairie de Vaux		2760,00			20251105		
+VE	Ventes	103	20251117	411000	Clients	C525	Residence Les Tilleuls	FV112	20251117	Facture Residence Les Tilleuls	11040,00				20251117		
+VE	Ventes	103	20251117	701000	Ventes de produits finis			FV112	20251117	Facture Residence Les Tilleuls		9200,00			20251117		
+VE	Ventes	103	20251117	445710	TVA collectee			FV112	20251117	Facture Residence Les Tilleuls		1840,00			20251117		
+HA	Achats	104	20251103	601000	Achats matieres premieres			FA11	20251103	Achat matieres Scierie du Val	9660,00				20251103		
+HA	Achats	104	20251103	445660	TVA deductible			FA11	20251103	Achat matieres Scierie du Val	1932,00				20251103		
+HA	Achats	104	20251103	401000	Fournisseurs	F556	Scierie du Val	FA11	20251103	Achat matieres Scierie du Val		11592,00			20251103		
+BQ	Banque	105	20251105	613200	Locations immobilieres			LOY11	20251105	Loyer atelier	1200,00				20251105		
+BQ	Banque	105	20251105	512000	Banque			LOY11	20251105	Loyer atelier		1200,00			20251105		
+BQ	Banque	106	20251108	606100	Fournitures non stockables			EDF11	20251108	Electricite et telecom	380,00				20251108		
+BQ	Banque	106	20251108	626000	Frais postaux et telecom			EDF11	20251108	Electricite et telecom	90,00				20251108		
+BQ	Banque	106	20251108	512000	Banque			EDF11	20251108	Electricite et telecom		470,00			20251108		
+BQ	Banque	107	20251110	616000	Primes assurances			ASS11	20251110	Assurance pro	260,00				20251110		
+BQ	Banque	107	20251110	512000	Banque			ASS11	20251110	Assurance pro		260,00			20251110		
+OD	Operations diverses	108	20251128	641100	Remunerations du personnel			SAL11	20251128	Salaires du mois	5200,00				20251128		
+OD	Operations diverses	108	20251128	421000	Personnel remunerations dues			SAL11	20251128	Salaires du mois		5200,00			20251128		
+BQ	Banque	109	20251128	421000	Personnel remunerations dues			SALV11	20251128	Virement salaires	5200,00				20251128		
+BQ	Banque	109	20251128	512000	Banque			SALV11	20251128	Virement salaires		5200,00			20251128		
+BQ	Banque	110	20251115	645000	Charges de securite sociale			URS11	20251115	Charges sociales URSSAF	2600,00				20251115		
+BQ	Banque	110	20251115	512000	Banque			URS11	20251115	Charges sociales URSSAF		2600,00			20251115		
+BQ	Banque	111	20251120	164000	Emprunts etablissements credit			EMP11	20251120	Echeance emprunt	800,00				20251120		
+BQ	Banque	111	20251120	661100	Interets des emprunts			EMP11	20251120	Echeance emprunt	71,20				20251120		
+BQ	Banque	111	20251120	512000	Banque			EMP11	20251120	Echeance emprunt		871,20			20251120		
+VE	Ventes	112	20251205	411000	Clients	C965	Cabinet Martin	FV121	20251205	Facture Cabinet Martin	12240,00				20251205		
+VE	Ventes	112	20251205	701000	Ventes de produits finis			FV121	20251205	Facture Cabinet Martin		10200,00			20251205		
+VE	Ventes	112	20251205	445710	TVA collectee			FV121	20251205	Facture Cabinet Martin		2040,00			20251205		
+VE	Ventes	113	20251217	411000	Clients	C250	Boulangerie Petit	FV122	20251217	Facture Boulangerie Petit	8160,00				20251217		
+VE	Ventes	113	20251217	701000	Ventes de produits finis			FV122	20251217	Facture Boulangerie Petit		6800,00			20251217		
+VE	Ventes	113	20251217	445710	TVA collectee			FV122	20251217	Facture Boulangerie Petit		1360,00			20251217		
+HA	Achats	114	20251203	601000	Achats matieres premieres			FA12	20251203	Achat matieres Scierie du Val	7140,00				20251203		
+HA	Achats	114	20251203	445660	TVA deductible			FA12	20251203	Achat matieres Scierie du Val	1428,00				20251203		
+HA	Achats	114	20251203	401000	Fournisseurs	F556	Scierie du Val	FA12	20251203	Achat matieres Scierie du Val		8568,00			20251203		
+BQ	Banque	115	20251205	613200	Locations immobilieres			LOY12	20251205	Loyer atelier	1200,00				20251205		
+BQ	Banque	115	20251205	512000	Banque			LOY12	20251205	Loyer atelier		1200,00			20251205		
+BQ	Banque	116	20251208	606100	Fournitures non stockables			EDF12	20251208	Electricite et telecom	380,00				20251208		
+BQ	Banque	116	20251208	626000	Frais postaux et telecom			EDF12	20251208	Electricite et telecom	90,00				20251208		
+BQ	Banque	116	20251208	512000	Banque			EDF12	20251208	Electricite et telecom		470,00			20251208		
+BQ	Banque	117	20251210	616000	Primes assurances			ASS12	20251210	Assurance pro	260,00				20251210		
+BQ	Banque	117	20251210	512000	Banque			ASS12	20251210	Assurance pro		260,00			20251210		
+OD	Operations diverses	118	20251228	641100	Remunerations du personnel			SAL12	20251228	Salaires du mois	5200,00				20251228		
+OD	Operations diverses	118	20251228	421000	Personnel remunerations dues			SAL12	20251228	Salaires du mois		5200,00			20251228		
+BQ	Banque	119	20251228	421000	Personnel remunerations dues			SALV12	20251228	Virement salaires	5200,00				20251228		
+BQ	Banque	119	20251228	512000	Banque			SALV12	20251228	Virement salaires		5200,00			20251228		
+BQ	Banque	120	20251215	645000	Charges de securite sociale			URS12	20251215	Charges sociales URSSAF	2600,00				20251215		
+BQ	Banque	120	20251215	512000	Banque			URS12	20251215	Charges sociales URSSAF		2600,00			20251215		
+BQ	Banque	121	20251220	164000	Emprunts etablissements credit			EMP12	20251220	Echeance emprunt	800,00				20251220		
+BQ	Banque	121	20251220	661100	Interets des emprunts			EMP12	20251220	Echeance emprunt	70,40				20251220		
+BQ	Banque	121	20251220	512000	Banque			EMP12	20251220	Echeance emprunt		870,40			20251220		
+BQ	Banque	122	20250212	512000	Banque			ENCFV011	20250212	Encaissement Cabinet Martin	11520,00				20250212		
+BQ	Banque	122	20250212	411000	Clients	C965	Cabinet Martin	ENCFV011	20250212	Encaissement Cabinet Martin		11520,00			20250212		
+BQ	Banque	123	20250212	512000	Banque			ENCFV012	20250212	Encaissement Dubois SARL	7680,00				20250212		
+BQ	Banque	123	20250212	411000	Clients	C650	Dubois SARL	ENCFV012	20250212	Encaissement Dubois SARL		7680,00			20250212		
+BQ	Banque	124	20250312	512000	Banque			ENCFV021	20250312	Encaissement Mairie de Vaux	13680,00				20250312		
+BQ	Banque	124	20250312	411000	Clients	C588	Mairie de Vaux	ENCFV021	20250312	Encaissement Mairie de Vaux		13680,00			20250312		
+BQ	Banque	125	20250312	512000	Banque			ENCFV022	20250312	Encaissement Mairie de Vaux	9120,00				20250312		
+BQ	Banque	125	20250312	411000	Clients	C588	Mairie de Vaux	ENCFV022	20250312	Encaissement Mairie de Vaux		9120,00			20250312		
+BQ	Banque	126	20250412	512000	Banque			ENCFV031	20250412	Encaissement Cabinet Martin	17280,00				20250412		
+BQ	Banque	126	20250412	411000	Clients	C965	Cabinet Martin	ENCFV031	20250412	Encaissement Cabinet Martin		17280,00			20250412		
+BQ	Banque	127	20250412	512000	Banque			ENCFV032	20250412	Encaissement Ecole Ste-Marie	11520,00				20250412		
+BQ	Banque	127	20250412	411000	Clients	C921	Ecole Ste-Marie	ENCFV032	20250412	Encaissement Ecole Ste-Marie		11520,00			20250412		
+BQ	Banque	128	20250512	512000	Banque			ENCFV041	20250512	Encaissement SCI Bellevue	19440,00				20250512		
+BQ	Banque	128	20250512	411000	Clients	C185	SCI Bellevue	ENCFV041	20250512	Encaissement SCI Bellevue		19440,00			20250512		
+BQ	Banque	129	20250512	512000	Banque			ENCFV042	20250512	Encaissement Boulangerie Petit	12960,00				20250512		
+BQ	Banque	129	20250512	411000	Clients	C250	Boulangerie Petit	ENCFV042	20250512	Encaissement Boulangerie Petit		12960,00			20250512		
+BQ	Banque	130	20250612	512000	Banque			ENCFV051	20250612	Encaissement Dubois SARL	15840,00				20250612		
+BQ	Banque	130	20250612	411000	Clients	C650	Dubois SARL	ENCFV051	20250612	Encaissement Dubois SARL		15840,00			20250612		
+BQ	Banque	131	20250612	512000	Banque			ENCFV052	20250612	Encaissement Cabinet Martin	10560,00				20250612		
+BQ	Banque	131	20250612	411000	Clients	C965	Cabinet Martin	ENCFV052	20250612	Encaissement Cabinet Martin		10560,00			20250612		
+BQ	Banque	132	20250712	512000	Banque			ENCFV061	20250712	Encaissement Mairie de Vaux	12960,00				20250712		
+BQ	Banque	132	20250712	411000	Clients	C588	Mairie de Vaux	ENCFV061	20250712	Encaissement Mairie de Vaux		12960,00			20250712		
+BQ	Banque	133	20250712	512000	Banque			ENCFV062	20250712	Encaissement Ecole Ste-Marie	8640,00				20250712		
+BQ	Banque	133	20250712	411000	Clients	C921	Ecole Ste-Marie	ENCFV062	20250712	Encaissement Ecole Ste-Marie		8640,00			20250712		
+BQ	Banque	134	20250812	512000	Banque			ENCFV071	20250812	Encaissement Ecole Ste-Marie	8640,00				20250812		
+BQ	Banque	134	20250812	411000	Clients	C921	Ecole Ste-Marie	ENCFV071	20250812	Encaissement Ecole Ste-Marie		8640,00			20250812		
+BQ	Banque	135	20250812	512000	Banque			ENCFV072	20250812	Encaissement Mairie de Vaux	5760,00				20250812		
+BQ	Banque	135	20250812	411000	Clients	C588	Mairie de Vaux	ENCFV072	20250812	Encaissement Mairie de Vaux		5760,00			20250812		
+BQ	Banque	136	20250912	512000	Banque			ENCFV081	20250912	Encaissement Mairie de Vaux	6480,00				20250912		
+BQ	Banque	136	20250912	411000	Clients	C588	Mairie de Vaux	ENCFV081	20250912	Encaissement Mairie de Vaux		6480,00			20250912		
+BQ	Banque	137	20250912	512000	Banque			ENCFV082	20250912	Encaissement Garage Central	4320,00				20250912		
+BQ	Banque	137	20250912	411000	Clients	C616	Garage Central	ENCFV082	20250912	Encaissement Garage Central		4320,00			20250912		
+BQ	Banque	138	20251012	512000	Banque			ENCFV091	20251012	Encaissement Dubois SARL	15120,00				20251012		
+BQ	Banque	138	20251012	411000	Clients	C650	Dubois SARL	ENCFV091	20251012	Encaissement Dubois SARL		15120,00			20251012		
+BQ	Banque	139	20251012	512000	Banque			ENCFV092	20251012	Encaissement Hotel du Parc	10080,00				20251012		
+BQ	Banque	139	20251012	411000	Clients	C322	Hotel du Parc	ENCFV092	20251012	Encaissement Hotel du Parc		10080,00			20251012		
+BQ	Banque	140	20251112	512000	Banque			ENCFV101	20251112	Encaissement Residence Les Tilleuls	18720,00				20251112		
+BQ	Banque	140	20251112	411000	Clients	C525	Residence Les Tilleuls	ENCFV101	20251112	Encaissement Residence Les Tilleuls		18720,00			20251112		
+BQ	Banque	141	20251112	512000	Banque			ENCFV102	20251112	Encaissement M. et Mme Leroy	12480,00				20251112		
+BQ	Banque	141	20251112	411000	Clients	C684	M. et Mme Leroy	ENCFV102	20251112	Encaissement M. et Mme Leroy		12480,00			20251112		
+BQ	Banque	142	20251212	512000	Banque			ENCFV111	20251212	Encaissement Mairie de Vaux	16560,00				20251212		
+BQ	Banque	142	20251212	411000	Clients	C588	Mairie de Vaux	ENCFV111	20251212	Encaissement Mairie de Vaux		16560,00			20251212		
+BQ	Banque	143	20251212	512000	Banque			ENCFV112	20251212	Encaissement Residence Les Tilleuls	11040,00				20251212		
+BQ	Banque	143	20251212	411000	Clients	C525	Residence Les Tilleuls	ENCFV112	20251212	Encaissement Residence Les Tilleuls		11040,00			20251212		
+BQ	Banque	144	20250206	401000	Fournisseurs	P509	Peintures Girard	PAYFA01	20250206	Paiement Peintures Girard	8064,00				20250206		
+BQ	Banque	144	20250206	512000	Banque			PAYFA01	20250206	Paiement Peintures Girard		8064,00			20250206		
+BQ	Banque	145	20250306	401000	Fournisseurs	Q207	Quincaillerie Pro	PAYFA02	20250306	Paiement Quincaillerie Pro	9576,00				20250306		
+BQ	Banque	145	20250306	512000	Banque			PAYFA02	20250306	Paiement Quincaillerie Pro		9576,00			20250306		
+BQ	Banque	146	20250406	401000	Fournisseurs	F556	Scierie du Val	PAYFA03	20250406	Paiement Scierie du Val	12096,00				20250406		
+BQ	Banque	146	20250406	512000	Banque			PAYFA03	20250406	Paiement Scierie du Val		12096,00			20250406		
+BQ	Banque	147	20250506	401000	Fournisseurs	F556	Scierie du Val	PAYFA04	20250506	Paiement Scierie du Val	13608,00				20250506		
+BQ	Banque	147	20250506	512000	Banque			PAYFA04	20250506	Paiement Scierie du Val		13608,00			20250506		
+BQ	Banque	148	20250606	401000	Fournisseurs	Q207	Quincaillerie Pro	PAYFA05	20250606	Paiement Quincaillerie Pro	11088,00				20250606		
+BQ	Banque	148	20250606	512000	Banque			PAYFA05	20250606	Paiement Quincaillerie Pro		11088,00			20250606		
+BQ	Banque	149	20250706	401000	Fournisseurs	F556	Scierie du Val	PAYFA06	20250706	Paiement Scierie du Val	9072,00				20250706		
+BQ	Banque	149	20250706	512000	Banque			PAYFA06	20250706	Paiement Scierie du Val		9072,00			20250706		
+BQ	Banque	150	20250806	401000	Fournisseurs	T510	TransportExpress	PAYFA07	20250806	Paiement TransportExpress	6048,00				20250806		
+BQ	Banque	150	20250806	512000	Banque			PAYFA07	20250806	Paiement TransportExpress		6048,00			20250806		
+BQ	Banque	151	20250906	401000	Fournisseurs	P509	Peintures Girard	PAYFA08	20250906	Paiement Peintures Girard	4536,00				20250906		
+BQ	Banque	151	20250906	512000	Banque			PAYFA08	20250906	Paiement Peintures Girard		4536,00			20250906		
+BQ	Banque	152	20251006	401000	Fournisseurs	T510	TransportExpress	PAYFA09	20251006	Paiement TransportExpress	10584,00				20251006		
+BQ	Banque	152	20251006	512000	Banque			PAYFA09	20251006	Paiement TransportExpress		10584,00			20251006		
+BQ	Banque	153	20251106	401000	Fournisseurs	Q207	Quincaillerie Pro	PAYFA10	20251106	Paiement Quincaillerie Pro	13104,00				20251106		
+BQ	Banque	153	20251106	512000	Banque			PAYFA10	20251106	Paiement Quincaillerie Pro		13104,00			20251106		
+BQ	Banque	154	20251206	401000	Fournisseurs	F556	Scierie du Val	PAYFA11	20251206	Paiement Scierie du Val	11592,00				20251206		
+BQ	Banque	154	20251206	512000	Banque			PAYFA11	20251206	Paiement Scierie du Val		11592,00			20251206		
+BQ	Banque	155	20251206	401000	Fournisseurs	F556	Scierie du Val	PAYFA12	20251206	Paiement Scierie du Val	8568,00				20251206		
+BQ	Banque	155	20251206	512000	Banque			PAYFA12	20251206	Paiement Scierie du Val		8568,00			20251206		
+OD	Operations diverses	156	20250420	445510	TVA a decaisser			TVA-T1	20250420	Declaration TVA		6844,00			20250420		
+OD	Operations diverses	156	20250420	445710	TVA collectee			TVA-T1	20250420	Declaration TVA	11800,00				20250420		
+OD	Operations diverses	156	20250420	445660	TVA deductible			TVA-T1	20250420	Declaration TVA		4956,00			20250420		
+BQ	Banque	157	20250425	445510	TVA a decaisser			TVAP-T1	20250425	Paiement TVA	6844,00				20250425		
+BQ	Banque	157	20250425	512000	Banque			TVAP-T1	20250425	Paiement TVA		6844,00			20250425		
+OD	Operations diverses	158	20250720	445510	TVA a decaisser			TVA-T2	20250720	Declaration TVA		7772,00			20250720		
+OD	Operations diverses	158	20250720	445710	TVA collectee			TVA-T2	20250720	Declaration TVA	13400,00				20250720		
+OD	Operations diverses	158	20250720	445660	TVA deductible			TVA-T2	20250720	Declaration TVA		5628,00			20250720		
+BQ	Banque	159	20250725	445510	TVA a decaisser			TVAP-T2	20250725	Paiement TVA	7772,00				20250725		
+BQ	Banque	159	20250725	512000	Banque			TVAP-T2	20250725	Paiement TVA		7772,00			20250725		
+OD	Operations diverses	160	20251020	445510	TVA a decaisser			TVA-T3	20251020	Declaration TVA		4872,00			20251020		
+OD	Operations diverses	160	20251020	445710	TVA collectee			TVA-T3	20251020	Declaration TVA	8400,00				20251020		
+OD	Operations diverses	160	20251020	445660	TVA deductible			TVA-T3	20251020	Declaration TVA		3528,00			20251020		
+BQ	Banque	161	20251025	445510	TVA a decaisser			TVAP-T3	20251025	Paiement TVA	4872,00				20251025		
+BQ	Banque	161	20251025	512000	Banque			TVAP-T3	20251025	Paiement TVA		4872,00			20251025		
+OD	Operations diverses	162	20251220	445510	TVA a decaisser			TVA-T4	20251220	Declaration TVA		7656,00			20251220		
+OD	Operations diverses	162	20251220	445710	TVA collectee			TVA-T4	20251220	Declaration TVA	13200,00				20251220		
+OD	Operations diverses	162	20251220	445660	TVA deductible			TVA-T4	20251220	Declaration TVA		5544,00			20251220		
+BQ	Banque	163	20251225	445510	TVA a decaisser			TVAP-T4	20251225	Paiement TVA	7656,00				20251225		
+BQ	Banque	163	20251225	512000	Banque			TVAP-T4	20251225	Paiement TVA		7656,00			20251225		
+BQ	Banque	164	20251215	635110	Contribution economique territoriale			CFE2025	20251215	Cotisation fonciere entreprises	1350,00				20251215		
+BQ	Banque	164	20251215	512000	Banque			CFE2025	20251215	Cotisation fonciere entreprises		1350,00			20251215		

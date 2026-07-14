@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply text-slate-600 antialiased;
+  color: #10163a;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.006em;
+  /* Dégradé « horizon » bleu -> pêche façon Dimension, couleurs de Michael. */
+  background:
+    radial-gradient(85% 65% at 88% 112%, rgba(244, 176, 116, 0.6) 0%, rgba(244, 176, 116, 0) 55%),
+    radial-gradient(70% 60% at 6% -8%, rgba(0, 98, 184, 0.28) 0%, rgba(0, 98, 184, 0) 55%),
+    linear-gradient(128deg, #7f9bd4 0%, #9aafda 22%, #bcc4d4 46%, #ddd2c2 70%, #f0c79c 100%);
+  background-attachment: fixed;
+}
+
+main,
+aside {
+  position: relative;
+  z-index: 1;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.022em;
+  color: #050a2c;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+}
+
+/* Panneau en verre dépoli — la signature du style. */
+.card {
+  @apply rounded-3xl border border-white/60 bg-white/55 backdrop-blur-2xl;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.6),
+    0 12px 40px -20px rgba(5, 10, 44, 0.28);
+}
+
+/* Table de données. */
+.data-table {
+  @apply w-full text-sm;
+  font-variant-numeric: tabular-nums;
+}
+.data-table thead th {
+  @apply border-b border-navy/10 py-2.5 pr-4 text-left align-bottom text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-500;
+}
+.data-table tbody td {
+  @apply border-t border-navy/[0.06] py-2.5 pr-4 text-left text-slate-600;
+}
+.data-table tbody tr {
+  @apply transition-colors;
+}
+.data-table tbody tr:hover {
+  @apply bg-white/40;
+}
+.num {
+  @apply text-right tabular;
+}
+
+::selection {
+  background: rgba(0, 98, 184, 0.2);
+  color: #050a2c;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(5, 10, 44, 0.2) transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(5, 10, 44, 0.16);
+  border-radius: 9px;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+  aside,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  #rapport {
+    border: 0 !important;
+    padding: 0 !important;
+  }
+}

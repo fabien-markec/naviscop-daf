@@ -1,0 +1,17 @@
+{
+  "name": "@naviscop/finance-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Moteur de calcul financier NAVISCOP : plan de trésorerie, compte de résultat, 11 KPI, alertes, scénarios. TypeScript pur, sans I/O, testable.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "node --test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

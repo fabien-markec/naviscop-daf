@@ -1,0 +1,6 @@
+**/node_modules
+**/.next
+**/.turbo
+**/*.log
+.git
+FEC_EXEMPLE_ATELIER_DU_BOIS_2025.txt
