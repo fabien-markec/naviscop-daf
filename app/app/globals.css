@@ -104,10 +104,15 @@ h3 {
 }
 
 @media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
   body {
     background: #fff;
   }
   aside,
+  .app-topbar,
   .no-print {
     display: none !important;
   }
@@ -117,5 +122,19 @@ h3 {
   #rapport {
     border: 0 !important;
     padding: 0 !important;
+  }
+  /* Sauts de page propres : on ne coupe pas une ligne ni un bloc en deux. */
+  #rapport section {
+    break-inside: avoid;
+  }
+  #rapport h3 {
+    break-after: avoid;
+  }
+  #rapport tr,
+  #rapport li {
+    break-inside: avoid;
+  }
+  #rapport thead {
+    display: table-header-group;
   }
 }

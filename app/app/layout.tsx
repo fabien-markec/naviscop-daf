@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <DossierProvider>
           <div className="relative flex min-h-screen">
             <Sidebar />
-            <main className="flex-1 overflow-x-hidden px-8 py-8 lg:px-10">
+            <main className="flex-1 overflow-x-hidden px-4 pb-10 pt-20 sm:px-6 lg:px-10 lg:py-8">
               <div className="rise mx-auto max-w-6xl">{children}</div>
             </main>
           </div>

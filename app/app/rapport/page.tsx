@@ -5,6 +5,7 @@ import { Printer, Download } from 'lucide-react';
 import { analyserCommeDaf, MOIS } from '@naviscop/finance-engine';
 import { useDossier } from '@/lib/dossier-context';
 import { construireCsv, telechargerCsv } from '@/lib/export-csv';
+import { telechargerXlsx } from '@/lib/export-xlsx';
 import { eur, pct } from '@/lib/format';
 
 export default function RapportPage() {
@@ -35,12 +36,18 @@ export default function RapportPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-navy">Rapport de rendez-vous</h1>
           <p className="mt-1 text-sm text-slate-500">Export prêt à présenter en rendez-vous DAF.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
-            onClick={() => telechargerCsv(nom, construireCsv(nom, tableauDeBord))}
+            onClick={() => telechargerXlsx(nom, tableauDeBord)}
             className="flex items-center gap-2 rounded-full border border-navy/15 px-5 py-2 text-sm text-slate-800 hover:bg-slate-100"
           >
-            <Download className="h-4 w-4" /> Excel / CSV
+            <Download className="h-4 w-4" /> Excel (.xlsx)
+          </button>
+          <button
+            onClick={() => telechargerCsv(nom, construireCsv(nom, tableauDeBord))}
+            className="flex items-center gap-2 rounded-full border border-navy/15 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100"
+          >
+            CSV
           </button>
           <button
             onClick={() => window.print()}
