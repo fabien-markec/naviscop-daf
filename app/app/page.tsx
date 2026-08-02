@@ -53,6 +53,8 @@ export default function DashboardPage() {
         <h2 className="mb-3 px-1 text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-500">Indicateurs clés</h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
           <KpiCard label="Chiffre d’affaires" value={eur(pnl.annuel.caHt)} hint={`${pct(kpis.tauxAtteinteObjectifCa)} de l’objectif`} />
+          <KpiCard label="Trésorerie à 3 mois" value={eur(kpis.tresorerie3Mois)} hint="projection" tone={kpis.tresorerie3Mois < 0 ? 'negative' : 'positive'} />
+          <KpiCard label="Trésorerie à 6 mois" value={eur(kpis.tresorerie6Mois)} hint="projection" tone={kpis.tresorerie6Mois < 0 ? 'negative' : 'positive'} />
           <KpiCard label="Marge brute" value={eur(kpis.margeBrute)} hint={`Taux de marque ${pct(kpis.tauxMarque)}`} />
           <KpiCard label="EBE" value={eur(kpis.excedentBrutExploitation)} tone={kpis.excedentBrutExploitation < 0 ? 'negative' : 'positive'} />
           <KpiCard label="Seuil de rentabilité" value={eur(kpis.seuilRentabilite)} hint="CA à atteindre" />
