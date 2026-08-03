@@ -8,6 +8,7 @@ import type {
   MouvementPrevisionnel,
 } from '@naviscop/finance-engine';
 import { supabase } from './supabase';
+import type { ActionItem, StatutAction } from './use-plan-action';
 
 export interface DossierRow {
   id: string;
@@ -15,6 +16,7 @@ export interface DossierRow {
   metier: string;
   entreesBase: EntreesMoteur;
   previsionnels: MouvementPrevisionnel[];
+  planActions: ActionItem[];
 }
 
 const n = (v: unknown) => Number(v ?? 0);
@@ -83,6 +85,17 @@ function mapPrevisionnel(r: Record<string, unknown>): MouvementPrevisionnel {
   };
 }
 
+function mapAction(r: Record<string, unknown>): ActionItem {
+  return {
+    id: String(r.id),
+    action: String(r.action ?? ''),
+    responsable: String(r.responsable ?? ''),
+    echeance: String(r.echeance ?? ''),
+    impact: String(r.impact ?? ''),
+    statut: (r.statut ?? 'a_faire') as StatutAction,
+  };
+}
+
 // ---------- lecture ----------
 /** Charge tous les dossiers accessibles à l'utilisateur, prêts pour le moteur. */
 export async function chargerDossiers(): Promise<DossierRow[]> {
@@ -92,13 +105,14 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
   if (!dossiers || dossiers.length === 0) return [];
 
   const ids = dossiers.map((d) => d.id as string);
-  const [param, pnl, cash, prev] = await Promise.all([
+  const [param, pnl, cash, prev, actions] = await Promise.all([
     s.from('dossier_parametrage').select('*').in('dossier_id', ids),
     s.from('dossier_pnl').select('*').in('dossier_id', ids),
     s.from('dossier_cash').select('*').in('dossier_id', ids),
     s.from('previsionnels').select('*').in('dossier_id', ids).order('created_at', { ascending: false }),
+    s.from('plan_actions').select('*').in('dossier_id', ids).order('created_at', { ascending: false }),
   ]);
-  for (const r of [param, pnl, cash, prev]) if (r.error) throw r.error;
+  for (const r of [param, pnl, cash, prev, actions]) if (r.error) throw r.error;
 
   const byId = <T extends { dossier_id: string }>(rows: T[] | null) => {
     const m = new Map<string, T[]>();
@@ -109,6 +123,7 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
   const pnlMap = byId(pnl.data as { dossier_id: string }[]);
   const cashMap = byId(cash.data as { dossier_id: string }[]);
   const prevMap = byId(prev.data as { dossier_id: string }[]);
+  const actionMap = byId(actions.data as { dossier_id: string }[]);
 
   return dossiers.map((d) => {
     const p = paramMap.get(d.id as string)?.[0] ?? {};
@@ -125,6 +140,7 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
       metier: (d.metier as string) ?? '',
       entreesBase,
       previsionnels: ((prevMap.get(d.id as string) ?? []) as Record<string, unknown>[]).map(mapPrevisionnel),
+      planActions: ((actionMap.get(d.id as string) ?? []) as Record<string, unknown>[]).map(mapAction),
     };
   });
 }
@@ -205,5 +221,31 @@ export async function ajouterPrevisionnelDb(
 
 export async function supprimerPrevisionnelDb(id: string): Promise<void> {
   const { error } = await db().from('previsionnels').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function ajouterActionDb(
+  dossierId: string,
+  a: Omit<ActionItem, 'id' | 'statut'>,
+): Promise<ActionItem> {
+  const { data, error } = await db()
+    .from('plan_actions')
+    .insert({
+      dossier_id: dossierId, action: a.action, responsable: a.responsable,
+      echeance: a.echeance, impact: a.impact, statut: 'a_faire',
+    })
+    .select('*')
+    .single();
+  if (error) throw error;
+  return mapAction(data as Record<string, unknown>);
+}
+
+export async function majStatutActionDb(id: string, statut: StatutAction): Promise<void> {
+  const { error } = await db().from('plan_actions').update({ statut }).eq('id', id);
+  if (error) throw error;
+}
+
+export async function supprimerActionDb(id: string): Promise<void> {
+  const { error } = await db().from('plan_actions').delete().eq('id', id);
   if (error) throw error;
 }

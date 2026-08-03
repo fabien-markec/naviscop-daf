@@ -10,6 +10,7 @@ import {
 } from '@naviscop/finance-engine';
 import { dossiersDemo } from './demo-data';
 import { supabase, supabaseConfigured } from './supabase';
+import type { ActionItem, StatutAction } from './use-plan-action';
 import {
   chargerDossiers,
   creerDossier,
@@ -17,6 +18,9 @@ import {
   majParametrageDb,
   ajouterPrevisionnelDb,
   supprimerPrevisionnelDb,
+  ajouterActionDb,
+  majStatutActionDb,
+  supprimerActionDb,
   type DossierRow,
 } from './naviscop-db';
 
@@ -30,6 +34,7 @@ export interface DossierEntry {
   metier: string;
   entreesBase: EntreesMoteur;
   previsionnels: MouvementPrevisionnel[];
+  planActions: ActionItem[];
 }
 
 interface Workspace {
@@ -47,6 +52,7 @@ interface DossierContextValue {
   metier: string;
   entrees: EntreesMoteur;
   previsionnels: MouvementPrevisionnel[];
+  planActions: ActionItem[];
   tableauDeBord: ReturnType<typeof calculerTableauDeBord>;
   chargement: boolean;
   connecte: boolean;
@@ -57,6 +63,9 @@ interface DossierContextValue {
   majParametrage: (patch: Partial<ParametrageFinancier>) => void;
   ajouterPrevisionnel: (mv: Omit<MouvementPrevisionnel, 'id'>) => void;
   supprimerPrevisionnel: (id: string) => void;
+  ajouterAction: (a: Omit<ActionItem, 'id' | 'statut'>) => void;
+  majStatutAction: (id: string, statut: StatutAction) => void;
+  supprimerAction: (id: string) => void;
   reinitialiser: () => void;
   deconnexion: () => void;
 }
@@ -82,7 +91,7 @@ function entreesVides(): EntreesMoteur {
 }
 
 function defautWorkspace(): Workspace {
-  const dossiers: DossierEntry[] = dossiersDemo.map((d) => ({ ...d, previsionnels: [] }));
+  const dossiers: DossierEntry[] = dossiersDemo.map((d) => ({ ...d, previsionnels: [], planActions: [] }));
   return { role: 'daf', dossiers, actifId: dossiers[0].id };
 }
 
@@ -102,7 +111,7 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
         if (dossiers.length === 0) {
           const base = entreesVides();
           const id = await creerDossier('Mon entreprise', base, '');
-          dossiers = [{ id, nom: 'Mon entreprise', metier: '', entreesBase: base, previsionnels: [] }];
+          dossiers = [{ id, nom: 'Mon entreprise', metier: '', entreesBase: base, previsionnels: [], planActions: [] }];
         }
         if (!annule) setWs({ role: 'daf', dossiers, actifId: dossiers[0].id });
       } catch (e) {
@@ -158,6 +167,7 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       metier: actif.metier,
       entrees,
       previsionnels: actif.previsionnels,
+      planActions: actif.planActions ?? [],
       tableauDeBord: calculerTableauDeBord(entrees),
       chargement,
       connecte: supabaseConfigured,
@@ -166,10 +176,10 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       ajouterDossier: async (nom, entreesBase, metier = '') => {
         if (supabaseConfigured) {
           const id = await creerDossier(nom, entreesBase, metier);
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [] }], actifId: id }));
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [], planActions: [] }], actifId: id }));
         } else {
           const id = crypto.randomUUID();
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [] }], actifId: id }));
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [], planActions: [] }], actifId: id }));
         }
       },
 
@@ -192,10 +202,10 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       activerDossier: async (nom, entreesBase) => {
         if (supabaseConfigured) {
           const id = await creerDossier(nom, entreesBase, '');
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [] }], actifId: id }));
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [], planActions: [] }], actifId: id }));
         } else {
           const id = crypto.randomUUID();
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [] }], actifId: id }));
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [], planActions: [] }], actifId: id }));
         }
       },
 
@@ -220,6 +230,29 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       supprimerPrevisionnel: (idmv) => {
         majActif((d) => ({ ...d, previsionnels: d.previsionnels.filter((m) => m.id !== idmv) }));
         if (supabaseConfigured) supprimerPrevisionnelDb(idmv).catch((e) => console.error('Suppression prévisionnel échouée', e));
+      },
+
+      ajouterAction: async (a) => {
+        if (supabaseConfigured) {
+          try {
+            const cree = await ajouterActionDb(ws.actifId, a);
+            majActif((d) => ({ ...d, planActions: [cree, ...(d.planActions ?? [])] }));
+          } catch (e) {
+            console.error('Ajout action échoué', e);
+          }
+        } else {
+          majActif((d) => ({ ...d, planActions: [{ ...a, id: crypto.randomUUID(), statut: 'a_faire' }, ...(d.planActions ?? [])] }));
+        }
+      },
+
+      majStatutAction: (id, statut) => {
+        majActif((d) => ({ ...d, planActions: (d.planActions ?? []).map((i) => (i.id === id ? { ...i, statut } : i)) }));
+        if (supabaseConfigured) majStatutActionDb(id, statut).catch((e) => console.error('MAJ statut action échouée', e));
+      },
+
+      supprimerAction: (id) => {
+        majActif((d) => ({ ...d, planActions: (d.planActions ?? []).filter((i) => i.id !== id) }));
+        if (supabaseConfigured) supprimerActionDb(id).catch((e) => console.error('Suppression action échouée', e));
       },
 
       reinitialiser: () => {

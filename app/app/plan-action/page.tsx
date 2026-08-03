@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { usePlanAction, type StatutAction } from '@/lib/use-plan-action';
+import { type StatutAction } from '@/lib/use-plan-action';
+import { useDossier } from '@/lib/dossier-context';
 import { PageHeader, Section } from '@/components/ui';
 
 const STATUTS: { valeur: StatutAction; label: string; classe: string }[] = [
@@ -12,7 +13,7 @@ const STATUTS: { valeur: StatutAction; label: string; classe: string }[] = [
 ];
 
 export default function PlanActionPage() {
-  const { items, ajouter, majStatut, supprimer } = usePlanAction();
+  const { planActions: items, ajouterAction: ajouter, majStatutAction: majStatut, supprimerAction: supprimer } = useDossier();
   const [action, setAction] = useState('');
   const [responsable, setResponsable] = useState('');
   const [echeance, setEcheance] = useState('');
