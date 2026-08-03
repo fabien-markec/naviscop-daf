@@ -13,6 +13,12 @@ COPY app/pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm install --no-frozen-lockfile
 
 COPY app/ ./
+# Config Supabase injectée au build (NEXT_PUBLIC_* = inlinée par Next).
+# Vides par défaut -> l'app tourne en mode démo localStorage (ex. peduzzi.sbs).
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 RUN pnpm build
 
 # --- Runtime ---

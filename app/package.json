@@ -5,7 +5,9 @@
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "pnpm": {
-    "onlyBuiltDependencies": ["sharp"]
+    "onlyBuiltDependencies": [
+      "sharp"
+    ]
   },
   "scripts": {
     "dev": "next dev -p 3100",
@@ -14,11 +16,12 @@
   },
   "dependencies": {
     "@naviscop/finance-engine": "link:../finance-engine",
+    "@supabase/supabase-js": "^2.112.0",
+    "lucide-react": "0.469.0",
     "next": "15.1.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "recharts": "2.15.0",
-    "lucide-react": "0.469.0",
     "xlsx": "0.18.5"
   },
   "devDependencies": {

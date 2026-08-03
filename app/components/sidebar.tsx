@@ -17,6 +17,7 @@ import {
   Users,
   Menu,
   X,
+  LogOut,
 } from 'lucide-react';
 import { useDossier } from '@/lib/dossier-context';
 
@@ -36,7 +37,7 @@ const MODULES = [
 export function Sidebar() {
   const path = usePathname();
   const router = useRouter();
-  const { role, setRole, nom, metier, dossiers, actifId, ouvrirDossier } = useDossier();
+  const { role, setRole, nom, metier, dossiers, actifId, ouvrirDossier, connecte, deconnexion } = useDossier();
   const [open, setOpen] = useState(false);
 
   // Ferme le tiroir à chaque changement de page (mobile).
@@ -146,25 +147,36 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Bascule de rôle (démo) */}
+        {/* Bas de barre : déconnexion (connecté) ou bascule de rôle (démo) */}
         <div className="mt-auto pt-6">
-          <p className="mb-2 px-1 text-[10px] font-medium uppercase tracking-[0.1em] text-slate-400">Vue (démo)</p>
-          <div className="flex gap-1 rounded-full border border-slate-200 bg-slate-50 p-1">
-            {(['daf', 'client'] as const).map((r) => (
-              <button
-                key={r}
-                onClick={() => {
-                  setRole(r);
-                  if (r === 'client') router.push('/');
-                }}
-                className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition ${
-                  role === r ? 'bg-brand text-white shadow-[0_4px_12px_-4px_rgba(0,98,184,0.4)]' : 'text-slate-500 hover:text-navy'
-                }`}
-              >
-                {r === 'daf' ? 'DAF' : 'Client'}
-              </button>
-            ))}
-          </div>
+          {connecte ? (
+            <button
+              onClick={deconnexion}
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-slate-50 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-navy"
+            >
+              <LogOut className="h-4 w-4" /> Se déconnecter
+            </button>
+          ) : (
+            <>
+              <p className="mb-2 px-1 text-[10px] font-medium uppercase tracking-[0.1em] text-slate-400">Vue (démo)</p>
+              <div className="flex gap-1 rounded-full border border-slate-200 bg-slate-50 p-1">
+                {(['daf', 'client'] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => {
+                      setRole(r);
+                      if (r === 'client') router.push('/');
+                    }}
+                    className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition ${
+                      role === r ? 'bg-brand text-white shadow-[0_4px_12px_-4px_rgba(0,98,184,0.4)]' : 'text-slate-500 hover:text-navy'
+                    }`}
+                  >
+                    {r === 'daf' ? 'DAF' : 'Client'}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </aside>
     </>
