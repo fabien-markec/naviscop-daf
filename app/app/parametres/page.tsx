@@ -3,6 +3,7 @@
 import { useDossier } from '@/lib/dossier-context';
 import { eur } from '@/lib/format';
 import { PageHeader, Section, ListeAlertes } from '@/components/ui';
+import { InviterClient } from '@/components/inviter-client';
 
 function ChampNombre({
   label,
@@ -38,7 +39,7 @@ function ChampNombre({
 }
 
 export default function ParametresPage() {
-  const { entrees, majParametrage, tableauDeBord, reinitialiser } = useDossier();
+  const { entrees, majParametrage, tableauDeBord, reinitialiser, connecte } = useDossier();
   const p = entrees.parametrage;
 
   return (
@@ -117,15 +118,18 @@ export default function ParametresPage() {
             </div>
           </Section>
 
-          <button
-            onClick={reinitialiser}
-            className="rounded-full border border-navy/15 px-5 py-2 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-800"
-          >
-            Réinitialiser le dossier de démo
-          </button>
+          {!connecte && (
+            <button
+              onClick={reinitialiser}
+              className="rounded-full border border-navy/15 px-5 py-2 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            >
+              Réinitialiser le dossier de démo
+            </button>
+          )}
         </div>
 
         <div className="space-y-4">
+          <InviterClient />
           <Section title="Alertes actuelles">
             <ListeAlertes alertes={tableauDeBord.alertes} />
           </Section>
