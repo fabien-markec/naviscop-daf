@@ -21,7 +21,9 @@ create table if not exists dossiers (
   id uuid primary key default gen_random_uuid(),
   nom text not null,
   metier text not null default '',
-  created_by uuid not null references auth.users (id) on delete restrict,
+  -- rempli automatiquement par l'utilisateur courant (pattern Supabase) ;
+  -- la policy d'insertion vérifie created_by = auth.uid().
+  created_by uuid not null default auth.uid() references auth.users (id) on delete restrict,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

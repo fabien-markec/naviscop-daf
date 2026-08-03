@@ -57,8 +57,10 @@ create policy profiles_update_self on profiles
 -- ============================================================================
 -- DOSSIERS : membre = lecture ; création par soi ; DAF = modif/suppression
 -- ============================================================================
+-- Le créateur voit toujours son dossier (indispensable pour INSERT ... RETURNING,
+-- où la policy SELECT est évaluée avant que le trigger n'ajoute l'appartenance).
 create policy dossiers_select on dossiers
-  for select using (est_membre_dossier(id));
+  for select using (created_by = auth.uid() or est_membre_dossier(id));
 create policy dossiers_insert on dossiers
   for insert with check (created_by = auth.uid());
 create policy dossiers_update on dossiers
