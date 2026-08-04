@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase, supabaseConfigured } from '@/lib/supabase';
 
@@ -37,6 +38,7 @@ function AuthGateSupabase({ children }: { children: React.ReactNode }) {
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [mdp, setMdp] = useState('');
+  const [voir, setVoir] = useState(false);
   const [erreur, setErreur] = useState('');
   const [enCours, setEnCours] = useState(false);
 
@@ -72,14 +74,24 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input
-            type="password"
-            required
-            placeholder="Mot de passe"
-            className={champ}
-            value={mdp}
-            onChange={(e) => setMdp(e.target.value)}
-          />
+          <div className="relative">
+            <input
+              type={voir ? 'text' : 'password'}
+              required
+              placeholder="Mot de passe"
+              className={`${champ} pr-11`}
+              value={mdp}
+              onChange={(e) => setMdp(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setVoir((v) => !v)}
+              aria-label={voir ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+              className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-navy"
+            >
+              {voir ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
           {erreur && <p className="text-sm text-rose-600">{erreur}</p>}
           <button
             type="submit"
