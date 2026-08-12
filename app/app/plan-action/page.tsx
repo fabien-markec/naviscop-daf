@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Trash2, Plus, Sparkles } from 'lucide-react';
+import { analyserCommeDaf } from '@naviscop/finance-engine';
 import { type StatutAction } from '@/lib/use-plan-action';
 import { useDossier } from '@/lib/dossier-context';
 import { PageHeader, Section } from '@/components/ui';
@@ -13,11 +14,22 @@ const STATUTS: { valeur: StatutAction; label: string; classe: string }[] = [
 ];
 
 export default function PlanActionPage() {
-  const { planActions: items, ajouterAction: ajouter, majStatutAction: majStatut, supprimerAction: supprimer } = useDossier();
+  const { planActions: items, ajouterAction: ajouter, majStatutAction: majStatut, supprimerAction: supprimer, entrees } = useDossier();
   const [action, setAction] = useState('');
   const [responsable, setResponsable] = useState('');
   const [echeance, setEcheance] = useState('');
   const [impact, setImpact] = useState('');
+
+  // Recommandations issues de l'analyse DAF, transformables en actions.
+  const recommandations = useMemo(() => analyserCommeDaf(entrees).recommandations, [entrees]);
+  const dejaPresente = (texte: string) => items.some((it) => it.action.trim() === texte.trim());
+  const recoRestantes = recommandations.filter((r) => !dejaPresente(r));
+
+  const ajouterReco = (texte: string) => {
+    if (dejaPresente(texte)) return;
+    ajouter({ action: texte, responsable: '', echeance: '', impact: 'Recommandation de l’analyse' });
+  };
+  const ajouterToutesRecos = () => recoRestantes.forEach(ajouterReco);
 
   const soumettre = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +48,52 @@ export default function PlanActionPage() {
     <div className="space-y-6">
       <PageHeader
         title="Plan d’action"
-        subtitle="Transformer l’analyse en décisions suivies : action, responsable, échéance, impact attendu."
+        subtitle="Les recommandations du DAF, transformées en décisions suivies : action, responsable, échéance, statut."
       />
+
+      <Section
+        title="Recommandations du DAF (issues de l’analyse)"
+        action={
+          recoRestantes.length > 0 ? (
+            <button
+              onClick={ajouterToutesRecos}
+              className="flex items-center gap-1.5 rounded-full bg-brand px-3.5 py-1.5 text-xs font-medium text-white hover:bg-brand-soft"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Tout ajouter au plan
+            </button>
+          ) : null
+        }
+      >
+        {recommandations.length === 0 ? (
+          <p className="text-sm text-slate-500">Aucune recommandation particulière : maintenez le cap.</p>
+        ) : (
+          <ul className="space-y-2">
+            {recommandations.map((r, i) => {
+              const dedans = dejaPresente(r);
+              return (
+                <li
+                  key={i}
+                  className="flex items-start justify-between gap-3 rounded-xl border border-navy/[0.08] bg-white/60 px-3.5 py-3"
+                >
+                  <span className="text-sm leading-snug text-slate-700">{r}</span>
+                  {dedans ? (
+                    <span className="flex-none rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                      Ajoutée
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => ajouterReco(r)}
+                      className="flex flex-none items-center gap-1 rounded-full border border-brand/30 px-2.5 py-1 text-[11px] font-semibold text-brand hover:bg-brand/5"
+                    >
+                      <Plus className="h-3 w-3" /> Ajouter
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Section>
 
       <Section title="Nouvelle action">
         <form onSubmit={soumettre} className="grid grid-cols-1 gap-3 md:grid-cols-12">

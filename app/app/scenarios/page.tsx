@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { appliquerScenario, type HypothesesScenario } from '@naviscop/finance-engine';
+import { appliquerScenario, MOIS, type HypothesesScenario } from '@naviscop/finance-engine';
 import { useDossier } from '@/lib/dossier-context';
 import { eur } from '@/lib/format';
 import { PageHeader, Section } from '@/components/ui';
@@ -71,6 +71,7 @@ export default function ScenariosPage() {
   const [embauche, setEmbauche] = useState(0);
   const [remu, setRemu] = useState(0);
   const [invest, setInvest] = useState(0);
+  const [moisDebut, setMoisDebut] = useState(0);
 
   const h: HypothesesScenario = useMemo(
     () => ({
@@ -78,9 +79,10 @@ export default function ScenariosPage() {
       variationCaPct: ca / 100,
       chargeMensuelleSupplementaire: embauche,
       remunerationSupplementaire: remu,
-      investissementComptant: invest > 0 ? { montant: invest, moisIndex: 0 } : undefined,
+      investissementComptant: invest > 0 ? { montant: invest, moisIndex: moisDebut } : undefined,
+      moisDebut,
     }),
-    [prix, ca, embauche, remu, invest],
+    [prix, ca, embauche, remu, invest, moisDebut],
   );
 
   const res = useMemo(() => appliquerScenario(dossierActif, h), [h, dossierActif]);
@@ -95,6 +97,23 @@ export default function ScenariosPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Section title="Hypothèses">
           <div className="space-y-5">
+            <label className="block">
+              <span className="mb-1 block text-sm text-slate-700">Ces changements démarrent en</span>
+              <select
+                value={moisDebut}
+                onChange={(e) => setMoisDebut(Number(e.target.value))}
+                className="w-full rounded-xl border border-navy/10 bg-white/60 px-3 py-2 text-sm text-navy outline-none focus:border-brand/50"
+              >
+                {MOIS.map((m, i) => (
+                  <option key={m} value={i} className="bg-white">
+                    {m}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block text-xs text-slate-500">
+                Avant ce mois, rien ne change. Une hausse en octobre ne joue que sur octobre à décembre.
+              </span>
+            </label>
             <Curseur label="Hausse / baisse de prix" value={prix} min={-30} max={30} step={1} suffix="%" onChange={setPrix} />
             <Curseur label="Variation de CA" value={ca} min={-50} max={50} step={1} suffix="%" onChange={setCa} />
             <Curseur label="Recrutement (coût chargé / mois)" value={embauche} min={0} max={6000} step={100} suffix=" €" onChange={setEmbauche} />
@@ -129,6 +148,36 @@ export default function ScenariosPage() {
           </div>
         </div>
       </div>
+
+      <Section title="Détail mois par mois (avec ces hypothèses)">
+        <div className="overflow-x-auto">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Mois</th>
+                <th className="!text-right">Chiffre d’affaires</th>
+                <th className="!text-right">Résultat</th>
+                <th className="!text-right">Trésorerie fin de mois</th>
+              </tr>
+            </thead>
+            <tbody>
+              {res.parMois.map((m, i) => (
+                <tr key={i} className={i >= moisDebut ? '' : 'opacity-60'}>
+                  <td className="font-medium text-slate-800">
+                    {MOIS[i]}
+                    {i === moisDebut && (
+                      <span className="ml-2 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">départ</span>
+                    )}
+                  </td>
+                  <td className="num text-slate-700">{eur(m.caHt)}</td>
+                  <td className={`num ${m.resultatNet < 0 ? 'text-rose-600' : 'text-slate-700'}`}>{eur(m.resultatNet)}</td>
+                  <td className={`num font-medium ${m.soldeFin < 0 ? 'text-rose-600' : 'text-slate-800'}`}>{eur(m.soldeFin)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
     </div>
   );
 }

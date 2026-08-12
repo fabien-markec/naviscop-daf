@@ -15,18 +15,21 @@ import {
   FileDown,
   PencilLine,
   Users,
+  Coins,
   Menu,
   X,
   LogOut,
 } from 'lucide-react';
 import { useDossier } from '@/lib/dossier-context';
 
+const IMPORT = { href: '/import', label: 'Import FEC / balance', icon: Upload };
+
 const MODULES = [
   { href: '/', label: 'Tableau de bord', icon: LayoutDashboard },
   { href: '/tresorerie', label: 'Plan de trésorerie', icon: Wallet },
   { href: '/rentabilite', label: 'Rentabilité', icon: TrendingUp },
+  { href: '/remuneration', label: 'Capacité de rémunération', icon: Coins },
   { href: '/scenarios', label: 'Scénarios', icon: FlaskConical },
-  { href: '/import', label: 'Import FEC', icon: Upload },
   { href: '/saisie', label: 'Saisie prévisionnelle', icon: PencilLine },
   { href: '/bilan', label: 'Analyse', icon: FileText },
   { href: '/plan-action', label: 'Plan d’action', icon: ListChecks },
@@ -53,7 +56,11 @@ export function Sidebar() {
     };
   }, [open]);
 
-  const nav = role === 'daf' ? [{ href: '/clients', label: 'Portefeuille clients', icon: Users }, ...MODULES] : MODULES;
+  // Import placé juste sous Portefeuille clients (vue DAF), en tête sinon.
+  const nav =
+    role === 'daf'
+      ? [{ href: '/clients', label: 'Portefeuille clients', icon: Users }, IMPORT, ...MODULES]
+      : [IMPORT, ...MODULES];
 
   return (
     <>

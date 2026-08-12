@@ -15,10 +15,12 @@ export * from './pnl.ts';
 export * from './cashflow.ts';
 export * from './kpi.ts';
 export * from './cash-disponible.ts';
+export * from './remuneration.ts';
 export * from './alerts.ts';
 export * from './scenarios.ts';
 export * from './samples.ts';
 export * from './fec/index.ts';
+export * from './balance.ts';
 export * from './analyse/daf.ts';
 export * from './previsionnel.ts';
 

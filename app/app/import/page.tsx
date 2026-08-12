@@ -4,12 +4,16 @@ import { useMemo, useState } from 'react';
 import {
   parseFec,
   entreesMoteurDepuisFec,
+  parseBalance,
+  entreesMoteurDepuisBalance,
   calculerTableauDeBord,
   diagnostiquerFec,
   fecExemple,
   type EntreesMoteur,
   type DiagnosticFec,
 } from '@naviscop/finance-engine';
+
+type ModeImport = 'fec' | 'balance';
 
 type ResultatImportEtat =
   | { statut: 'vide' }
@@ -33,12 +37,26 @@ const MOIS_COURT = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 
 export default function ImportPage() {
   const [contenu, setContenu] = useState('');
   const [nomFichier, setNomFichier] = useState('');
+  const [mode, setMode] = useState<ModeImport>('fec');
   const { activerDossier } = useDossier();
   const router = useRouter();
 
   const resultat = useMemo<ResultatImportEtat>(() => {
     if (!contenu.trim()) return { statut: 'vide' };
     try {
+      if (mode === 'balance') {
+        const lignes = parseBalance(contenu);
+        if (lignes.length === 0) return { statut: 'erreur', message: 'Aucune ligne de compte lisible dans cette balance.' };
+        const { entrees } = entreesMoteurDepuisBalance(contenu, { objectifCaAnnuel: 200000 });
+        return {
+          statut: 'ok',
+          tdb: calculerTableauDeBord(entrees),
+          entrees,
+          diagnostic: { anneeExercice: new Date().getFullYear(), dernierMoisActif: null, moisSuspects: [], messages: [] },
+          annee: new Date().getFullYear(),
+          nb: lignes.length,
+        };
+      }
       const ecritures = parseFec(contenu);
       if (ecritures.length === 0) return { statut: 'erreur', message: 'Aucune écriture lisible dans ce fichier.' };
       const { entrees, annee } = entreesMoteurDepuisFec(contenu, { objectifCaAnnuel: 200000 });
@@ -48,7 +66,7 @@ export default function ImportPage() {
     } catch (e) {
       return { statut: 'erreur', message: `Erreur de lecture : ${(e as Error).message}` };
     }
-  }, [contenu]);
+  }, [contenu, mode]);
 
   const onFichier = (f: File | undefined) => {
     if (!f) return;
@@ -60,7 +78,7 @@ export default function ImportPage() {
 
   const activer = () => {
     if (resultat.statut !== 'ok') return;
-    const nom = nomFichier || `Import FEC ${resultat.annee}`;
+    const nom = nomFichier || `${mode === 'fec' ? 'Import FEC' : 'Import balance'} ${resultat.annee}`;
     activerDossier(nom, resultat.entrees);
     router.push('/');
   };
@@ -68,14 +86,38 @@ export default function ImportPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Import FEC"
-        subtitle="Déposez le Fichier des Écritures Comptables exporté depuis n’importe quel logiciel (Pennylane, EBP, SAGE, Indy…)."
+        title="Import des données comptables"
+        subtitle="Importez un FEC (le plus précis) ou une balance comptable, exportés depuis n’importe quel logiciel (Pennylane, EBP, SAGE, Indy…)."
       />
+
+      <Section title="Type de fichier">
+        <div className="inline-flex rounded-full border border-navy/10 bg-slate-50 p-1">
+          {(['fec', 'balance'] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => {
+                setMode(m);
+                setContenu('');
+              }}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                mode === m ? 'bg-brand text-white shadow-[0_4px_12px_-4px_rgba(0,98,184,0.4)]' : 'text-slate-500 hover:text-navy'
+              }`}
+            >
+              {m === 'fec' ? 'FEC (écritures)' : 'Balance comptable'}
+            </button>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-slate-500">
+          {mode === 'fec'
+            ? 'Le FEC contient le détail des écritures : ventilation mensuelle exacte, trésorerie réelle, clients.'
+            : 'La balance donne les soldes par compte. Le compte de résultat annuel et le détail des charges sont exacts ; la trésorerie mensuelle est lissée (à affiner avec un FEC).'}
+        </p>
+      </Section>
 
       <Section title="Fichier comptable">
         <div className="flex flex-wrap items-center gap-3">
           <label className="cursor-pointer rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft">
-            Choisir un fichier FEC
+            {mode === 'fec' ? 'Choisir un fichier FEC' : 'Choisir une balance'}
             <input
               type="file"
               accept=".txt,.csv,.tsv"
@@ -83,12 +125,14 @@ export default function ImportPage() {
               onChange={(e) => onFichier(e.target.files?.[0])}
             />
           </label>
-          <button
-            onClick={() => setContenu(fecExemple)}
-            className="rounded-full border border-navy/15 px-5 py-2 text-sm text-slate-700 hover:bg-slate-100"
-          >
-            Charger un exemple
-          </button>
+          {mode === 'fec' && (
+            <button
+              onClick={() => setContenu(fecExemple)}
+              className="rounded-full border border-navy/15 px-5 py-2 text-sm text-slate-700 hover:bg-slate-100"
+            >
+              Charger un exemple
+            </button>
+          )}
           {contenu && (
             <button
               onClick={() => setContenu('')}
@@ -99,7 +143,9 @@ export default function ImportPage() {
           )}
           {resultat.statut === 'ok' && (
             <span className="text-sm text-emerald-600">
-              {resultat.nb} écritures lues · exercice {resultat.annee}
+              {mode === 'fec'
+                ? `${resultat.nb} écritures lues · exercice ${resultat.annee}`
+                : `${resultat.nb} comptes lus`}
             </span>
           )}
           {resultat.statut === 'ok' && (
@@ -114,7 +160,11 @@ export default function ImportPage() {
         <textarea
           value={contenu}
           onChange={(e) => setContenu(e.target.value)}
-          placeholder="…ou collez ici le contenu du FEC (tabulations, point-virgules ou pipes)."
+          placeholder={
+            mode === 'fec'
+              ? '…ou collez ici le contenu du FEC (tabulations, point-virgules ou pipes).'
+              : '…ou collez ici la balance (colonnes CompteNum, Libellé, Solde débiteur / créditeur, ou Débit / Crédit).'
+          }
           className="mt-4 h-28 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-500 outline-none focus:border-brand/50"
         />
       </Section>
@@ -183,7 +233,7 @@ function ResultatImport({ tdb }: { tdb: ReturnType<typeof calculerTableauDeBord>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Section title="Trésorerie reconstituée depuis le FEC">
+          <Section title="Trésorerie reconstituée">
             <TresorerieChart data={chartData} />
           </Section>
         </div>
