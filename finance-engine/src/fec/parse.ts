@@ -82,6 +82,7 @@ export function parseFec(contenu: string): EcritureFec[] {
   const iCompte = col('comptenum');
   const iCompteLib = col('comptelib');
   const iCompAux = col('compauxnum');
+  const iCompAuxLib = col('compauxlib');
   const iLib = col('ecriturelib');
   const iDebit = col('debit');
   const iCredit = col('credit');
@@ -118,6 +119,7 @@ export function parseFec(contenu: string): EcritureFec[] {
       compteNum: get(iCompte),
       compteLib: get(iCompteLib),
       compAuxNum: get(iCompAux),
+      compAuxLib: get(iCompAuxLib),
       libelle: get(iLib),
       debit,
       credit,

@@ -5,10 +5,11 @@ import { useDossier } from '@/lib/dossier-context';
 import { eur } from '@/lib/format';
 import { PageHeader, Section } from '@/components/ui';
 import { FluxChart } from '@/components/charts';
+import { CascadeCash } from '@/components/cash-disponible';
 
 export default function TresoreriePage() {
   const { tableauDeBord } = useDossier();
-  const { tresorerie } = tableauDeBord;
+  const { tresorerie, cashDisponible } = tableauDeBord;
   const chartData = tresorerie.parMois.map((m, i) => ({
     mois: MOIS[i].slice(0, 3),
     encaissements: m.encaissements,
@@ -22,6 +23,10 @@ export default function TresoreriePage() {
         title="Plan de trésorerie"
         subtitle="Reconstitution du réel et projection des soldes mensuels (TTC)."
       />
+
+      <div className="max-w-xl">
+        <CascadeCash data={cashDisponible} />
+      </div>
 
       <Section title="Encaissements, décaissements et solde">
         <FluxChart data={chartData} />

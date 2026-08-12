@@ -6,6 +6,7 @@ import type {
   LignePnlMensuelle,
   LigneCashMensuelle,
   MouvementPrevisionnel,
+  DetailFinancier,
 } from '@naviscop/finance-engine';
 import { supabase } from './supabase';
 import type { ActionItem, StatutAction } from './use-plan-action';
@@ -36,6 +37,10 @@ function mapParametrage(row: Record<string, unknown>): { parametrage: Parametrag
       objectifTauxMarque: n(row.objectif_taux_marque),
       seuilChargesFixesPctCa: n(row.seuil_charges_fixes_pct_ca),
       objectifResultatNetAnnuel: n(row.objectif_resultat_net_annuel),
+      tvaAProvisionner: n(row.tva_a_provisionner),
+      chargesSocialesAProvisionner: n(row.charges_sociales_a_provisionner),
+      impotsAProvisionner: n(row.impots_a_provisionner),
+      securiteTresorerieCible: n(row.securite_tresorerie_cible),
     },
     creancesClients: n(row.creances_clients),
   };
@@ -100,7 +105,10 @@ function mapAction(r: Record<string, unknown>): ActionItem {
 /** Charge tous les dossiers accessibles à l'utilisateur, prêts pour le moteur. */
 export async function chargerDossiers(): Promise<DossierRow[]> {
   const s = db();
-  const { data: dossiers, error } = await s.from('dossiers').select('id, nom, metier').order('created_at');
+  const { data: dossiers, error } = await s
+    .from('dossiers')
+    .select('id, nom, metier, detail_financier')
+    .order('created_at');
   if (error) throw error;
   if (!dossiers || dossiers.length === 0) return [];
 
@@ -128,11 +136,13 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
   return dossiers.map((d) => {
     const p = paramMap.get(d.id as string)?.[0] ?? {};
     const { parametrage, creancesClients } = mapParametrage(p as Record<string, unknown>);
+    const detailBrut = (d as Record<string, unknown>).detail_financier as DetailFinancier | null;
     const entreesBase: EntreesMoteur = {
       parametrage,
       pnl: mapPnl((pnlMap.get(d.id as string) ?? []) as Record<string, unknown>[]),
       cash: mapCash((cashMap.get(d.id as string) ?? []) as Record<string, unknown>[]),
       creancesClients,
+      detail: detailBrut ?? undefined,
     };
     return {
       id: d.id as string,
@@ -148,7 +158,11 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
 // ---------- écriture ----------
 export async function creerDossier(nom: string, entreesBase: EntreesMoteur, metier = ''): Promise<string> {
   const s = db();
-  const { data, error } = await s.from('dossiers').insert({ nom, metier }).select('id').single();
+  const { data, error } = await s
+    .from('dossiers')
+    .insert({ nom, metier, detail_financier: entreesBase.detail ?? null })
+    .select('id')
+    .single();
   if (error) throw error;
   const id = data.id as string;
   const p = entreesBase.parametrage;
@@ -162,6 +176,10 @@ export async function creerDossier(nom: string, entreesBase: EntreesMoteur, meti
       objectif_taux_marque: p.objectifTauxMarque,
       seuil_charges_fixes_pct_ca: p.seuilChargesFixesPctCa,
       objectif_resultat_net_annuel: p.objectifResultatNetAnnuel,
+      tva_a_provisionner: p.tvaAProvisionner ?? 0,
+      charges_sociales_a_provisionner: p.chargesSocialesAProvisionner ?? 0,
+      impots_a_provisionner: p.impotsAProvisionner ?? 0,
+      securite_tresorerie_cible: p.securiteTresorerieCible ?? 0,
       creances_clients: entreesBase.creancesClients ?? 0,
     }),
     s.from('dossier_pnl').insert(
@@ -195,11 +213,42 @@ export async function majParametrageDb(dossierId: string, patch: Partial<Paramet
     objectifTauxMarque: 'objectif_taux_marque',
     seuilChargesFixesPctCa: 'seuil_charges_fixes_pct_ca',
     objectifResultatNetAnnuel: 'objectif_resultat_net_annuel',
+    tvaAProvisionner: 'tva_a_provisionner',
+    chargesSocialesAProvisionner: 'charges_sociales_a_provisionner',
+    impotsAProvisionner: 'impots_a_provisionner',
+    securiteTresorerieCible: 'securite_tresorerie_cible',
   };
   const upd: Record<string, number> = {};
   for (const [k, v] of Object.entries(patch)) if (map[k] && v != null) upd[map[k]] = v as number;
   if (Object.keys(upd).length === 0) return;
   const { error } = await db().from('dossier_parametrage').update(upd).eq('dossier_id', dossierId);
+  if (error) throw error;
+}
+
+/** Corrige le réalisé d'un mois (une ligne de dossier_pnl) : factures manquantes, compte pas à jour. */
+export async function majPnlMoisDb(
+  dossierId: string,
+  moisIndex: number,
+  patch: Partial<LignePnlMensuelle>,
+): Promise<void> {
+  const map: Record<string, string> = {
+    caHt: 'ca_ht',
+    achatsMarchandisesMp: 'achats_marchandises_mp',
+    autresAchatsChargesExternes: 'autres_achats_charges_externes',
+    salairesEtCharges: 'salaires_et_charges',
+    impotsEtTaxes: 'impots_et_taxes',
+    chargesFinancieres: 'charges_financieres',
+    chargesExceptionnelles: 'charges_exceptionnelles',
+    amortissements: 'amortissements',
+  };
+  const upd: Record<string, number> = {};
+  for (const [k, v] of Object.entries(patch)) if (map[k] && v != null) upd[map[k]] = v as number;
+  if (Object.keys(upd).length === 0) return;
+  const { error } = await db()
+    .from('dossier_pnl')
+    .update(upd)
+    .eq('dossier_id', dossierId)
+    .eq('mois', moisIndex);
   if (error) throw error;
 }
 

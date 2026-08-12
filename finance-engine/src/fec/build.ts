@@ -6,7 +6,15 @@
  * - Solde initial : ouverture des comptes de trésorerie (journal d'à-nouveau).
  * - Créances clients : solde net des comptes 411 en fin de période.
  */
-import type { EntreesMoteur, LignePnlMensuelle, LigneCashMensuelle, ParametrageFinancier } from '../types.ts';
+import type {
+  EntreesMoteur,
+  LignePnlMensuelle,
+  LigneCashMensuelle,
+  ParametrageFinancier,
+  DetailFinancier,
+  PosteCharge,
+  ClientCa,
+} from '../types.ts';
 import type { EcritureFec } from './types.ts';
 import { parseFec } from './parse.ts';
 import { categoriePourCompte, estTresorerie, estCompteClient, estJournalOuverture } from './mapping.ts';
@@ -17,6 +25,76 @@ export interface EntreesDepuisFec {
   cash: LigneCashMensuelle[];
   creancesClients: number;
   soldeInitialTresorerie: number;
+  detail: DetailFinancier;
+}
+
+/**
+ * Détail par compte (charges) et par client (CA), non porté par les 12 lignes agrégées.
+ * - Charges : cumul par numéro de compte de classe 6 (fixe si hors coûts directs 601/602/607).
+ * - Clients : CA HT attribué en regroupant chaque écriture (ligne 411 débitrice = facture, ligne 70 = CA).
+ */
+function construireDetail(ecritures: EcritureFec[]): DetailFinancier {
+  const r = (n: number) => Math.round(n * 100) / 100;
+  const chargesMap = new Map<string, PosteCharge>();
+  const parEcriture = new Map<string, { clientId?: string; clientNom?: string; caHt: number }>();
+
+  for (const e of ecritures) {
+    if (estJournalOuverture(e.journalCode)) continue;
+    const cat = categoriePourCompte(e.compteNum);
+
+    // Postes de charges (classe 6).
+    const estCharge =
+      cat === 'achatsMarchandisesMp' ||
+      cat === 'autresAchatsChargesExternes' ||
+      cat === 'salairesEtCharges' ||
+      cat === 'impotsEtTaxes' ||
+      cat === 'chargesFinancieres' ||
+      cat === 'chargesExceptionnelles' ||
+      cat === 'amortissements';
+    if (estCharge) {
+      const p = chargesMap.get(e.compteNum) ?? {
+        compte: e.compteNum,
+        libelle: e.compteLib || e.compteNum,
+        montant: 0,
+        fixe: cat !== 'achatsMarchandisesMp',
+      };
+      p.montant += e.debit - e.credit;
+      if ((!p.libelle || p.libelle === e.compteNum) && e.compteLib) p.libelle = e.compteLib;
+      chargesMap.set(e.compteNum, p);
+    }
+
+    // CA par client : on regroupe les lignes d'une même écriture.
+    const cle = `${e.journalCode}|${e.ecritureNum}`;
+    let slot = parEcriture.get(cle);
+    if (!slot) {
+      slot = { caHt: 0 };
+      parEcriture.set(cle, slot);
+    }
+    if (estCompteClient(e.compteNum) && e.debit > 0) {
+      slot.clientId = e.compAuxNum || e.compteNum;
+      slot.clientNom = e.compAuxLib || e.compAuxNum || e.compteLib || 'Client';
+    }
+    if (cat === 'caHt' || cat === 'autresProduits') slot.caHt += e.credit - e.debit;
+  }
+
+  const clientsMap = new Map<string, ClientCa>();
+  for (const s of parEcriture.values()) {
+    if (!s.clientId || Math.abs(s.caHt) <= 0.005) continue;
+    const c = clientsMap.get(s.clientId) ?? { id: s.clientId, nom: s.clientNom ?? s.clientId, caHt: 0 };
+    c.caHt += s.caHt;
+    clientsMap.set(s.clientId, c);
+  }
+
+  const charges = [...chargesMap.values()]
+    .map((p) => ({ ...p, montant: r(p.montant) }))
+    .filter((p) => p.montant > 0)
+    .sort((a, b) => b.montant - a.montant);
+  const clients = [...clientsMap.values()]
+    .map((c) => ({ ...c, caHt: r(c.caHt) }))
+    .filter((c) => c.caHt > 0)
+    .sort((a, b) => b.caHt - a.caHt);
+
+  return { charges, clients };
 }
 
 function douze<T>(fabrique: () => T): T[] {
@@ -115,7 +193,14 @@ export function construireEntreesDepuisFec(ecritures: EcritureFec[]): EntreesDep
     c.decaissements = r(c.decaissements);
   }
 
-  return { annee, pnl, cash, creancesClients: r(creancesClients), soldeInitialTresorerie: r(soldeInitialTresorerie) };
+  return {
+    annee,
+    pnl,
+    cash,
+    creancesClients: r(creancesClients),
+    soldeInitialTresorerie: r(soldeInitialTresorerie),
+    detail: construireDetail(ecritures),
+  };
 }
 
 /** Chaîne complète : contenu FEC → entrées prêtes pour le moteur, fusionnées avec le paramétrage. */
@@ -135,7 +220,13 @@ export function entreesMoteurDepuisFec(
     ...parametrage,
   };
   return {
-    entrees: { parametrage: param, pnl: fec.pnl, cash: fec.cash, creancesClients: fec.creancesClients },
+    entrees: {
+      parametrage: param,
+      pnl: fec.pnl,
+      cash: fec.cash,
+      creancesClients: fec.creancesClients,
+      detail: fec.detail,
+    },
     annee: fec.annee,
   };
 }

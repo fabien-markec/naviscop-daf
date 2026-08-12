@@ -4,6 +4,7 @@ import './globals.css';
 import { Sidebar } from '@/components/sidebar';
 import { DossierProvider } from '@/lib/dossier-context';
 import { AuthGate } from '@/components/auth-gate';
+import { AssistantBulle } from '@/components/assistant-bulle';
 
 const sans = DM_Sans({
   subsets: ['latin'],
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="rise mx-auto max-w-6xl">{children}</div>
               </main>
             </div>
+            <AssistantBulle />
           </DossierProvider>
         </AuthGate>
       </body>

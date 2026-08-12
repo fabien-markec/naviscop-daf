@@ -58,6 +58,47 @@ export interface ParametrageFinancier {
   seuilChargesFixesPctCa: number;
   /** Objectif de résultat net annuel. */
   objectifResultatNetAnnuel: number;
+  /** TVA à provisionner (montant à mettre de côté avant échéance). Optionnel. */
+  tvaAProvisionner?: number;
+  /** URSSAF / charges sociales à provisionner. Optionnel. */
+  chargesSocialesAProvisionner?: number;
+  /** Impôts à venir à provisionner (IS, CFE...). Optionnel. */
+  impotsAProvisionner?: number;
+  /** Matelas de sécurité de trésorerie souhaité (montant fixe à conserver). Optionnel. */
+  securiteTresorerieCible?: number;
+}
+
+/** Un poste de charge détaillé (par compte comptable). */
+export interface PosteCharge {
+  /** Numéro de compte PCG (ex 613000). */
+  compte: string;
+  /** Libellé du compte (ex "Locations"). */
+  libelle: string;
+  /** Montant annuel de la charge. */
+  montant: number;
+  /** true = charge fixe (structure), false = coût direct/variable. */
+  fixe: boolean;
+}
+
+/** Un client avec son chiffre d'affaires HT sur la période. */
+export interface ClientCa {
+  /** Identifiant (compte auxiliaire ou numéro de compte). */
+  id: string;
+  /** Nom lisible du client. */
+  nom: string;
+  /** Chiffre d'affaires HT attribué au client. */
+  caHt: number;
+}
+
+/**
+ * Détail financier issu du FEC (au-delà des 12 lignes agrégées).
+ * Sert aux blocs "où part l'argent" (top charges) et "dépendance client" (top clients).
+ */
+export interface DetailFinancier {
+  /** Postes de charges par compte, triés du plus lourd au plus léger. */
+  charges: PosteCharge[];
+  /** Clients par CA HT, triés du plus gros au plus petit. */
+  clients: ClientCa[];
 }
 
 export interface EntreesMoteur {
@@ -66,4 +107,6 @@ export interface EntreesMoteur {
   cash: LigneCashMensuelle[]; // 12 mois
   /** Créances clients à date (factures émises non encaissées). Optionnel. */
   creancesClients?: number;
+  /** Détail par compte et par client (présent seulement après import FEC). Optionnel. */
+  detail?: DetailFinancier;
 }

@@ -14,6 +14,7 @@ export * from './types.ts';
 export * from './pnl.ts';
 export * from './cashflow.ts';
 export * from './kpi.ts';
+export * from './cash-disponible.ts';
 export * from './alerts.ts';
 export * from './scenarios.ts';
 export * from './samples.ts';
@@ -25,6 +26,7 @@ import type { EntreesMoteur } from './types.ts';
 import { calculerPnl } from './pnl.ts';
 import { calculerTresorerie } from './cashflow.ts';
 import { calculerKpis } from './kpi.ts';
+import { calculerCashDisponible } from './cash-disponible.ts';
 import { evaluerAlertes } from './alerts.ts';
 
 /** Calcule tout le tableau de bord d'un dossier en une passe. */
@@ -33,6 +35,7 @@ export function calculerTableauDeBord(entrees: EntreesMoteur) {
     pnl: calculerPnl(entrees.pnl),
     tresorerie: calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash),
     kpis: calculerKpis(entrees),
+    cashDisponible: calculerCashDisponible(entrees),
     alertes: evaluerAlertes(entrees),
   };
 }

@@ -15,6 +15,8 @@ export interface EcritureFec {
   compteNum: string;
   compteLib: string;
   compAuxNum: string;
+  /** Libellé du compte auxiliaire (nom du client / fournisseur). */
+  compAuxLib: string;
   libelle: string;
   debit: number;
   credit: number;

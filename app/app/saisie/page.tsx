@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { MOIS, type TypePrevisionnel, type CategorieCharge } from '@naviscop/finance-engine';
+import { MOIS, resultatMensuel, type TypePrevisionnel, type CategorieCharge } from '@naviscop/finance-engine';
 import { useDossier } from '@/lib/dossier-context';
 import { eur } from '@/lib/format';
 import { PageHeader, Section } from '@/components/ui';
@@ -28,7 +28,24 @@ const LABEL_TYPE: Record<TypePrevisionnel, string> = {
 };
 
 export default function SaisiePage() {
-  const { previsionnels, ajouterPrevisionnel, supprimerPrevisionnel } = useDossier();
+  const { previsionnels, ajouterPrevisionnel, supprimerPrevisionnel, pnlReel, entrees, majReelMois } = useDossier();
+
+  // Comparaison Réalisé (données de base) vs Prévisionnel (base + mouvements saisis), par mois.
+  const comparaison = MOIS.map((mois, i) => {
+    const reel = resultatMensuel(pnlReel[i]);
+    const prev = resultatMensuel(entrees.pnl[i]);
+    return {
+      i,
+      mois,
+      caReel: pnlReel[i].caHt,
+      caPrev: entrees.pnl[i].caHt,
+      resReel: reel.resultatNet,
+      resPrev: prev.resultatNet,
+      ecart: reel.resultatNet - prev.resultatNet,
+    };
+  });
+  const totReel = comparaison.reduce((a, l) => a + l.resReel, 0);
+  const totPrev = comparaison.reduce((a, l) => a + l.resPrev, 0);
   const [type, setType] = useState<TypePrevisionnel>('facture_a_venir');
   const [libelle, setLibelle] = useState('');
   const [montant, setMontant] = useState(0);
@@ -220,6 +237,68 @@ export default function SaisiePage() {
         )}
         <p className="mt-4 text-xs text-slate-500">
           Ces mouvements se superposent aux données réelles importées et alimentent directement le dashboard, le plan de trésorerie et les scénarios.
+        </p>
+      </Section>
+
+      {/* Réalisé vs Prévisionnel */}
+      <Section title="Réalisé vs Prévisionnel par mois">
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-sm text-amber-700">
+          Votre compte n’est pas à jour ? Il manque peut-être des factures sur le mois. Corrigez directement le CA
+          réalisé dans le tableau ci-dessous : le reste se recalcule tout seul.
+        </div>
+        <div className="overflow-x-auto">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Mois</th>
+                <th className="!text-right">CA réalisé</th>
+                <th className="!text-right">CA prévu</th>
+                <th className="!text-right">Résultat réalisé</th>
+                <th className="!text-right">Résultat prévu</th>
+                <th className="!text-right">Écart</th>
+              </tr>
+            </thead>
+            <tbody>
+              {comparaison.map((l) => (
+                <tr key={l.mois}>
+                  <td className="text-slate-700">{l.mois}</td>
+                  <td className="!text-right">
+                    <input
+                      type="number"
+                      step={100}
+                      value={Math.round(l.caReel)}
+                      onChange={(e) => majReelMois(l.i, { caHt: Number(e.target.value) })}
+                      className="w-28 rounded-lg border border-navy/10 bg-white/60 px-2 py-1 text-right text-sm tabular-nums text-navy outline-none focus:border-brand/50"
+                    />
+                  </td>
+                  <td className="num text-slate-500">{eur(l.caPrev)}</td>
+                  <td className={`num ${l.resReel < 0 ? 'text-rose-600' : 'text-slate-700'}`}>{eur(l.resReel)}</td>
+                  <td className="num text-slate-500">{eur(l.resPrev)}</td>
+                  <td className={`num font-medium ${l.ecart < 0 ? 'text-rose-600' : l.ecart > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                    {l.ecart > 0 ? '+' : ''}
+                    {eur(l.ecart)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-navy/10 font-semibold">
+                <td className="text-navy">Total année</td>
+                <td></td>
+                <td></td>
+                <td className={`num ${totReel < 0 ? 'text-rose-600' : 'text-navy'}`}>{eur(totReel)}</td>
+                <td className={`num ${totPrev < 0 ? 'text-rose-600' : 'text-navy'}`}>{eur(totPrev)}</td>
+                <td className={`num ${totReel - totPrev < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                  {totReel - totPrev > 0 ? '+' : ''}
+                  {eur(totReel - totPrev)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <p className="mt-4 text-xs text-slate-500">
+          Le réalisé, c’est ce que dit votre comptabilité (import FEC ou balance). Le prévisionnel ajoute vos mouvements
+          saisis ci-dessus. L’analyse de ces écarts est centralisée dans la page Analyse.
         </p>
       </Section>
     </div>

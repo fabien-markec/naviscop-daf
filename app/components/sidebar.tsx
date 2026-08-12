@@ -18,7 +18,6 @@ import {
   Menu,
   X,
   LogOut,
-  Sparkles,
 } from 'lucide-react';
 import { useDossier } from '@/lib/dossier-context';
 
@@ -30,7 +29,6 @@ const MODULES = [
   { href: '/import', label: 'Import FEC', icon: Upload },
   { href: '/saisie', label: 'Saisie prévisionnelle', icon: PencilLine },
   { href: '/bilan', label: 'Analyse', icon: FileText },
-  { href: '/assistant', label: 'Assistant IA', icon: Sparkles },
   { href: '/plan-action', label: 'Plan d’action', icon: ListChecks },
   { href: '/rapport', label: 'Rapport / Export', icon: FileDown },
   { href: '/parametres', label: 'Paramétrage', icon: Settings },

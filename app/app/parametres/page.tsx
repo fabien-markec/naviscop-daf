@@ -97,6 +97,45 @@ export default function ParametresPage() {
             </div>
           </Section>
 
+          <Section title="Provisions (cash réellement disponible)">
+            <p className="mb-4 text-xs text-slate-500">
+              Les montants déjà dus ou à mettre de côté. Ils sont déduits du solde bancaire pour calculer le cash
+              réellement disponible affiché sur le tableau de bord.
+            </p>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <ChampNombre
+                label="TVA à provisionner"
+                value={p.tvaAProvisionner ?? 0}
+                step={100}
+                suffix="€"
+                onChange={(v) => majParametrage({ tvaAProvisionner: v })}
+              />
+              <ChampNombre
+                label="URSSAF / charges sociales"
+                value={p.chargesSocialesAProvisionner ?? 0}
+                step={100}
+                suffix="€"
+                onChange={(v) => majParametrage({ chargesSocialesAProvisionner: v })}
+              />
+              <ChampNombre
+                label="Impôts à venir"
+                value={p.impotsAProvisionner ?? 0}
+                step={100}
+                suffix="€"
+                hint="IS, CFE, autres impôts à échéance."
+                onChange={(v) => majParametrage({ impotsAProvisionner: v })}
+              />
+              <ChampNombre
+                label="Matelas de sécurité souhaité"
+                value={p.securiteTresorerieCible ?? 0}
+                step={500}
+                suffix="€"
+                hint="Réserve que vous voulez toujours garder de côté."
+                onChange={(v) => majParametrage({ securiteTresorerieCible: v })}
+              />
+            </div>
+          </Section>
+
           <Section title="Seuils d’alerte">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <ChampNombre

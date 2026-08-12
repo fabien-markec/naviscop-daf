@@ -28,17 +28,36 @@ export function KpiCard({
   label,
   value,
   hint,
+  info,
   tone = 'neutral',
 }: {
   label: string;
   value: string;
   hint?: string;
+  /** Explication en langage dirigeant, révélée au survol du point d'interrogation. */
+  info?: string;
   tone?: keyof typeof TONE;
 }) {
   return (
     <div className="group card relative overflow-hidden p-4 transition-all duration-200 hover:bg-white/70">
       <span className={`absolute inset-x-0 top-0 h-px ${TONE_BAR[tone]} opacity-60`} />
-      <p className="text-[10.5px] font-medium uppercase tracking-[0.08em] text-slate-500">{label}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[10.5px] font-medium uppercase tracking-[0.08em] text-slate-500">{label}</p>
+        {info && (
+          <span className="group/info relative flex-none">
+            <span
+              tabIndex={0}
+              className="flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-semibold text-slate-400 hover:border-brand/50 hover:text-brand"
+              aria-label={info}
+            >
+              ?
+            </span>
+            <span className="pointer-events-none absolute right-0 top-6 z-20 w-56 rounded-xl border border-navy/10 bg-navy px-3 py-2 text-[11px] font-normal leading-snug text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/info:opacity-100 group-focus-within/info:opacity-100">
+              {info}
+            </span>
+          </span>
+        )}
+      </div>
       <p className={`tabular mt-2 text-[1.7rem] font-semibold leading-none ${TONE[tone]}`}>{value}</p>
       {hint && <p className="mt-1.5 text-xs text-slate-500">{hint}</p>}
     </div>

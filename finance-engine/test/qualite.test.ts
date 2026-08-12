@@ -13,6 +13,7 @@ function ecr(mois: number, compte: string, credit: number, journal = 'VE'): Ecri
     compteNum: compte,
     compteLib: '',
     compAuxNum: '',
+    compAuxLib: '',
     libelle: '',
     debit: 0,
     credit,

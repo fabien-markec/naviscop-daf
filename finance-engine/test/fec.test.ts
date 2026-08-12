@@ -104,6 +104,25 @@ test('build — reconstruit le compte de résultat, la trésorerie et les créan
   assert.equal(e.pnl[2].chargesFinancieres, 30);
 });
 
+test('build — détail : CA attribué par client et charges triées', () => {
+  const e = construireEntreesDepuisFec(parseFec(FEC));
+
+  // Clients : Dupont 1000 HT devant Martin 500 HT (paiement exclu, seule la facture compte).
+  assert.equal(e.detail.clients.length, 2);
+  assert.equal(e.detail.clients[0].id, '411DUP');
+  assert.equal(e.detail.clients[0].caHt, 1000);
+  assert.equal(e.detail.clients[1].id, '411MAR');
+  assert.equal(e.detail.clients[1].caHt, 500);
+
+  // Charges triées du plus lourd au plus léger ; salaires en tête, achats marqués variables.
+  assert.equal(e.detail.charges[0].compte, '641000');
+  assert.equal(e.detail.charges[0].montant, 500);
+  assert.equal(e.detail.charges[0].fixe, true);
+  const achats = e.detail.charges.find((c) => c.compte === '607000');
+  assert.equal(achats?.montant, 400);
+  assert.equal(achats?.fixe, false);
+});
+
 test('pipeline — FEC vers tableau de bord complet', () => {
   const { entrees, annee } = entreesMoteurDepuisFec(FEC, { objectifCaAnnuel: 5000 });
   assert.equal(annee, 2026);

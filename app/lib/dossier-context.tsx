@@ -7,6 +7,7 @@ import {
   type EntreesMoteur,
   type ParametrageFinancier,
   type MouvementPrevisionnel,
+  type LignePnlMensuelle,
 } from '@naviscop/finance-engine';
 import { dossiersDemo } from './demo-data';
 import { supabase, supabaseConfigured } from './supabase';
@@ -16,6 +17,7 @@ import {
   creerDossier,
   supprimerDossier as supprimerDossierDb,
   majParametrageDb,
+  majPnlMoisDb,
   ajouterPrevisionnelDb,
   supprimerPrevisionnelDb,
   ajouterActionDb,
@@ -24,7 +26,7 @@ import {
   type DossierRow,
 } from './naviscop-db';
 
-const CLE_STORAGE = 'naviscop.workspace.v1';
+const CLE_STORAGE = 'naviscop.workspace.v3';
 
 export type Role = 'daf' | 'client';
 
@@ -51,6 +53,8 @@ interface DossierContextValue {
   nom: string;
   metier: string;
   entrees: EntreesMoteur;
+  /** Compte de résultat réalisé (données de base, sans les mouvements prévisionnels). */
+  pnlReel: LignePnlMensuelle[];
   previsionnels: MouvementPrevisionnel[];
   planActions: ActionItem[];
   tableauDeBord: ReturnType<typeof calculerTableauDeBord>;
@@ -61,6 +65,8 @@ interface DossierContextValue {
   supprimerDossier: (id: string) => void;
   activerDossier: (nom: string, entreesBase: EntreesMoteur) => void;
   majParametrage: (patch: Partial<ParametrageFinancier>) => void;
+  /** Corrige le réalisé d'un mois à la main (factures manquantes, compte pas à jour). */
+  majReelMois: (moisIndex: number, patch: Partial<LignePnlMensuelle>) => void;
   ajouterPrevisionnel: (mv: Omit<MouvementPrevisionnel, 'id'>) => void;
   supprimerPrevisionnel: (id: string) => void;
   ajouterAction: (a: Omit<ActionItem, 'id' | 'statut'>) => void;
@@ -166,6 +172,7 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       nom: actif.nom,
       metier: actif.metier,
       entrees,
+      pnlReel: actif.entreesBase.pnl,
       previsionnels: actif.previsionnels,
       planActions: actif.planActions ?? [],
       tableauDeBord: calculerTableauDeBord(entrees),
@@ -212,6 +219,17 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       majParametrage: (patch) => {
         majActif((d) => ({ ...d, entreesBase: { ...d.entreesBase, parametrage: { ...d.entreesBase.parametrage, ...patch } } }));
         if (supabaseConfigured) majParametrageDb(ws.actifId, patch).catch((e) => console.error('MAJ paramétrage échouée', e));
+      },
+
+      majReelMois: (moisIndex, patch) => {
+        majActif((d) => ({
+          ...d,
+          entreesBase: {
+            ...d.entreesBase,
+            pnl: d.entreesBase.pnl.map((m, i) => (i === moisIndex ? { ...m, ...patch } : m)),
+          },
+        }));
+        if (supabaseConfigured) majPnlMoisDb(ws.actifId, moisIndex, patch).catch((e) => console.error('MAJ réalisé échouée', e));
       },
 
       ajouterPrevisionnel: async (mv) => {

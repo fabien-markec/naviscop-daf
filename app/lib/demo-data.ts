@@ -2,7 +2,13 @@
  * Dossiers de démonstration ANONYMES et synthétiques.
  * Cohérence compte de résultat / trésorerie : encaissements décalés d'un mois.
  */
-import type { EntreesMoteur, LignePnlMensuelle, LigneCashMensuelle } from '@naviscop/finance-engine';
+import type {
+  EntreesMoteur,
+  LignePnlMensuelle,
+  LigneCashMensuelle,
+  PosteCharge,
+  ClientCa,
+} from '@naviscop/finance-engine';
 
 interface ConfigDossier {
   caHt: number[];
@@ -40,6 +46,34 @@ function genererEntrees(c: ConfigDossier): EntreesMoteur {
     return { encaissements: Math.round(caTtcPrec), decaissements: Math.round(dec) };
   });
 
+  // Détail synthétique (charges par poste + clients) pour illustrer les blocs du tableau de bord.
+  // En production, ce détail provient du FEC importé.
+  const somme = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
+  const aace = somme(c.chargesExternes);
+  const charges: PosteCharge[] = [
+    { compte: '641000', libelle: 'Salaires et charges sociales', montant: Math.round(somme(c.salaires)), fixe: true },
+    { compte: '613000', libelle: 'Loyer et charges locatives', montant: Math.round(aace * 0.42), fixe: true },
+    { compte: '607000', libelle: 'Achats et sous-traitance', montant: Math.round(somme(achatsMp)), fixe: false },
+    { compte: '606000', libelle: 'Fournitures et énergie', montant: Math.round(aace * 0.26), fixe: true },
+    { compte: '616000', libelle: 'Assurances', montant: Math.round(aace * 0.17), fixe: true },
+    { compte: '626000', libelle: 'Téléphonie et logiciels', montant: Math.round(aace * 0.15), fixe: true },
+    { compte: '635000', libelle: 'Impôts et taxes', montant: Math.round(somme(c.impots)), fixe: true },
+    { compte: '661000', libelle: "Intérêts d'emprunt", montant: Math.round(somme(c.chargesFin)), fixe: true },
+  ]
+    .filter((p) => p.montant > 0)
+    .sort((a, b) => b.montant - a.montant);
+
+  const caAnnuel = somme(c.caHt);
+  const repartition: { nom: string; part: number }[] = [
+    { nom: 'SARL Durand & Fils', part: 0.41 },
+    { nom: 'Groupe Lefèvre', part: 0.29 },
+    { nom: 'Cabinet Martin', part: 0.18 },
+    { nom: 'Autres clients', part: 0.12 },
+  ];
+  const clients: ClientCa[] = repartition
+    .map((x, i) => ({ id: `C${i + 1}`, nom: x.nom, caHt: Math.round(caAnnuel * x.part) }))
+    .filter((x) => x.caHt > 0);
+
   return {
     parametrage: {
       soldeInitialTresorerie: c.soldeInitial,
@@ -49,10 +83,16 @@ function genererEntrees(c: ConfigDossier): EntreesMoteur {
       objectifTauxMarque: c.objectifTauxMarque,
       seuilChargesFixesPctCa: 0.3,
       objectifResultatNetAnnuel: c.objectifResultatNetAnnuel,
+      // Provisions (saisies à la main en production) pour illustrer le cash réellement disponible.
+      tvaAProvisionner: Math.round(caAnnuel * 0.028),
+      chargesSocialesAProvisionner: Math.round(somme(c.salaires) * 0.12),
+      impotsAProvisionner: Math.round(Math.max(0, c.objectifResultatNetAnnuel) * 0.15),
+      securiteTresorerieCible: 4000,
     },
     pnl,
     cash,
     creancesClients: Math.round(c.caHt[11] * 1.2),
+    detail: { charges, clients },
   };
 }
 
