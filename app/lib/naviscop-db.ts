@@ -87,6 +87,8 @@ function mapPrevisionnel(r: Record<string, unknown>): MouvementPrevisionnel {
     tauxTva: n(r.taux_tva),
     moisIndex: n(r.mois_index),
     categorie: (r.categorie ?? undefined) as MouvementPrevisionnel['categorie'],
+    moisEncaissement: r.mois_encaissement == null ? undefined : n(r.mois_encaissement),
+    statut: (r.statut ?? undefined) as MouvementPrevisionnel['statut'],
   };
 }
 
@@ -261,6 +263,7 @@ export async function ajouterPrevisionnelDb(
     .insert({
       dossier_id: dossierId, type: mv.type, libelle: mv.libelle, montant_ht: mv.montantHt,
       taux_tva: mv.tauxTva, mois_index: mv.moisIndex, categorie: mv.categorie ?? null,
+      mois_encaissement: mv.moisEncaissement ?? null, statut: mv.statut ?? null,
     })
     .select('*')
     .single();

@@ -23,10 +23,14 @@ export interface MouvementPrevisionnel {
   montantHt: number;
   /** Taux de TVA en pourcentage (ex 20). */
   tauxTva: number;
-  /** Mois concerné, 0-11. */
+  /** Mois concerné, 0-11. Pour une facture à venir : mois de facturation (impact CA). */
   moisIndex: number;
   /** Catégorie de charge (pour type = charge_prevue). */
   categorie?: CategorieCharge;
+  /** Mois d'encaissement (0-11), pour une facture à venir. Défaut : le mois de facturation. */
+  moisEncaissement?: number;
+  /** Statut d'une commande : signée (sûre) ou seulement prévue. */
+  statut?: 'signee' | 'prevue';
 }
 
 /** Fusionne des mouvements prévisionnels dans une copie des entrées de base. */
@@ -43,10 +47,13 @@ export function fusionnerPrevisionnels(
     const ttc = mv.montantHt * (1 + mv.tauxTva / 100);
 
     switch (mv.type) {
-      case 'facture_a_venir':
+      case 'facture_a_venir': {
+        // CA au mois de facturation, encaissement (TTC) au mois d'encaissement (défaut : facturation).
         pnl[i].caHt += mv.montantHt;
-        cash[i].encaissements += ttc;
+        const j = mv.moisEncaissement ?? i;
+        if (j >= 0 && j <= 11) cash[j].encaissements += ttc;
         break;
+      }
       case 'charge_prevue': {
         const cat = mv.categorie ?? 'autresAchatsChargesExternes';
         pnl[i][cat] += mv.montantHt;

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Printer, Download } from 'lucide-react';
-import { analyserCommeDaf, MOIS } from '@naviscop/finance-engine';
+import { analyserCommeDaf, synthetiserMois, dernierMoisActif, MOIS } from '@naviscop/finance-engine';
 import { useDossier } from '@/lib/dossier-context';
 import { construireCsv, telechargerCsv } from '@/lib/export-csv';
 import { telechargerXlsx } from '@/lib/export-xlsx';
@@ -12,6 +12,8 @@ export default function RapportPage() {
   const { entrees, nom, tableauDeBord } = useDossier();
   const { kpis, tresorerie, pnl, alertes } = tableauDeBord;
   const analyse = useMemo(() => analyserCommeDaf(entrees), [entrees]);
+  const [moisSynthese, setMoisSynthese] = useState(() => dernierMoisActif(entrees));
+  const syntheseMois = useMemo(() => synthetiserMois(entrees, moisSynthese), [entrees, moisSynthese]);
   const [date, setDate] = useState('');
 
   useEffect(() => {
@@ -69,7 +71,23 @@ export default function RapportPage() {
         </header>
 
         <section>
-          <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-500">Synthèse</h3>
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">Synthèse du mois de {syntheseMois.mois}</h3>
+            <select
+              value={moisSynthese}
+              onChange={(e) => setMoisSynthese(Number(e.target.value))}
+              className="no-print rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-600 outline-none"
+            >
+              {MOIS.map((m, i) => (
+                <option key={m} value={i}>{m}</option>
+              ))}
+            </select>
+          </div>
+          <p className="rounded-xl bg-slate-50 px-4 py-3 text-[15px] leading-relaxed text-slate-800">{syntheseMois.texte}</p>
+        </section>
+
+        <section>
+          <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-500">Synthèse de l’année</h3>
           <p className="text-[15px] leading-relaxed text-slate-800">{analyse.synthese}</p>
         </section>
 
