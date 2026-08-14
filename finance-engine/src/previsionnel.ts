@@ -33,10 +33,15 @@ export interface MouvementPrevisionnel {
   statut?: 'signee' | 'prevue';
 }
 
-/** Fusionne des mouvements prévisionnels dans une copie des entrées de base. */
+/**
+ * Fusionne des mouvements prévisionnels dans une copie des entrées de base.
+ * @param moisClotureIndex Dernier mois clôturé (réalisé connu). Les prévisions portant sur un
+ *   mois déjà clôturé sont ignorées : le réalisé remplace la prévision, sans double compte.
+ */
 export function fusionnerPrevisionnels(
   base: EntreesMoteur,
   mouvements: MouvementPrevisionnel[],
+  moisClotureIndex = -1,
 ): EntreesMoteur {
   const pnl: LignePnlMensuelle[] = base.pnl.map((m) => ({ ...m }));
   const cash: LigneCashMensuelle[] = base.cash.map((m) => ({ ...m }));
@@ -44,6 +49,8 @@ export function fusionnerPrevisionnels(
   for (const mv of mouvements) {
     const i = mv.moisIndex;
     if (i < 0 || i > 11) continue;
+    // Mois clôturé : la prévision est remplacée par le réalisé, on ignore le mouvement.
+    if (i <= moisClotureIndex) continue;
     const ttc = mv.montantHt * (1 + mv.tauxTva / 100);
 
     switch (mv.type) {

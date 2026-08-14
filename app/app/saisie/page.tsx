@@ -28,7 +28,7 @@ const LABEL_TYPE: Record<TypePrevisionnel, string> = {
 };
 
 export default function SaisiePage() {
-  const { previsionnels, ajouterPrevisionnel, supprimerPrevisionnel, pnlReel, entrees, majReelMois } = useDossier();
+  const { previsionnels, ajouterPrevisionnel, supprimerPrevisionnel, pnlReel, entrees, majReelMois, moisClotureIndex, majMoisCloture } = useDossier();
 
   // Comparaison Réalisé (données de base) vs Prévisionnel (base + mouvements saisis), par mois.
   const comparaison = MOIS.map((mois, i) => {
@@ -246,6 +246,26 @@ export default function SaisiePage() {
           Votre compte n’est pas à jour ? Il manque peut-être des factures sur le mois. Corrigez directement le CA
           réalisé dans le tableau ci-dessous : le reste se recalcule tout seul.
         </div>
+
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-navy/10 bg-slate-50 px-3.5 py-3 text-sm">
+          <span className="font-medium text-navy">Dernier mois clôturé (réalisé) :</span>
+          <select
+            value={moisClotureIndex}
+            onChange={(e) => majMoisCloture(Number(e.target.value))}
+            className="rounded-lg border border-navy/10 bg-white px-2.5 py-1.5 text-sm text-navy outline-none focus:border-brand/50"
+          >
+            <option value={-1}>Aucun</option>
+            {MOIS.map((m, i) => (
+              <option key={m} value={i}>
+                {m}
+              </option>
+            ))}
+          </select>
+          <span className="w-full text-xs leading-snug text-slate-500">
+            Jusqu’à ce mois, le réalisé remplace la prévision : les mouvements prévisionnels portant sur un mois clôturé sont
+            ignorés (plus de double compte). Les mois suivants restent prévisionnels.
+          </span>
+        </div>
         <div className="overflow-x-auto">
           <table className="data-table">
             <thead>
@@ -261,7 +281,12 @@ export default function SaisiePage() {
             <tbody>
               {comparaison.map((l) => (
                 <tr key={l.mois}>
-                  <td className="text-slate-700">{l.mois}</td>
+                  <td className="text-slate-700">
+                    {l.mois}
+                    {l.i <= moisClotureIndex && (
+                      <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">clôturé</span>
+                    )}
+                  </td>
                   <td className="!text-right">
                     <input
                       type="number"

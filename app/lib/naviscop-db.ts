@@ -18,6 +18,7 @@ export interface DossierRow {
   entreesBase: EntreesMoteur;
   previsionnels: MouvementPrevisionnel[];
   planActions: ActionItem[];
+  moisClotureIndex: number;
 }
 
 const n = (v: unknown) => Number(v ?? 0);
@@ -109,7 +110,7 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
   const s = db();
   const { data: dossiers, error } = await s
     .from('dossiers')
-    .select('id, nom, metier, detail_financier')
+    .select('id, nom, metier, detail_financier, mois_cloture_index')
     .order('created_at');
   if (error) throw error;
   if (!dossiers || dossiers.length === 0) return [];
@@ -153,16 +154,22 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
       entreesBase,
       previsionnels: ((prevMap.get(d.id as string) ?? []) as Record<string, unknown>[]).map(mapPrevisionnel),
       planActions: ((actionMap.get(d.id as string) ?? []) as Record<string, unknown>[]).map(mapAction),
+      moisClotureIndex: (d as Record<string, unknown>).mois_cloture_index == null ? -1 : n((d as Record<string, unknown>).mois_cloture_index),
     };
   });
 }
 
 // ---------- écriture ----------
-export async function creerDossier(nom: string, entreesBase: EntreesMoteur, metier = ''): Promise<string> {
+export async function creerDossier(
+  nom: string,
+  entreesBase: EntreesMoteur,
+  metier = '',
+  moisClotureIndex = -1,
+): Promise<string> {
   const s = db();
   const { data, error } = await s
     .from('dossiers')
-    .insert({ nom, metier, detail_financier: entreesBase.detail ?? null })
+    .insert({ nom, metier, detail_financier: entreesBase.detail ?? null, mois_cloture_index: moisClotureIndex })
     .select('id')
     .single();
   if (error) throw error;
@@ -276,9 +283,15 @@ export async function avancerDossierDb(
     s.from('dossier_cash').update({ encaissements: c.encaissements, decaissements: c.decaissements })
       .eq('dossier_id', dossierId).eq('mois', moisArrete),
     s.from('dossier_parametrage').update({ creances_clients: entrees.creancesClients ?? 0 }).eq('dossier_id', dossierId),
-    s.from('dossiers').update({ detail_financier: entrees.detail ?? null }).eq('id', dossierId),
+    s.from('dossiers').update({ detail_financier: entrees.detail ?? null, mois_cloture_index: moisArrete }).eq('id', dossierId),
   ]);
   for (const r of res) if (r.error) throw r.error;
+}
+
+/** Met à jour le dernier mois clôturé d'un dossier. */
+export async function majMoisClotureDb(dossierId: string, moisClotureIndex: number): Promise<void> {
+  const { error } = await db().from('dossiers').update({ mois_cloture_index: moisClotureIndex }).eq('id', dossierId);
+  if (error) throw error;
 }
 
 export async function ajouterPrevisionnelDb(

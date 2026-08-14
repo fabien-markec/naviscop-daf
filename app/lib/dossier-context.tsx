@@ -5,6 +5,7 @@ import {
   calculerTableauDeBord,
   fusionnerPrevisionnels,
   appliquerBalanceCumulee,
+  dernierMoisActif,
   type EntreesMoteur,
   type ParametrageFinancier,
   type MouvementPrevisionnel,
@@ -20,6 +21,7 @@ import {
   majParametrageDb,
   majPnlMoisDb,
   avancerDossierDb,
+  majMoisClotureDb,
   ajouterPrevisionnelDb,
   supprimerPrevisionnelDb,
   ajouterActionDb,
@@ -39,6 +41,8 @@ export interface DossierEntry {
   entreesBase: EntreesMoteur;
   previsionnels: MouvementPrevisionnel[];
   planActions: ActionItem[];
+  /** Dernier mois clôturé (réalisé connu). -1 = aucun. */
+  moisClotureIndex: number;
 }
 
 interface Workspace {
@@ -59,6 +63,8 @@ interface DossierContextValue {
   pnlReel: LignePnlMensuelle[];
   previsionnels: MouvementPrevisionnel[];
   planActions: ActionItem[];
+  /** Dernier mois clôturé (réalisé). Les prévisions de ces mois sont ignorées. */
+  moisClotureIndex: number;
   tableauDeBord: ReturnType<typeof calculerTableauDeBord>;
   chargement: boolean;
   connecte: boolean;
@@ -71,6 +77,8 @@ interface DossierContextValue {
   majReelMois: (moisIndex: number, patch: Partial<LignePnlMensuelle>) => void;
   /** Avance le dossier actif avec une balance cumulée : mois figés, nouveau mois = différence. */
   avancerDossierCumule: (contenuBalance: string, moisArrete: number) => void;
+  /** Définit le dernier mois clôturé (réalisé) du dossier actif. */
+  majMoisCloture: (moisClotureIndex: number) => void;
   ajouterPrevisionnel: (mv: Omit<MouvementPrevisionnel, 'id'>) => void;
   supprimerPrevisionnel: (id: string) => void;
   ajouterAction: (a: Omit<ActionItem, 'id' | 'statut'>) => void;
@@ -101,7 +109,7 @@ function entreesVides(): EntreesMoteur {
 }
 
 function defautWorkspace(): Workspace {
-  const dossiers: DossierEntry[] = dossiersDemo.map((d) => ({ ...d, previsionnels: [], planActions: [] }));
+  const dossiers: DossierEntry[] = dossiersDemo.map((d) => ({ ...d, previsionnels: [], planActions: [], moisClotureIndex: -1 }));
   return { role: 'daf', dossiers, actifId: dossiers[0].id };
 }
 
@@ -163,7 +171,9 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<DossierContextValue>(() => {
     const actif = ws.dossiers.find((d) => d.id === ws.actifId) ?? null;
     const base = actif ? actif.entreesBase : entreesVides();
-    const entrees = actif ? fusionnerPrevisionnels(actif.entreesBase, actif.previsionnels) : base;
+    const entrees = actif
+      ? fusionnerPrevisionnels(actif.entreesBase, actif.previsionnels, actif.moisClotureIndex ?? -1)
+      : base;
 
     return {
       role: ws.role,
@@ -176,18 +186,20 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       pnlReel: base.pnl,
       previsionnels: actif ? actif.previsionnels : [],
       planActions: actif?.planActions ?? [],
+      moisClotureIndex: actif?.moisClotureIndex ?? -1,
       tableauDeBord: calculerTableauDeBord(entrees),
       chargement,
       connecte: supabaseConfigured,
       ouvrirDossier: (id) => setWs((s) => ({ ...s, actifId: id })),
 
       ajouterDossier: async (nom, entreesBase, metier = '') => {
+        const clot = dernierMoisActif(entreesBase);
         if (supabaseConfigured) {
-          const id = await creerDossier(nom, entreesBase, metier);
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [], planActions: [] }], actifId: id }));
+          const id = await creerDossier(nom, entreesBase, metier, clot);
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot }], actifId: id }));
         } else {
           const id = crypto.randomUUID();
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [], planActions: [] }], actifId: id }));
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot }], actifId: id }));
         }
       },
 
@@ -208,12 +220,13 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       },
 
       activerDossier: async (nom, entreesBase) => {
+        const clot = dernierMoisActif(entreesBase);
         if (supabaseConfigured) {
-          const id = await creerDossier(nom, entreesBase, '');
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [], planActions: [] }], actifId: id }));
+          const id = await creerDossier(nom, entreesBase, '', clot);
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot }], actifId: id }));
         } else {
           const id = crypto.randomUUID();
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [], planActions: [] }], actifId: id }));
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot }], actifId: id }));
         }
       },
 
@@ -237,8 +250,13 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
         const actifCourant = ws.dossiers.find((d) => d.id === ws.actifId);
         if (!actifCourant) return;
         const maj = appliquerBalanceCumulee(actifCourant.entreesBase, contenuBalance, moisArrete);
-        majActif((d) => ({ ...d, entreesBase: maj }));
+        majActif((d) => ({ ...d, entreesBase: maj, moisClotureIndex: moisArrete }));
         if (supabaseConfigured) avancerDossierDb(ws.actifId, maj, moisArrete).catch((e) => console.error('Avancement balance cumulée échoué', e));
+      },
+
+      majMoisCloture: (moisClotureIndex) => {
+        majActif((d) => ({ ...d, moisClotureIndex }));
+        if (supabaseConfigured) majMoisClotureDb(ws.actifId, moisClotureIndex).catch((e) => console.error('MAJ clôture échouée', e));
       },
 
       ajouterPrevisionnel: async (mv) => {

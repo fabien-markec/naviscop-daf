@@ -40,6 +40,17 @@ test('prévisionnel — facture à venir alimente CA et encaissements', () => {
   // base non mutée
 });
 
+test('prévisionnel — un mois clôturé ignore la prévision (réalisé remplace)', () => {
+  const mv: MouvementPrevisionnel[] = [
+    { id: '1', type: 'facture_a_venir', libelle: 'Devis mars', montantHt: 1000, tauxTva: 20, moisIndex: 2 },
+    { id: '2', type: 'facture_a_venir', libelle: 'Devis mai', montantHt: 2000, tauxTva: 20, moisIndex: 4 },
+  ];
+  // Clôture jusqu'à mars (index 2) : mars ignoré, mai (futur) conservé.
+  const e = fusionnerPrevisionnels(baseVide(), mv, 2);
+  assert.equal(e.pnl[2].caHt, 0); // mars clôturé -> prévision ignorée
+  assert.equal(e.pnl[4].caHt, 2000); // mai ouvert -> prévision conservée
+});
+
 test('prévisionnel — charge prévue et investissement', () => {
   const mv: MouvementPrevisionnel[] = [
     { id: '1', type: 'charge_prevue', libelle: 'Pub', montantHt: 500, tauxTva: 20, moisIndex: 0, categorie: 'autresAchatsChargesExternes' },
