@@ -9,6 +9,7 @@ import {
   calculerTableauDeBord,
   diagnostiquerFec,
   fecExemple,
+  MOIS,
   type EntreesMoteur,
   type DiagnosticFec,
 } from '@naviscop/finance-engine';
@@ -38,7 +39,9 @@ export default function ImportPage() {
   const [contenu, setContenu] = useState('');
   const [nomFichier, setNomFichier] = useState('');
   const [mode, setMode] = useState<ModeImport>('fec');
-  const { activerDossier } = useDossier();
+  const [cumulee, setCumulee] = useState(false);
+  const [moisArrete, setMoisArrete] = useState(new Date().getMonth());
+  const { activerDossier, avancerDossierCumule, actifId, nom: nomActif } = useDossier();
   const router = useRouter();
 
   const resultat = useMemo<ResultatImportEtat>(() => {
@@ -47,7 +50,7 @@ export default function ImportPage() {
       if (mode === 'balance') {
         const lignes = parseBalance(contenu);
         if (lignes.length === 0) return { statut: 'erreur', message: 'Aucune ligne de compte lisible dans cette balance.' };
-        const { entrees } = entreesMoteurDepuisBalance(contenu, { objectifCaAnnuel: 200000 });
+        const { entrees } = entreesMoteurDepuisBalance(contenu, { objectifCaAnnuel: 200000 }, cumulee ? moisArrete : 11);
         return {
           statut: 'ok',
           tdb: calculerTableauDeBord(entrees),
@@ -66,7 +69,13 @@ export default function ImportPage() {
     } catch (e) {
       return { statut: 'erreur', message: `Erreur de lecture : ${(e as Error).message}` };
     }
-  }, [contenu, mode]);
+  }, [contenu, mode, cumulee, moisArrete]);
+
+  const avancer = () => {
+    if (resultat.statut !== 'ok' || !actifId) return;
+    avancerDossierCumule(contenu, moisArrete);
+    router.push('/');
+  };
 
   const onFichier = (f: File | undefined) => {
     if (!f) return;
@@ -112,6 +121,42 @@ export default function ImportPage() {
             ? 'Le FEC contient le détail des écritures : ventilation mensuelle exacte, trésorerie réelle, clients.'
             : 'La balance donne les soldes par compte. Le compte de résultat annuel et le détail des charges sont exacts ; la trésorerie mensuelle est lissée (à affiner avec un FEC).'}
         </p>
+
+        {mode === 'balance' && (
+          <div className="mt-4 rounded-xl border border-navy/10 bg-slate-50 p-4">
+            <label className="flex items-center gap-2.5 text-sm font-medium text-navy">
+              <input
+                type="checkbox"
+                checked={cumulee}
+                onChange={(e) => setCumulee(e.target.checked)}
+                className="h-4 w-4 accent-brand"
+              />
+              Balance cumulée (soldes depuis le début de l’exercice)
+            </label>
+            {cumulee && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                <span className="text-slate-600">Arrêtée à fin</span>
+                <select
+                  value={moisArrete}
+                  onChange={(e) => setMoisArrete(Number(e.target.value))}
+                  className="rounded-lg border border-navy/10 bg-white px-2.5 py-1.5 text-sm text-navy outline-none focus:border-brand/50"
+                >
+                  {MOIS.map((m, i) => (
+                    <option key={m} value={i}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <p className="mt-3 text-xs leading-relaxed text-slate-500">
+              Une balance cumulée contient les soldes depuis le 1<sup>er</sup> janvier jusqu’au mois choisi. À chaque nouvelle
+              balance, NAVISCOP <strong>fige les mois déjà validés</strong> : seule la différence avec la balance précédente
+              alimente le nouveau mois. Ainsi, si votre comptable corrige une facture d’un mois passé, cela n’écrase pas votre
+              historique, la correction tombe sur le mois en cours.
+            </p>
+          </div>
+        )}
       </Section>
 
       <Section title="Fichier comptable">
@@ -148,12 +193,22 @@ export default function ImportPage() {
                 : `${resultat.nb} comptes lus`}
             </span>
           )}
+          {resultat.statut === 'ok' && mode === 'balance' && cumulee && actifId && (
+            <button
+              onClick={avancer}
+              className="ml-auto rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft"
+            >
+              Avancer « {nomActif} » au mois de {MOIS[moisArrete]} →
+            </button>
+          )}
           {resultat.statut === 'ok' && (
             <button
               onClick={activer}
-              className="ml-auto rounded-full bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-500"
+              className={`rounded-full bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-500 ${
+                mode === 'balance' && cumulee && actifId ? '' : 'ml-auto'
+              }`}
             >
-              Activer ce dossier →
+              {mode === 'balance' && cumulee && actifId ? 'Nouveau dossier' : 'Activer ce dossier →'}
             </button>
           )}
         </div>

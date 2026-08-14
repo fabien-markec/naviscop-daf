@@ -97,51 +97,49 @@ export interface EntreesDepuisBalance {
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
-export function construireEntreesDepuisBalance(lignes: LigneBalance[]): EntreesDepuisBalance {
-  const pnlAnnuel: LignePnlMensuelle = {
+/** Catégories de charges (classe 6), pour figer et cumuler mois par mois. */
+const CATEGORIES: (keyof LignePnlMensuelle)[] = [
+  'caHt', 'achatsMarchandisesMp', 'autresAchatsChargesExternes', 'salairesEtCharges',
+  'impotsEtTaxes', 'chargesFinancieres', 'chargesExceptionnelles', 'amortissements',
+];
+
+/** Totaux (cumulés) d'une balance : par catégorie, créances, trésorerie et postes de charges. */
+export interface TotauxBalance {
+  pnl: LignePnlMensuelle;
+  creancesClients: number;
+  soldeTresorerie: number;
+  charges: PosteCharge[];
+}
+
+export function totauxBalance(lignes: LigneBalance[]): TotauxBalance {
+  const pnl: LignePnlMensuelle = {
     caHt: 0, achatsMarchandisesMp: 0, autresAchatsChargesExternes: 0, salairesEtCharges: 0,
     impotsEtTaxes: 0, chargesFinancieres: 0, chargesExceptionnelles: 0, amortissements: 0,
   };
   let creancesClients = 0;
-  let soldeInitialTresorerie = 0;
+  let soldeTresorerie = 0;
   const chargesMap = new Map<string, PosteCharge>();
 
   for (const e of lignes) {
     if (estCompteClient(e.compteNum)) creancesClients += e.soldeNet;
-    if (estTresorerie(e.compteNum)) soldeInitialTresorerie += e.soldeNet;
+    if (estTresorerie(e.compteNum)) soldeTresorerie += e.soldeNet;
 
     const cat = categoriePourCompte(e.compteNum);
     switch (cat) {
       case 'caHt':
       case 'autresProduits':
-        pnlAnnuel.caHt += -e.soldeNet; // produits = créditeurs
+        pnl.caHt += -e.soldeNet; // produits = créditeurs
         break;
-      case 'achatsMarchandisesMp':
-        pnlAnnuel.achatsMarchandisesMp += e.soldeNet;
-        break;
-      case 'autresAchatsChargesExternes':
-        pnlAnnuel.autresAchatsChargesExternes += e.soldeNet;
-        break;
-      case 'salairesEtCharges':
-        pnlAnnuel.salairesEtCharges += e.soldeNet;
-        break;
-      case 'impotsEtTaxes':
-        pnlAnnuel.impotsEtTaxes += e.soldeNet;
-        break;
-      case 'chargesFinancieres':
-        pnlAnnuel.chargesFinancieres += e.soldeNet;
-        break;
-      case 'chargesExceptionnelles':
-        pnlAnnuel.chargesExceptionnelles += e.soldeNet;
-        break;
-      case 'amortissements':
-        pnlAnnuel.amortissements += e.soldeNet;
-        break;
-      default:
-        break;
+      case 'achatsMarchandisesMp': pnl.achatsMarchandisesMp += e.soldeNet; break;
+      case 'autresAchatsChargesExternes': pnl.autresAchatsChargesExternes += e.soldeNet; break;
+      case 'salairesEtCharges': pnl.salairesEtCharges += e.soldeNet; break;
+      case 'impotsEtTaxes': pnl.impotsEtTaxes += e.soldeNet; break;
+      case 'chargesFinancieres': pnl.chargesFinancieres += e.soldeNet; break;
+      case 'chargesExceptionnelles': pnl.chargesExceptionnelles += e.soldeNet; break;
+      case 'amortissements': pnl.amortissements += e.soldeNet; break;
+      default: break;
     }
 
-    // Détail des charges par poste (classe 6).
     const estCharge =
       cat === 'achatsMarchandisesMp' || cat === 'autresAchatsChargesExternes' ||
       cat === 'salairesEtCharges' || cat === 'impotsEtTaxes' || cat === 'chargesFinancieres' ||
@@ -156,50 +154,86 @@ export function construireEntreesDepuisBalance(lignes: LigneBalance[]): EntreesD
     }
   }
 
-  // Répartition à plat sur 12 mois, en préservant le total annuel exact (le 12e mois absorbe l'arrondi).
-  const repartir = (annuel: number): number[] => {
-    const total = r2(annuel);
-    const base = r2(total / 12);
-    const arr = Array.from({ length: 11 }, () => base);
-    arr.push(r2(total - base * 11));
-    return arr;
-  };
-  const caR = repartir(pnlAnnuel.caHt);
-  const achR = repartir(pnlAnnuel.achatsMarchandisesMp);
-  const aaceR = repartir(pnlAnnuel.autresAchatsChargesExternes);
-  const salR = repartir(pnlAnnuel.salairesEtCharges);
-  const impR = repartir(pnlAnnuel.impotsEtTaxes);
-  const finR = repartir(pnlAnnuel.chargesFinancieres);
-  const excR = repartir(pnlAnnuel.chargesExceptionnelles);
-  const amoR = repartir(pnlAnnuel.amortissements);
-  const pnl: LignePnlMensuelle[] = Array.from({ length: 12 }, (_, i) => ({
-    caHt: caR[i],
-    achatsMarchandisesMp: achR[i],
-    autresAchatsChargesExternes: aaceR[i],
-    salairesEtCharges: salR[i],
-    impotsEtTaxes: impR[i],
-    chargesFinancieres: finR[i],
-    chargesExceptionnelles: excR[i],
-    amortissements: amoR[i],
-  }));
-
-  // Trésorerie approchée (lissée) : encaissements = CA TTC, décaissements = charges TTC, par mois.
-  const chargesTotales =
-    pnlAnnuel.achatsMarchandisesMp + pnlAnnuel.autresAchatsChargesExternes + pnlAnnuel.salairesEtCharges +
-    pnlAnnuel.impotsEtTaxes + pnlAnnuel.chargesFinancieres + pnlAnnuel.chargesExceptionnelles;
-  const cash: LigneCashMensuelle[] = Array.from({ length: 12 }, () => ({
-    encaissements: r2((pnlAnnuel.caHt * 1.2) / 12),
-    decaissements: r2((chargesTotales * 1.2) / 12),
-  }));
-
+  for (const c of CATEGORIES) pnl[c] = r2(pnl[c]);
   const charges = [...chargesMap.values()].map((p) => ({ ...p, montant: r2(p.montant) })).sort((a, b) => b.montant - a.montant);
+  return { pnl, creancesClients: r2(creancesClients), soldeTresorerie: r2(soldeTresorerie), charges };
+}
+
+/** Répartit un total sur les `nbMois` premiers mois (le dernier absorbe l'arrondi), reste à 0. */
+function repartirSur(annuel: number, nbMois: number): number[] {
+  const total = r2(annuel);
+  const n = Math.max(1, Math.min(12, nbMois));
+  const arr = Array<number>(12).fill(0);
+  const base = r2(total / n);
+  for (let i = 0; i < n - 1; i++) arr[i] = base;
+  arr[n - 1] = r2(total - base * (n - 1));
+  return arr;
+}
+
+/**
+ * Construit les entrées depuis une balance.
+ * @param moisArrete Mois d'arrêté (0-11) d'une balance cumulée : le cumulé est réparti sur
+ *   les mois écoulés (0..moisArrete), les mois suivants restent à zéro. Défaut : toute l'année.
+ */
+export function construireEntreesDepuisBalance(lignes: LigneBalance[], moisArrete = 11): EntreesDepuisBalance {
+  const t = totauxBalance(lignes);
+  const nb = Math.max(1, Math.min(12, moisArrete + 1));
+  const rep = (v: number) => repartirSur(v, nb);
+  const caR = rep(t.pnl.caHt), achR = rep(t.pnl.achatsMarchandisesMp), aaceR = rep(t.pnl.autresAchatsChargesExternes),
+    salR = rep(t.pnl.salairesEtCharges), impR = rep(t.pnl.impotsEtTaxes), finR = rep(t.pnl.chargesFinancieres),
+    excR = rep(t.pnl.chargesExceptionnelles), amoR = rep(t.pnl.amortissements);
+  const pnl: LignePnlMensuelle[] = Array.from({ length: 12 }, (_, i) => ({
+    caHt: caR[i], achatsMarchandisesMp: achR[i], autresAchatsChargesExternes: aaceR[i], salairesEtCharges: salR[i],
+    impotsEtTaxes: impR[i], chargesFinancieres: finR[i], chargesExceptionnelles: excR[i], amortissements: amoR[i],
+  }));
+
+  const chargesTotales = t.pnl.achatsMarchandisesMp + t.pnl.autresAchatsChargesExternes + t.pnl.salairesEtCharges +
+    t.pnl.impotsEtTaxes + t.pnl.chargesFinancieres + t.pnl.chargesExceptionnelles;
+  const encR = repartirSur(t.pnl.caHt * 1.2, nb);
+  const decR = repartirSur(chargesTotales * 1.2, nb);
+  const cash: LigneCashMensuelle[] = Array.from({ length: 12 }, (_, i) => ({ encaissements: encR[i], decaissements: decR[i] }));
 
   return {
     pnl,
     cash,
-    creancesClients: r2(creancesClients),
-    soldeInitialTresorerie: r2(soldeInitialTresorerie),
-    detail: { charges, clients: [] },
+    creancesClients: t.creancesClients,
+    soldeInitialTresorerie: t.soldeTresorerie,
+    detail: { charges: t.charges, clients: [] },
+  };
+}
+
+/**
+ * Avance un dossier avec une balance CUMULÉE arrêtée au mois `moisArrete` (0-11), façon logiciel comptable.
+ * Les mois AVANT `moisArrete` sont figés ; `moisArrete` reçoit la différence entre le cumulé importé
+ * et le cumulé déjà connu ; les mois SUIVANTS (prévisionnel) sont conservés.
+ * La trésorerie du nouveau mois est approchée (une balance ne porte pas les flux datés).
+ */
+export function appliquerBalanceCumulee(
+  actuel: EntreesMoteur,
+  contenuBalance: string,
+  moisArrete: number,
+): EntreesMoteur {
+  const m = Math.max(0, Math.min(11, moisArrete));
+  const t = totauxBalance(parseBalance(contenuBalance));
+  const pnl = actuel.pnl.map((x) => ({ ...x }));
+
+  for (const c of CATEGORIES) {
+    let cumulPrecedent = 0;
+    for (let i = 0; i < m; i++) cumulPrecedent += pnl[i][c];
+    pnl[m][c] = r2(t.pnl[c] - cumulPrecedent);
+  }
+
+  const cash = actuel.cash.map((x) => ({ ...x }));
+  const chargesMois = pnl[m].achatsMarchandisesMp + pnl[m].autresAchatsChargesExternes + pnl[m].salairesEtCharges +
+    pnl[m].impotsEtTaxes + pnl[m].chargesFinancieres + pnl[m].chargesExceptionnelles;
+  cash[m] = { encaissements: r2(pnl[m].caHt * 1.2), decaissements: r2(chargesMois * 1.2) };
+
+  return {
+    ...actuel,
+    pnl,
+    cash,
+    creancesClients: t.creancesClients,
+    detail: { charges: t.charges, clients: actuel.detail?.clients ?? [] },
   };
 }
 
@@ -207,8 +241,9 @@ export function construireEntreesDepuisBalance(lignes: LigneBalance[]): EntreesD
 export function entreesMoteurDepuisBalance(
   contenu: string,
   parametrage: Partial<ParametrageFinancier> = {},
+  moisArrete = 11,
 ): { entrees: EntreesMoteur } {
-  const bal = construireEntreesDepuisBalance(parseBalance(contenu));
+  const bal = construireEntreesDepuisBalance(parseBalance(contenu), moisArrete);
   const param: ParametrageFinancier = {
     soldeInitialTresorerie: bal.soldeInitialTresorerie,
     objectifCaAnnuel: 0,

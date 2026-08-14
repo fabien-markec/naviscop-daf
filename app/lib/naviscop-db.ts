@@ -254,6 +254,33 @@ export async function majPnlMoisDb(
   if (error) throw error;
 }
 
+/**
+ * Avance un dossier avec une balance cumulée : seul le mois `moisArrete` change (les mois
+ * précédents sont figés). On met à jour la ligne P&L et la ligne cash du mois, les créances et le détail.
+ */
+export async function avancerDossierDb(
+  dossierId: string,
+  entrees: EntreesMoteur,
+  moisArrete: number,
+): Promise<void> {
+  const s = db();
+  const p = entrees.pnl[moisArrete];
+  const c = entrees.cash[moisArrete];
+  const res = await Promise.all([
+    s.from('dossier_pnl').update({
+      ca_ht: p.caHt, achats_marchandises_mp: p.achatsMarchandisesMp,
+      autres_achats_charges_externes: p.autresAchatsChargesExternes, salaires_et_charges: p.salairesEtCharges,
+      impots_et_taxes: p.impotsEtTaxes, charges_financieres: p.chargesFinancieres,
+      charges_exceptionnelles: p.chargesExceptionnelles, amortissements: p.amortissements,
+    }).eq('dossier_id', dossierId).eq('mois', moisArrete),
+    s.from('dossier_cash').update({ encaissements: c.encaissements, decaissements: c.decaissements })
+      .eq('dossier_id', dossierId).eq('mois', moisArrete),
+    s.from('dossier_parametrage').update({ creances_clients: entrees.creancesClients ?? 0 }).eq('dossier_id', dossierId),
+    s.from('dossiers').update({ detail_financier: entrees.detail ?? null }).eq('id', dossierId),
+  ]);
+  for (const r of res) if (r.error) throw r.error;
+}
+
 export async function ajouterPrevisionnelDb(
   dossierId: string,
   mv: Omit<MouvementPrevisionnel, 'id'>,

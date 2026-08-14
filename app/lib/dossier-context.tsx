@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import {
   calculerTableauDeBord,
   fusionnerPrevisionnels,
+  appliquerBalanceCumulee,
   type EntreesMoteur,
   type ParametrageFinancier,
   type MouvementPrevisionnel,
@@ -18,6 +19,7 @@ import {
   supprimerDossier as supprimerDossierDb,
   majParametrageDb,
   majPnlMoisDb,
+  avancerDossierDb,
   ajouterPrevisionnelDb,
   supprimerPrevisionnelDb,
   ajouterActionDb,
@@ -67,6 +69,8 @@ interface DossierContextValue {
   majParametrage: (patch: Partial<ParametrageFinancier>) => void;
   /** Corrige le réalisé d'un mois à la main (factures manquantes, compte pas à jour). */
   majReelMois: (moisIndex: number, patch: Partial<LignePnlMensuelle>) => void;
+  /** Avance le dossier actif avec une balance cumulée : mois figés, nouveau mois = différence. */
+  avancerDossierCumule: (contenuBalance: string, moisArrete: number) => void;
   ajouterPrevisionnel: (mv: Omit<MouvementPrevisionnel, 'id'>) => void;
   supprimerPrevisionnel: (id: string) => void;
   ajouterAction: (a: Omit<ActionItem, 'id' | 'statut'>) => void;
@@ -227,6 +231,14 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
           },
         }));
         if (supabaseConfigured) majPnlMoisDb(ws.actifId, moisIndex, patch).catch((e) => console.error('MAJ réalisé échouée', e));
+      },
+
+      avancerDossierCumule: (contenuBalance, moisArrete) => {
+        const actifCourant = ws.dossiers.find((d) => d.id === ws.actifId);
+        if (!actifCourant) return;
+        const maj = appliquerBalanceCumulee(actifCourant.entreesBase, contenuBalance, moisArrete);
+        majActif((d) => ({ ...d, entreesBase: maj }));
+        if (supabaseConfigured) avancerDossierDb(ws.actifId, maj, moisArrete).catch((e) => console.error('Avancement balance cumulée échoué', e));
       },
 
       ajouterPrevisionnel: async (mv) => {

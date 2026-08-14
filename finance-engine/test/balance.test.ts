@@ -3,8 +3,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseBalance, construireEntreesDepuisBalance, entreesMoteurDepuisBalance } from '../src/balance.ts';
+import { parseBalance, construireEntreesDepuisBalance, entreesMoteurDepuisBalance, appliquerBalanceCumulee } from '../src/balance.ts';
 import { calculerTableauDeBord } from '../src/index.ts';
+import type { EntreesMoteur } from '../src/types.ts';
 
 const BALANCE = [
   'CompteNum;CompteLib;SoldeDebiteur;SoldeCrediteur',
@@ -37,6 +38,28 @@ test('balance — reconstruction compte de résultat + détail + position', () =
   assert.equal(b.detail.charges[0].compte, '607000');
   assert.equal(b.detail.charges[0].fixe, false);
   assert.equal(b.detail.charges[1].compte, '641000');
+});
+
+test('balance cumulée — mois figés + différence sur le nouveau mois (façon RCA)', () => {
+  // Dossier avec Janvier→Juillet à 10 000 de CA (cumul = 70 000), reste à 0.
+  const actuel: EntreesMoteur = {
+    parametrage: {
+      soldeInitialTresorerie: 5000, objectifCaAnnuel: 0, objectifRemunerationMensuelle: 0,
+      moisSecuriteTresorerie: 2, objectifTauxMarque: 0, seuilChargesFixesPctCa: 0.3, objectifResultatNetAnnuel: 0,
+    },
+    pnl: Array.from({ length: 12 }, (_, i) => ({
+      caHt: i <= 6 ? 10000 : 0, achatsMarchandisesMp: 0, autresAchatsChargesExternes: 0, salairesEtCharges: 0,
+      impotsEtTaxes: 0, chargesFinancieres: 0, chargesExceptionnelles: 0, amortissements: 0,
+    })),
+    cash: Array.from({ length: 12 }, () => ({ encaissements: 0, decaissements: 0 })),
+  };
+  // Balance cumulée arrêtée fin août : CA cumulé 82 000 -> août = 82 000 - 70 000 = 12 000.
+  const balanceAout = ['CompteNum;CompteLib;SoldeDebiteur;SoldeCrediteur', '706000;Ventes;0;82000'].join('\n');
+  const maj = appliquerBalanceCumulee(actuel, balanceAout, 7);
+
+  assert.equal(maj.pnl[6].caHt, 10000); // juillet figé
+  assert.equal(maj.pnl[7].caHt, 12000); // août = différence
+  assert.equal(maj.pnl[8].caHt, 0); // septembre inchangé (prévisionnel)
 });
 
 test('balance — pipeline vers tableau de bord', () => {
