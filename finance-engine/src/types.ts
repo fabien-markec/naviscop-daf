@@ -68,6 +68,18 @@ export interface ParametrageFinancier {
   securiteTresorerieCible?: number;
 }
 
+/** Une écriture comptable détaillée (une ligne d'un poste de charge). */
+export interface EcritureDetail {
+  /** Date brute de l'écriture (telle que dans le FEC). */
+  date: string;
+  /** Libellé de l'écriture. */
+  libelle: string;
+  /** Montant (débit − crédit ; une charge est positive). */
+  montant: number;
+  /** Référence : journal + numéro d'écriture. */
+  ref?: string;
+}
+
 /** Un poste de charge détaillé (par compte comptable). */
 export interface PosteCharge {
   /** Numéro de compte PCG (ex 613000). */
@@ -78,6 +90,8 @@ export interface PosteCharge {
   montant: number;
   /** true = charge fixe (structure), false = coût direct/variable. */
   fixe: boolean;
+  /** Écritures qui composent le poste (présent pour un import FEC ; absent pour une balance). */
+  ecritures?: EcritureDetail[];
 }
 
 /** Un client avec son chiffre d'affaires HT sur la période. */

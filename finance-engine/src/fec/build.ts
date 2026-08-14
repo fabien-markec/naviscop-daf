@@ -14,6 +14,7 @@ import type {
   DetailFinancier,
   PosteCharge,
   ClientCa,
+  EcritureDetail,
 } from '../types.ts';
 import type { EcritureFec } from './types.ts';
 import { parseFec } from './parse.ts';
@@ -57,9 +58,19 @@ function construireDetail(ecritures: EcritureFec[]): DetailFinancier {
         libelle: e.compteLib || e.compteNum,
         montant: 0,
         fixe: cat !== 'achatsMarchandisesMp',
+        ecritures: [] as EcritureDetail[],
       };
-      p.montant += e.debit - e.credit;
+      const mouvement = e.debit - e.credit;
+      p.montant += mouvement;
       if ((!p.libelle || p.libelle === e.compteNum) && e.compteLib) p.libelle = e.compteLib;
+      if (mouvement !== 0) {
+        p.ecritures!.push({
+          date: e.dateBrute,
+          libelle: e.libelle || e.compteLib || '',
+          montant: Math.round(mouvement * 100) / 100,
+          ref: `${e.journalCode} ${e.ecritureNum}`.trim(),
+        });
+      }
       chargesMap.set(e.compteNum, p);
     }
 

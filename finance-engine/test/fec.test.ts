@@ -121,6 +121,12 @@ test('build — détail : CA attribué par client et charges triées', () => {
   const achats = e.detail.charges.find((c) => c.compte === '607000');
   assert.equal(achats?.montant, 400);
   assert.equal(achats?.fixe, false);
+
+  // Écritures : chaque poste conserve les lignes qui le composent (voir le détail).
+  const loyer = e.detail.charges.find((c) => c.compte === '613000');
+  assert.equal(loyer?.ecritures?.length, 1);
+  assert.equal(loyer?.ecritures?.[0].montant, 100);
+  assert.equal(loyer?.ecritures?.[0].libelle, 'Loyers');
 });
 
 test('pipeline — FEC vers tableau de bord complet', () => {
