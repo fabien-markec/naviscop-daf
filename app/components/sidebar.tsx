@@ -124,6 +124,11 @@ export function Sidebar() {
               onChange={(e) => ouvrirDossier(e.target.value)}
               className="-ml-0.5 mt-1 w-full cursor-pointer bg-transparent text-sm font-semibold text-slate-800 outline-none"
             >
+              {!actifId && (
+                <option value="" disabled className="bg-white">
+                  Choisir un dossier…
+                </option>
+              )}
               {dossiers.map((d) => (
                 <option key={d.id} value={d.id} className="bg-white">
                   {d.nom}

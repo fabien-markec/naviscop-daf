@@ -113,13 +113,9 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
     let annule = false;
     (async () => {
       try {
-        let dossiers: DossierRow[] = await chargerDossiers();
-        if (dossiers.length === 0) {
-          const base = entreesVides();
-          const id = await creerDossier('Mon entreprise', base, '');
-          dossiers = [{ id, nom: 'Mon entreprise', metier: '', entreesBase: base, previsionnels: [], planActions: [] }];
-        }
-        if (!annule) setWs({ role: 'daf', dossiers, actifId: dossiers[0].id });
+        const dossiers: DossierRow[] = await chargerDossiers();
+        // Aucun dossier auto-créé : le DAF choisit (ou importe) son dossier. Pas de sélection par défaut.
+        if (!annule) setWs({ role: 'daf', dossiers, actifId: '' });
       } catch (e) {
         console.error('Chargement des dossiers échoué', e);
       } finally {
@@ -161,20 +157,21 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
     setWs((s) => ({ ...s, dossiers: s.dossiers.map((d) => (d.id === s.actifId ? fn(d) : d)) }));
 
   const value = useMemo<DossierContextValue>(() => {
-    const actif = ws.dossiers.find((d) => d.id === ws.actifId) ?? ws.dossiers[0];
-    const entrees = fusionnerPrevisionnels(actif.entreesBase, actif.previsionnels);
+    const actif = ws.dossiers.find((d) => d.id === ws.actifId) ?? null;
+    const base = actif ? actif.entreesBase : entreesVides();
+    const entrees = actif ? fusionnerPrevisionnels(actif.entreesBase, actif.previsionnels) : base;
 
     return {
       role: ws.role,
       setRole: (role) => setWs((s) => ({ ...s, role })),
       dossiers: ws.dossiers,
-      actifId: actif.id,
-      nom: actif.nom,
-      metier: actif.metier,
+      actifId: actif ? actif.id : '',
+      nom: actif ? actif.nom : '',
+      metier: actif ? actif.metier : '',
       entrees,
-      pnlReel: actif.entreesBase.pnl,
-      previsionnels: actif.previsionnels,
-      planActions: actif.planActions ?? [],
+      pnlReel: base.pnl,
+      previsionnels: actif ? actif.previsionnels : [],
+      planActions: actif?.planActions ?? [],
       tableauDeBord: calculerTableauDeBord(entrees),
       chargement,
       connecte: supabaseConfigured,

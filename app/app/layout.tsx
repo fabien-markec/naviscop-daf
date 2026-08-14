@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { DM_Sans } from 'next/font/google';
 import './globals.css';
-import { Sidebar } from '@/components/sidebar';
 import { DossierProvider } from '@/lib/dossier-context';
 import { AuthGate } from '@/components/auth-gate';
-import { AssistantBulle } from '@/components/assistant-bulle';
+import { AppShell } from '@/components/app-shell';
 
 const sans = DM_Sans({
   subsets: ['latin'],
@@ -23,13 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <AuthGate>
           <DossierProvider>
-            <div className="relative flex min-h-screen">
-              <Sidebar />
-              <main className="flex-1 overflow-x-hidden px-4 pb-10 pt-20 sm:px-6 lg:px-10 lg:py-8">
-                <div className="rise mx-auto max-w-6xl">{children}</div>
-              </main>
-            </div>
-            <AssistantBulle />
+            <AppShell>{children}</AppShell>
           </DossierProvider>
         </AuthGate>
       </body>
