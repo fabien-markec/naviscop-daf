@@ -88,6 +88,8 @@ function genererEntrees(c: ConfigDossier): EntreesMoteur {
       chargesSocialesAProvisionner: Math.round(somme(c.salaires) * 0.12),
       impotsAProvisionner: Math.round(Math.max(0, c.objectifResultatNetAnnuel) * 0.15),
       securiteTresorerieCible: 4000,
+      investissementsAProvisionner: 2000,
+      saisonnaliteAProvisionner: 1500,
     },
     pnl,
     cash,

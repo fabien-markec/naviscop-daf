@@ -133,6 +133,22 @@ export default function ParametresPage() {
                 hint="Réserve que vous voulez toujours garder de côté."
                 onChange={(v) => majParametrage({ securiteTresorerieCible: v })}
               />
+              <ChampNombre
+                label="Investissements à venir"
+                value={p.investissementsAProvisionner ?? 0}
+                step={500}
+                suffix="€"
+                hint="Achats/matériel prévus à mettre de côté."
+                onChange={(v) => majParametrage({ investissementsAProvisionner: v })}
+              />
+              <ChampNombre
+                label="Saisonnalité / périodes creuses"
+                value={p.saisonnaliteAProvisionner ?? 0}
+                step={500}
+                suffix="€"
+                hint="Réserve pour les mois à faible activité."
+                onChange={(v) => majParametrage({ saisonnaliteAProvisionner: v })}
+              />
             </div>
           </Section>
 

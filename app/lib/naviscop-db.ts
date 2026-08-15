@@ -42,6 +42,8 @@ function mapParametrage(row: Record<string, unknown>): { parametrage: Parametrag
       chargesSocialesAProvisionner: n(row.charges_sociales_a_provisionner),
       impotsAProvisionner: n(row.impots_a_provisionner),
       securiteTresorerieCible: n(row.securite_tresorerie_cible),
+      investissementsAProvisionner: n(row.investissements_a_provisionner),
+      saisonnaliteAProvisionner: n(row.saisonnalite_a_provisionner),
     },
     creancesClients: n(row.creances_clients),
   };
@@ -189,6 +191,8 @@ export async function creerDossier(
       charges_sociales_a_provisionner: p.chargesSocialesAProvisionner ?? 0,
       impots_a_provisionner: p.impotsAProvisionner ?? 0,
       securite_tresorerie_cible: p.securiteTresorerieCible ?? 0,
+      investissements_a_provisionner: p.investissementsAProvisionner ?? 0,
+      saisonnalite_a_provisionner: p.saisonnaliteAProvisionner ?? 0,
       creances_clients: entreesBase.creancesClients ?? 0,
     }),
     s.from('dossier_pnl').insert(
@@ -226,6 +230,8 @@ export async function majParametrageDb(dossierId: string, patch: Partial<Paramet
     chargesSocialesAProvisionner: 'charges_sociales_a_provisionner',
     impotsAProvisionner: 'impots_a_provisionner',
     securiteTresorerieCible: 'securite_tresorerie_cible',
+    investissementsAProvisionner: 'investissements_a_provisionner',
+    saisonnaliteAProvisionner: 'saisonnalite_a_provisionner',
   };
   const upd: Record<string, number> = {};
   for (const [k, v] of Object.entries(patch)) if (map[k] && v != null) upd[map[k]] = v as number;

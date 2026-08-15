@@ -66,6 +66,10 @@ export interface ParametrageFinancier {
   impotsAProvisionner?: number;
   /** Matelas de sécurité de trésorerie souhaité (montant fixe à conserver). Optionnel. */
   securiteTresorerieCible?: number;
+  /** Investissements à venir à provisionner. Optionnel. */
+  investissementsAProvisionner?: number;
+  /** Provision pour saisonnalité / périodes creuses. Optionnel. */
+  saisonnaliteAProvisionner?: number;
 }
 
 /** Une écriture comptable détaillée (une ligne d'un poste de charge). */

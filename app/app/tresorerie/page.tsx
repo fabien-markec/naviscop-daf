@@ -6,6 +6,7 @@ import { eur } from '@/lib/format';
 import { PageHeader, Section } from '@/components/ui';
 import { FluxChart } from '@/components/charts';
 import { CascadeCash } from '@/components/cash-disponible';
+import { EnveloppesProvision } from '@/components/enveloppes';
 
 export default function TresoreriePage() {
   const { tableauDeBord } = useDossier();
@@ -24,8 +25,9 @@ export default function TresoreriePage() {
         subtitle="Reconstitution du réel et projection des soldes mensuels (TTC)."
       />
 
-      <div className="max-w-xl">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <CascadeCash data={cashDisponible} />
+        <EnveloppesProvision data={cashDisponible} />
       </div>
 
       <Section title="Encaissements, décaissements et solde">

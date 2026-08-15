@@ -45,6 +45,8 @@ export function calculerCashDisponible(entrees: EntreesMoteur): CashDisponible {
     { libelle: 'Charges fixes du mois à venir', montant: r(chargesFixesMois), saisi: false },
     { libelle: 'Rémunération minimale dirigeant', montant: r(p.objectifRemunerationMensuelle || 0), saisi: true },
     { libelle: 'Sécurité de trésorerie', montant: r(p.securiteTresorerieCible ?? 0), saisi: true },
+    { libelle: 'Investissements à venir', montant: r(p.investissementsAProvisionner ?? 0), saisi: true },
+    { libelle: 'Saisonnalité / périodes creuses', montant: r(p.saisonnaliteAProvisionner ?? 0), saisi: true },
   ].filter((d) => d.montant !== 0);
 
   const totalEngage = deductions.reduce((acc, d) => acc + d.montant, 0);
