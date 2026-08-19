@@ -22,8 +22,15 @@ export interface HypothesesScenario {
   investissementComptant?: { montant: number; moisIndex: number };
   /** Décalage d'encaissements (montant repoussé) ou retard client, en euros/mois. */
   decalageEncaissementMensuel?: number;
-  /** Mois de démarrage des hypothèses (0-11). Avant ce mois, rien ne change. Défaut : Janvier. */
+  /** Mois de démarrage par défaut (0-11) si un mois par variable n'est pas précisé. */
   moisDebut?: number;
+  /** Mois de démarrage propres à chaque variable (0-11). À défaut : moisDebut. */
+  moisPrix?: number;
+  moisCa?: number;
+  moisCharge?: number;
+  moisRemu?: number;
+  /** Charges ajoutées au scénario : ponctuelles (un mois) ou récurrentes (à partir du mois, jusqu'à décembre). */
+  chargesScenario?: { libelle?: string; montant: number; moisIndex: number; toutAnnee?: boolean }[];
 }
 
 export interface ResultatScenario {
@@ -62,33 +69,36 @@ export function appliquerScenario(
 } {
   const duree = h.dureeMois ?? 12;
   const debut = h.moisDebut ?? 0;
-  const actifAu = (i: number) => i >= debut;
+  const dPrix = h.moisPrix ?? debut;
+  const dCa = h.moisCa ?? debut;
+  const dCharge = h.moisCharge ?? debut;
+  const dRemu = h.moisRemu ?? debut;
+  const chargesScenario = h.chargesScenario ?? [];
+  // Montant d'une charge du scénario applicable au mois i (ponctuelle = ce mois ; récurrente = à partir du mois).
+  const chargeAuMois = (i: number) =>
+    chargesScenario.reduce((acc, c) => acc + ((c.toutAnnee ? i >= c.moisIndex : i === c.moisIndex) ? c.montant : 0), 0);
 
   const pnl: LignePnlMensuelle[] = base.pnl.map((m, i) => {
-    const actif = actifAu(i);
     let caHt = m.caHt;
-    if (h.variationPrixPct && actif) caHt *= 1 + h.variationPrixPct;
-    if (h.variationCaPct && actif && i < debut + duree) caHt *= 1 + h.variationCaPct;
+    if (h.variationPrixPct && i >= dPrix) caHt *= 1 + h.variationPrixPct;
+    if (h.variationCaPct && i >= dCa && i < dCa + duree) caHt *= 1 + h.variationCaPct;
     return {
       ...m,
       caHt,
       salairesEtCharges:
-        m.salairesEtCharges +
-        (actif ? (h.chargeMensuelleSupplementaire ?? 0) + (h.remunerationSupplementaire ?? 0) : 0),
+        m.salairesEtCharges + (i >= dCharge ? h.chargeMensuelleSupplementaire ?? 0 : 0) + (i >= dRemu ? h.remunerationSupplementaire ?? 0 : 0),
+      autresAchatsChargesExternes: m.autresAchatsChargesExternes + chargeAuMois(i),
     };
   });
 
   const cash: LigneCashMensuelle[] = base.cash.map((m, i) => {
-    const actif = actifAu(i);
     let encaissements = m.encaissements;
     let decaissements = m.decaissements;
-    // La variation de prix/CA se répercute sur les encaissements TTC (approche simplifiée).
-    if (h.variationPrixPct && actif) encaissements *= 1 + h.variationPrixPct;
-    if (h.variationCaPct && actif && i < debut + duree) encaissements *= 1 + h.variationCaPct;
-    if (h.decalageEncaissementMensuel && actif) encaissements -= h.decalageEncaissementMensuel;
-    if (actif) {
-      decaissements += (h.chargeMensuelleSupplementaire ?? 0) + (h.remunerationSupplementaire ?? 0);
-    }
+    if (h.variationPrixPct && i >= dPrix) encaissements *= 1 + h.variationPrixPct;
+    if (h.variationCaPct && i >= dCa && i < dCa + duree) encaissements *= 1 + h.variationCaPct;
+    if (h.decalageEncaissementMensuel && i >= debut) encaissements -= h.decalageEncaissementMensuel;
+    decaissements += (i >= dCharge ? h.chargeMensuelleSupplementaire ?? 0 : 0) + (i >= dRemu ? h.remunerationSupplementaire ?? 0 : 0);
+    decaissements += chargeAuMois(i) * 1.2;
     if (h.investissementComptant && h.investissementComptant.moisIndex === i) {
       decaissements += h.investissementComptant.montant;
     }
