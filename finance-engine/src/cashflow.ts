@@ -20,6 +20,10 @@ export interface PlanTresorerie {
   soldeFinAnnee: number;
   /** Décaissement mensuel moyen sur les mois où il y a de l'activité. */
   decaissementMensuelMoyen: number;
+  /** Index du dernier mois avec un mouvement de trésorerie (-1 si aucun). */
+  moisADateIndex: number;
+  /** Solde de trésorerie à date : solde de fin du dernier mois actif (position actuelle). */
+  soldeADate: number;
 }
 
 export function calculerTresorerie(
@@ -56,12 +60,23 @@ export function calculerTresorerie(
       ? 0
       : moisActifs.reduce((acc, m) => acc + m.decaissements, 0) / moisActifs.length;
 
+  let moisADateIndex = -1;
+  for (let i = cash.length - 1; i >= 0; i--) {
+    if (cash[i].encaissements !== 0 || cash[i].decaissements !== 0) {
+      moisADateIndex = i;
+      break;
+    }
+  }
+  const soldeADate = moisADateIndex >= 0 ? parMois[moisADateIndex].soldeFin : soldeInitial;
+
   return {
     parMois,
     moisCritiqueIndex,
     soldeFinLePlusBas: parMois[moisCritiqueIndex].soldeFin,
     soldeFinAnnee: parMois[parMois.length - 1].soldeFin,
     decaissementMensuelMoyen,
+    moisADateIndex,
+    soldeADate,
   };
 }
 

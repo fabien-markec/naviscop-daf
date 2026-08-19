@@ -10,6 +10,7 @@ import {
   type ParametrageFinancier,
   type MouvementPrevisionnel,
   type LignePnlMensuelle,
+  type ChargeFixe,
 } from '@naviscop/finance-engine';
 import { dossiersDemo } from './demo-data';
 import { supabase, supabaseConfigured } from './supabase';
@@ -22,6 +23,7 @@ import {
   majPnlMoisDb,
   avancerDossierDb,
   majMoisClotureDb,
+  majChargesFixesDb,
   ajouterPrevisionnelDb,
   supprimerPrevisionnelDb,
   ajouterActionDb,
@@ -59,6 +61,10 @@ interface DossierContextValue {
   nom: string;
   metier: string;
   entrees: EntreesMoteur;
+  /** Entrées réalisées seules (base, sans les mouvements prévisionnels). Pour la vue « à aujourd'hui ». */
+  entreesReel: EntreesMoteur;
+  /** Charges fixes mensuelles saisies. */
+  chargesFixes: ChargeFixe[];
   /** Compte de résultat réalisé (données de base, sans les mouvements prévisionnels). */
   pnlReel: LignePnlMensuelle[];
   previsionnels: MouvementPrevisionnel[];
@@ -77,6 +83,10 @@ interface DossierContextValue {
   majReelMois: (moisIndex: number, patch: Partial<LignePnlMensuelle>) => void;
   /** Avance le dossier actif avec une balance cumulée : mois figés, nouveau mois = différence. */
   avancerDossierCumule: (contenuBalance: string, moisArrete: number) => void;
+  /** Ajoute une charge fixe mensuelle. */
+  ajouterChargeFixe: (charge: Omit<ChargeFixe, 'id'>) => void;
+  /** Supprime une charge fixe mensuelle. */
+  supprimerChargeFixe: (id: string) => void;
   /** Définit le dernier mois clôturé (réalisé) du dossier actif. */
   majMoisCloture: (moisClotureIndex: number) => void;
   ajouterPrevisionnel: (mv: Omit<MouvementPrevisionnel, 'id'>) => void;
@@ -183,6 +193,8 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       nom: actif ? actif.nom : '',
       metier: actif ? actif.metier : '',
       entrees,
+      entreesReel: base,
+      chargesFixes: entrees.chargesFixes ?? [],
       pnlReel: base.pnl,
       previsionnels: actif ? actif.previsionnels : [],
       planActions: actif?.planActions ?? [],
@@ -257,6 +269,20 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       majMoisCloture: (moisClotureIndex) => {
         majActif((d) => ({ ...d, moisClotureIndex }));
         if (supabaseConfigured) majMoisClotureDb(ws.actifId, moisClotureIndex).catch((e) => console.error('MAJ clôture échouée', e));
+      },
+
+      ajouterChargeFixe: (charge) => {
+        const actifCourant = ws.dossiers.find((d) => d.id === ws.actifId);
+        const liste = [...(actifCourant?.entreesBase.chargesFixes ?? []), { ...charge, id: crypto.randomUUID() }];
+        majActif((d) => ({ ...d, entreesBase: { ...d.entreesBase, chargesFixes: liste } }));
+        if (supabaseConfigured) majChargesFixesDb(ws.actifId, liste).catch((e) => console.error('Ajout charge fixe échoué', e));
+      },
+
+      supprimerChargeFixe: (id) => {
+        const actifCourant = ws.dossiers.find((d) => d.id === ws.actifId);
+        const liste = (actifCourant?.entreesBase.chargesFixes ?? []).filter((c) => c.id !== id);
+        majActif((d) => ({ ...d, entreesBase: { ...d.entreesBase, chargesFixes: liste } }));
+        if (supabaseConfigured) majChargesFixesDb(ws.actifId, liste).catch((e) => console.error('Suppression charge fixe échouée', e));
       },
 
       ajouterPrevisionnel: async (mv) => {

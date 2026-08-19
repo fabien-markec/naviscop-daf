@@ -9,6 +9,7 @@
  */
 import type { EntreesMoteur } from './types.ts';
 import { calculerPnl } from './pnl.ts';
+import { calculerTresorerie } from './cashflow.ts';
 
 /** Une ligne de la cascade (un engagement déduit du solde bancaire). */
 export interface LigneCashDisponible {
@@ -31,12 +32,18 @@ export interface CashDisponible {
 
 const r = (n: number) => Math.round(n);
 
-export function calculerCashDisponible(entrees: EntreesMoteur): CashDisponible {
+export function calculerCashDisponible(entrees: EntreesMoteur, soldeBancaireOverride?: number): CashDisponible {
   const p = entrees.parametrage;
   const pnl = calculerPnl(entrees.pnl);
+  const treso = calculerTresorerie(p.soldeInitialTresorerie, entrees.cash);
 
-  const soldeBancaire = r(p.soldeInitialTresorerie);
-  const chargesFixesMois = pnl.annuel.chargesFixesTotales / 12;
+  // Solde bancaire = position à date (dernier mois actif), ou une position choisie (vue par mois).
+  const soldeBancaire = r(soldeBancaireOverride ?? treso.soldeADate);
+  // Si des charges fixes ont été saisies à la main, elles priment sur l'estimation (charges fixes annuelles / 12).
+  const chargesFixesMois =
+    entrees.chargesFixes && entrees.chargesFixes.length > 0
+      ? entrees.chargesFixes.reduce((acc, c) => acc + c.montant, 0)
+      : pnl.annuel.chargesFixesTotales / 12;
 
   const deductions: LigneCashDisponible[] = [
     { libelle: 'TVA à provisionner', montant: r(p.tvaAProvisionner ?? 0), saisi: true },

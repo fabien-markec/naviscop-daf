@@ -48,7 +48,7 @@ export function calculerKpis(entrees: EntreesMoteur): Kpis {
   const tmcv = pnl.annuel.tauxMarqueBrute;
   const seuilRentabilite = tmcv === 0 ? 0 : pnl.annuel.chargesFixesTotales / tmcv;
 
-  const tresorerieDisponible = p.soldeInitialTresorerie;
+  const tresorerieDisponible = treso.soldeADate;
   const moisTresorerieAvance =
     treso.decaissementMensuelMoyen === 0
       ? 0

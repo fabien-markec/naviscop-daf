@@ -119,6 +119,14 @@ export interface DetailFinancier {
   clients: ClientCa[];
 }
 
+/** Une charge fixe récurrente mensuelle (loyer, assurance, abonnement...). */
+export interface ChargeFixe {
+  id: string;
+  libelle: string;
+  /** Montant mensuel. */
+  montant: number;
+}
+
 export interface EntreesMoteur {
   parametrage: ParametrageFinancier;
   pnl: LignePnlMensuelle[]; // 12 mois
@@ -127,4 +135,6 @@ export interface EntreesMoteur {
   creancesClients?: number;
   /** Détail par compte et par client (présent seulement après import FEC). Optionnel. */
   detail?: DetailFinancier;
+  /** Charges fixes mensuelles saisies à la main. Si renseignées, elles priment sur l'estimation. */
+  chargesFixes?: ChargeFixe[];
 }

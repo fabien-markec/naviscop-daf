@@ -39,8 +39,8 @@ export function KpiCard({
   tone?: keyof typeof TONE;
 }) {
   return (
-    <div className="group card relative overflow-hidden p-4 transition-all duration-200 hover:bg-white/70">
-      <span className={`absolute inset-x-0 top-0 h-px ${TONE_BAR[tone]} opacity-60`} />
+    <div className="group card relative p-4 transition-all duration-200 hover:bg-white/70">
+      <span className={`absolute inset-x-4 top-0 h-px ${TONE_BAR[tone]} opacity-60`} />
       <div className="flex items-start justify-between gap-2">
         <p className="text-[10.5px] font-medium uppercase tracking-[0.08em] text-slate-700">{label}</p>
         {info && (

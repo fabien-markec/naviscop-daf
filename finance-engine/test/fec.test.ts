@@ -136,5 +136,5 @@ test('pipeline — FEC vers tableau de bord complet', () => {
   assert.equal(tdb.pnl.annuel.caHt, 1500); // 1000 + 500
   assert.equal(tdb.pnl.annuel.margeBrute, 1100); // 1500 - 400
   assert.equal(tdb.kpis.creancesClients, 600);
-  assert.equal(tdb.kpis.tresorerieDisponible, 10000);
+  assert.equal(tdb.kpis.tresorerieDisponible, 10040); // solde à date = solde fin du dernier mois actif (mars)
 });

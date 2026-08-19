@@ -1,12 +1,15 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { MOIS } from '@naviscop/finance-engine';
+import { MOIS, calculerTableauDeBord, calculerCashDisponible, dernierMoisActif } from '@naviscop/finance-engine';
 import { useDossier } from '@/lib/dossier-context';
 import { eur, pct } from '@/lib/format';
 import { KpiCard, StatBar, PageHeader, Section, ListeAlertes } from '@/components/ui';
 import { TresorerieChart } from '@/components/charts';
 import { CascadeCash } from '@/components/cash-disponible';
+
+type VueDashboard = 'aujourdhui' | 'annee' | 'perso';
 
 const STATUT_LABEL: Record<string, string> = {
   a_faire: 'À faire',
@@ -20,9 +23,19 @@ const STATUT_STYLE: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const { tableauDeBord, planActions, entrees } = useDossier();
-  const { kpis, tresorerie, pnl, alertes, cashDisponible } = tableauDeBord;
-  const moisCritique = MOIS[tresorerie.moisCritiqueIndex];
+  const { entrees, entreesReel, previsionnels, planActions } = useDossier();
+  const [vue, setVue] = useState<VueDashboard>('aujourdhui');
+  const [moisPerso, setMoisPerso] = useState(() => dernierMoisActif(entreesReel));
+
+  // Vue « à aujourd'hui » = réalisé seul ; « fin d'année » / « personnalisé » = base + prévisions.
+  const entreesVue = vue === 'aujourdhui' ? entreesReel : entrees;
+  const tdb = useMemo(() => calculerTableauDeBord(entreesVue), [entreesVue]);
+  const { kpis, tresorerie, pnl, alertes } = tdb;
+  const moisRef =
+    vue === 'annee' ? 11 : vue === 'perso' ? moisPerso : tresorerie.moisADateIndex >= 0 ? tresorerie.moisADateIndex : 11;
+  const soldeADate = tresorerie.parMois[moisRef]?.soldeFin ?? kpis.tresorerieDisponible;
+  const cashDisponible = useMemo(() => calculerCashDisponible(entreesVue, soldeADate), [entreesVue, soldeADate]);
+  const sansPrevision = vue !== 'aujourdhui' && previsionnels.length === 0;
   const chartData = tresorerie.parMois.map((m, i) => ({ mois: MOIS[i].slice(0, 3), solde: m.soldeFin }));
 
   // 3 actions prioritaires : celles qui restent à mener (à faire ou en cours).
@@ -48,21 +61,67 @@ export default function DashboardPage() {
         subtitle="Comprendre la situation financière en 30 secondes, et savoir quoi décider."
       />
 
+      {/* Sélecteur de vue : à date / fin d'année / mois personnalisé */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex rounded-full border border-navy/10 bg-white/70 p-1">
+          {([
+            ['aujourdhui', 'À aujourd’hui'],
+            ['annee', 'Prévision fin d’année'],
+            ['perso', 'Personnalisé'],
+          ] as [VueDashboard, string][]).map(([v, label]) => (
+            <button
+              key={v}
+              onClick={() => setVue(v)}
+              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+                vue === v ? 'bg-brand text-white shadow-[0_4px_12px_-4px_rgba(0,98,184,0.4)]' : 'text-slate-700 hover:text-navy'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {vue === 'perso' && (
+          <select
+            value={moisPerso}
+            onChange={(e) => setMoisPerso(Number(e.target.value))}
+            className="rounded-full border border-navy/10 bg-white/70 px-3 py-1.5 text-sm text-navy outline-none focus:border-brand/50"
+          >
+            {MOIS.map((m, i) => (
+              <option key={m} value={i}>
+                Situation à fin {m}
+              </option>
+            ))}
+          </select>
+        )}
+        <span className="text-xs text-slate-700">
+          Situation à fin <strong>{MOIS[moisRef]}</strong>
+          {vue === 'aujourdhui' ? ' (dernier mois réalisé)' : vue === 'annee' ? ' (projeté)' : ''}
+        </span>
+      </div>
+
+      {sansPrevision && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          Vous n’avez pas encore saisi de prévisions (factures et charges à venir) dans les autres modules. Cette vue reprend
+          donc simplement le réalisé. Ajoutez vos mouvements dans « Saisie prévisionnelle » et « Carnet de commandes » pour une
+          vraie projection.
+        </div>
+      )}
+
       {/* Bandeau décision */}
       <StatBar
         stats={[
-          { label: 'Trésorerie disponible', value: eur(kpis.tresorerieDisponible) },
+          { label: `Trésorerie à fin ${MOIS[moisRef].toLowerCase()}`, value: eur(soldeADate), tone: soldeADate < 0 ? 'negative' : 'neutral' },
           {
-            label: 'Trésorerie à 12 mois',
-            value: eur(kpis.tresorerie12Mois),
-            tone: kpis.tresorerie12Mois < 0 ? 'negative' : 'positive',
+            label: 'Trésorerie à 3 mois',
+            value: eur(kpis.tresorerie3Mois),
+            tone: kpis.tresorerie3Mois < 0 ? 'negative' : 'positive',
           },
           {
             label: 'Résultat prévisionnel',
             value: eur(kpis.resultatPrevisionnel),
             tone: kpis.resultatPrevisionnel < 0 ? 'negative' : 'positive',
           },
-          { label: 'Mois critique', value: moisCritique, hint: eur(tresorerie.soldeFinLePlusBas), tone: 'warning' },
+          { label: 'Créances clients', value: eur(kpis.creancesClients), hint: 'facturé non encaissé', tone: 'warning' },
         ]}
       />
 

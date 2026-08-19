@@ -112,7 +112,7 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
   const s = db();
   const { data: dossiers, error } = await s
     .from('dossiers')
-    .select('id, nom, metier, detail_financier, mois_cloture_index')
+    .select('id, nom, metier, detail_financier, mois_cloture_index, charges_fixes')
     .order('created_at');
   if (error) throw error;
   if (!dossiers || dossiers.length === 0) return [];
@@ -141,13 +141,16 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
   return dossiers.map((d) => {
     const p = paramMap.get(d.id as string)?.[0] ?? {};
     const { parametrage, creancesClients } = mapParametrage(p as Record<string, unknown>);
-    const detailBrut = (d as Record<string, unknown>).detail_financier as DetailFinancier | null;
+    const dr = d as Record<string, unknown>;
+    const detailBrut = dr.detail_financier as DetailFinancier | null;
+    const chargesFixesBrut = dr.charges_fixes as EntreesMoteur['chargesFixes'] | null;
     const entreesBase: EntreesMoteur = {
       parametrage,
       pnl: mapPnl((pnlMap.get(d.id as string) ?? []) as Record<string, unknown>[]),
       cash: mapCash((cashMap.get(d.id as string) ?? []) as Record<string, unknown>[]),
       creancesClients,
       detail: detailBrut ?? undefined,
+      chargesFixes: chargesFixesBrut ?? undefined,
     };
     return {
       id: d.id as string,
@@ -171,7 +174,13 @@ export async function creerDossier(
   const s = db();
   const { data, error } = await s
     .from('dossiers')
-    .insert({ nom, metier, detail_financier: entreesBase.detail ?? null, mois_cloture_index: moisClotureIndex })
+    .insert({
+      nom,
+      metier,
+      detail_financier: entreesBase.detail ?? null,
+      mois_cloture_index: moisClotureIndex,
+      charges_fixes: entreesBase.chargesFixes ?? null,
+    })
     .select('id')
     .single();
   if (error) throw error;
@@ -297,6 +306,12 @@ export async function avancerDossierDb(
 /** Met à jour le dernier mois clôturé d'un dossier. */
 export async function majMoisClotureDb(dossierId: string, moisClotureIndex: number): Promise<void> {
   const { error } = await db().from('dossiers').update({ mois_cloture_index: moisClotureIndex }).eq('id', dossierId);
+  if (error) throw error;
+}
+
+/** Met à jour la liste des charges fixes mensuelles d'un dossier. */
+export async function majChargesFixesDb(dossierId: string, chargesFixes: EntreesMoteur['chargesFixes']): Promise<void> {
+  const { error } = await db().from('dossiers').update({ charges_fixes: chargesFixes ?? null }).eq('id', dossierId);
   if (error) throw error;
 }
 
