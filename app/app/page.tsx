@@ -23,7 +23,7 @@ const STATUT_STYLE: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const { entrees, entreesReel, previsionnels, planActions } = useDossier();
+  const { entrees, entreesReel, previsionnels, planActions, chargesFixes, ajouterChargeFixe, supprimerChargeFixe } = useDossier();
   const [vue, setVue] = useState<VueDashboard>('aujourdhui');
   const [moisPerso, setMoisPerso] = useState(() => dernierMoisActif(entreesReel));
 
@@ -127,7 +127,7 @@ export default function DashboardPage() {
 
       {/* Cash réellement disponible (pilier 1) + alertes */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <CascadeCash data={cashDisponible} />
+        <CascadeCash data={cashDisponible} chargesFixes={chargesFixes} onAjouterCharge={ajouterChargeFixe} onSupprimerCharge={supprimerChargeFixe} />
         <Section title="Alertes prioritaires">
           <ListeAlertes alertes={alertes} />
         </Section>

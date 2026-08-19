@@ -9,7 +9,7 @@ import { CascadeCash } from '@/components/cash-disponible';
 import { EnveloppesProvision } from '@/components/enveloppes';
 
 export default function TresoreriePage() {
-  const { tableauDeBord } = useDossier();
+  const { tableauDeBord, chargesFixes, ajouterChargeFixe, supprimerChargeFixe } = useDossier();
   const { tresorerie, cashDisponible } = tableauDeBord;
   const chartData = tresorerie.parMois.map((m, i) => ({
     mois: MOIS[i].slice(0, 3),
@@ -26,7 +26,7 @@ export default function TresoreriePage() {
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <CascadeCash data={cashDisponible} />
+        <CascadeCash data={cashDisponible} chargesFixes={chargesFixes} onAjouterCharge={ajouterChargeFixe} onSupprimerCharge={supprimerChargeFixe} />
         <EnveloppesProvision data={cashDisponible} />
       </div>
 
