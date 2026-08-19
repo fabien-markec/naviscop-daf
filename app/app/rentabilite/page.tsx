@@ -1,12 +1,20 @@
 'use client';
 
-import { Fragment, useState } from 'react';
-import { ChevronRight } from 'lucide-react';
-import { MOIS } from '@naviscop/finance-engine';
+import { Fragment, useMemo, useState } from 'react';
+import { ChevronRight, Trash2 } from 'lucide-react';
+import {
+  MOIS,
+  resultatMensuel,
+  type LignePnlMensuelle,
+  type TypePrevisionnel,
+  type CategorieCharge,
+} from '@naviscop/finance-engine';
 import { useDossier } from '@/lib/dossier-context';
 import { eur, pct } from '@/lib/format';
 import { KpiCard, PageHeader, Section } from '@/components/ui';
 import { ResultatChart } from '@/components/charts';
+
+const MOIS_COURT = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
 
 function formatDateFec(d: string): string {
   const v = (d ?? '').trim();
@@ -14,38 +22,107 @@ function formatDateFec(d: string): string {
   return v;
 }
 
-const CATEGORIES_CHARGES: { cle: keyof import('@naviscop/finance-engine').LignePnlMensuelle; label: string }[] = [
-  { cle: 'achatsMarchandisesMp', label: 'Achats / matières' },
-  { cle: 'autresAchatsChargesExternes', label: 'Charges externes' },
-  { cle: 'salairesEtCharges', label: 'Salaires et charges' },
-  { cle: 'impotsEtTaxes', label: 'Impôts et taxes' },
-  { cle: 'chargesFinancieres', label: 'Charges financières' },
-  { cle: 'chargesExceptionnelles', label: 'Except.' },
-  { cle: 'amortissements', label: 'Amortissements' },
+/** Catégorie NAVISCOP d'un numéro de compte (aligné sur le moteur). */
+function categorieDeCompte(compte: string): keyof LignePnlMensuelle | null {
+  const c = (compte ?? '').replace(/\D/g, '');
+  const p2 = c.slice(0, 2);
+  const p3 = c.slice(0, 3);
+  if (p3 === '601' || p3 === '602' || p3 === '607') return 'achatsMarchandisesMp';
+  if (p2 === '60' || p2 === '61' || p2 === '62' || p2 === '65') return 'autresAchatsChargesExternes';
+  if (p2 === '63') return 'impotsEtTaxes';
+  if (p2 === '64') return 'salairesEtCharges';
+  if (p2 === '66') return 'chargesFinancieres';
+  if (p2 === '67') return 'chargesExceptionnelles';
+  if (p2 === '68') return 'amortissements';
+  return null;
+}
+
+type KindSIG = 'produit' | 'charge' | 'solde';
+interface LigneSIG {
+  key: string;
+  label: string;
+  kind: KindSIG;
+  cat?: keyof LignePnlMensuelle; // pour les charges : catégorie détaillable
+  val: (i: number) => number;
+  fort?: boolean;
+}
+
+const CATEGORIES_SAISIE: { valeur: CategorieCharge; label: string }[] = [
+  { valeur: 'autresAchatsChargesExternes', label: 'Charges externes' },
+  { valeur: 'achatsMarchandisesMp', label: 'Achats / matières' },
+  { valeur: 'salairesEtCharges', label: 'Salaires et charges' },
+  { valeur: 'impotsEtTaxes', label: 'Impôts et taxes' },
+  { valeur: 'chargesFinancieres', label: 'Charges financières' },
 ];
 
 export default function RentabilitePage() {
-  const { tableauDeBord, entrees } = useDossier();
+  const { entrees, tableauDeBord, previsionnels, ajouterPrevisionnel, supprimerPrevisionnel } = useDossier();
   const { pnl } = tableauDeBord;
   const a = pnl.annuel;
-  const chartData = pnl.parMois.map((m, i) => ({
-    mois: MOIS[i].slice(0, 3),
-    resultat: m.resultatNet,
-    cumule: pnl.resultatCumule[i],
-  }));
-
-  const caHtAnnuel = a.caHt || 1;
+  const pnlMensuel = entrees.pnl;
   const postes = entrees.detail?.charges ?? [];
+
+  const [catOuverte, setCatOuverte] = useState<keyof LignePnlMensuelle | null>(null);
   const [posteOuvert, setPosteOuvert] = useState<string | null>(null);
-  const totalCharges = (m: import('@naviscop/finance-engine').LignePnlMensuelle) =>
-    CATEGORIES_CHARGES.reduce((acc, c) => acc + (m[c.cle] as number), 0);
+
+  // Saisie manuelle produit / charge.
+  const [typeSaisie, setTypeSaisie] = useState<'produit' | 'charge'>('produit');
+  const [libelle, setLibelle] = useState('');
+  const [montant, setMontant] = useState(0);
+  const [tva, setTva] = useState(20);
+  const [moisFact, setMoisFact] = useState(new Date().getMonth());
+  const [moisEnc, setMoisEnc] = useState(new Date().getMonth());
+  const [statut, setStatut] = useState<'signee' | 'prevue'>('signee');
+  const [categorie, setCategorie] = useState<CategorieCharge>('autresAchatsChargesExternes');
+
+  const rm = useMemo(() => pnlMensuel.map((m) => resultatMensuel(m)), [pnlMensuel]);
+  const cumul = useMemo(() => {
+    let c = 0;
+    return rm.map((r) => (c += r.resultatNet));
+  }, [rm]);
+
+  const lignes: LigneSIG[] = [
+    { key: 'ca', label: "Chiffre d'affaires HT", kind: 'produit', val: (i) => pnlMensuel[i].caHt },
+    { key: 'achats', label: 'Achats consommés', kind: 'charge', cat: 'achatsMarchandisesMp', val: (i) => pnlMensuel[i].achatsMarchandisesMp },
+    { key: 'marge', label: 'Marge brute', kind: 'solde', fort: true, val: (i) => rm[i].margeBrute },
+    { key: 'externes', label: 'Charges externes', kind: 'charge', cat: 'autresAchatsChargesExternes', val: (i) => pnlMensuel[i].autresAchatsChargesExternes },
+    { key: 'impots', label: 'Impôts et taxes', kind: 'charge', cat: 'impotsEtTaxes', val: (i) => pnlMensuel[i].impotsEtTaxes },
+    { key: 'salaires', label: 'Salaires et charges', kind: 'charge', cat: 'salairesEtCharges', val: (i) => pnlMensuel[i].salairesEtCharges },
+    { key: 'ebe', label: "Excédent brut d'exploitation (EBE)", kind: 'solde', fort: true, val: (i) => rm[i].ebe },
+    { key: 'fin', label: 'Charges financières', kind: 'charge', cat: 'chargesFinancieres', val: (i) => pnlMensuel[i].chargesFinancieres },
+    { key: 'exc', label: 'Charges exceptionnelles', kind: 'charge', cat: 'chargesExceptionnelles', val: (i) => pnlMensuel[i].chargesExceptionnelles },
+    { key: 'amort', label: 'Dotations aux amortissements', kind: 'charge', cat: 'amortissements', val: (i) => pnlMensuel[i].amortissements },
+    { key: 'resultat', label: 'Résultat net', kind: 'solde', fort: true, val: (i) => rm[i].resultatNet },
+    { key: 'cumul', label: 'Résultat cumulé', kind: 'solde', val: (i) => cumul[i] },
+  ];
+
+  const totalLigne = (l: LigneSIG) => (l.key === 'cumul' ? cumul[11] : Array.from({ length: 12 }, (_, i) => l.val(i)).reduce((x, y) => x + y, 0));
+
+  const chartData = pnl.parMois.map((m, i) => ({ mois: MOIS_COURT[i], resultat: m.resultatNet, cumule: pnl.resultatCumule[i] }));
+  const postesCategorie = (cat: keyof LignePnlMensuelle) => postes.filter((p) => categorieDeCompte(p.compte) === cat);
+
+  const champ = 'rounded-xl border border-navy/10 bg-white/60 px-3 py-2 text-sm text-navy outline-none focus:border-brand/50';
+  const soumettre = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!libelle.trim() || montant <= 0) return;
+    if (typeSaisie === 'produit') {
+      ajouterPrevisionnel({ type: 'facture_a_venir', libelle: libelle.trim(), montantHt: montant, tauxTva: tva, moisIndex: moisFact, moisEncaissement: moisEnc, statut });
+    } else {
+      ajouterPrevisionnel({ type: 'charge_prevue', libelle: libelle.trim(), montantHt: montant, tauxTva: tva, moisIndex: moisFact, categorie });
+    }
+    setLibelle('');
+    setMontant(0);
+  };
+
+  const LABEL_TYPE: Record<TypePrevisionnel, string> = {
+    facture_a_venir: 'Produit',
+    charge_prevue: 'Charge',
+    investissement: 'Investissement',
+  };
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Rentabilité"
-        subtitle="L’activité gagne-t-elle vraiment de l’argent ? Compte de résultat (HT)."
-      />
+      <PageHeader title="Rentabilité" subtitle="L’activité gagne-t-elle vraiment de l’argent ? Compte de résultat détaillé (SIG)." />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard label="CA HT annuel" value={eur(a.caHt)} />
@@ -58,154 +135,178 @@ export default function RentabilitePage() {
         <ResultatChart data={chartData} />
       </Section>
 
-      <Section title="Compte de résultat mensuel">
+      {/* Soldes intermédiaires de gestion — mois en colonnes, SIG en lignes */}
+      <Section title="Soldes intermédiaires de gestion (mensuel)">
+        <p className="mb-3 text-xs text-slate-700">Cliquez sur une ligne de charge pour voir le détail des postes qui la composent.</p>
         <div className="overflow-x-auto">
-          <table className="data-table">
+          <table className="w-full border-collapse text-sm">
             <thead>
-              <tr>
-                <th>Mois</th>
-                <th className="!text-center">CA HT</th>
-                <th className="!text-center">Marge brute</th>
-                <th className="!text-center">EBE</th>
-                <th className="!text-center">Résultat</th>
-                <th className="!text-center">Cumulé</th>
+              <tr className="border-b border-navy/10 text-[11px] uppercase tracking-wide text-slate-700">
+                <th className="sticky left-0 z-10 bg-white py-2 pr-3 text-left font-semibold">Poste</th>
+                {MOIS_COURT.map((m) => (
+                  <th key={m} className="px-2 py-2 text-center font-semibold">{m}</th>
+                ))}
+                <th className="px-2 py-2 text-center font-semibold text-navy">Année</th>
               </tr>
             </thead>
             <tbody>
-              {pnl.parMois.map((m, i) => (
-                <tr key={i}>
-                  <td className="font-medium text-slate-800">{MOIS[i]}</td>
-                  <td className="num text-slate-700">{eur(m.caHt)}</td>
-                  <td className="num text-slate-700">{eur(m.margeBrute)}</td>
-                  <td className={`num ${m.ebe < 0 ? 'text-rose-600' : 'text-slate-700'}`}>{eur(m.ebe)}</td>
-                  <td className={`num font-semibold ${m.resultatNet < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{eur(m.resultatNet)}</td>
-                  <td className={`num ${pnl.resultatCumule[i] < 0 ? 'text-rose-600' : 'text-slate-700'}`}>{eur(pnl.resultatCumule[i])}</td>
-                </tr>
-              ))}
+              {lignes.map((l) => {
+                const cliquable = l.kind === 'charge' && !!l.cat;
+                const ouvert = cliquable && catOuverte === l.cat;
+                return (
+                  <Fragment key={l.key}>
+                    <tr
+                      className={`border-b border-navy/[0.05] ${l.fort ? 'bg-slate-50 font-semibold' : ''} ${cliquable ? 'cursor-pointer hover:bg-white/60' : ''}`}
+                      onClick={cliquable ? () => setCatOuverte(ouvert ? null : (l.cat as keyof LignePnlMensuelle)) : undefined}
+                    >
+                      <td className={`sticky left-0 z-10 py-2 pr-3 text-left ${l.fort ? 'bg-slate-50 text-navy' : 'bg-white text-slate-800'}`}>
+                        <span className="inline-flex items-center gap-1.5">
+                          {cliquable && <ChevronRight className={`h-3.5 w-3.5 text-slate-600 transition-transform ${ouvert ? 'rotate-90' : ''}`} />}
+                          {l.kind === 'charge' && <span className="text-slate-600">−</span>}
+                          {l.label}
+                        </span>
+                      </td>
+                      {Array.from({ length: 12 }, (_, i) => {
+                        const v = l.val(i);
+                        return (
+                          <td key={i} className={`px-2 py-2 text-center tabular-nums ${v < 0 ? 'text-rose-600' : l.fort ? 'text-navy' : 'text-slate-700'}`}>
+                            {v !== 0 || l.kind === 'solde' ? eur(v) : '—'}
+                          </td>
+                        );
+                      })}
+                      <td className={`px-2 py-2 text-center font-semibold tabular-nums ${totalLigne(l) < 0 ? 'text-rose-600' : 'text-navy'}`}>{eur(totalLigne(l))}</td>
+                    </tr>
+                    {ouvert && (
+                      <tr>
+                        <td colSpan={14} className="bg-slate-50 px-3 py-2">
+                          {postesCategorie(l.cat as keyof LignePnlMensuelle).length === 0 ? (
+                            <p className="text-xs text-slate-700">Détail des postes indisponible (pas d’import FEC pour cette catégorie).</p>
+                          ) : (
+                            <div className="space-y-1.5">
+                              {postesCategorie(l.cat as keyof LignePnlMensuelle).map((p) => {
+                                const po = posteOuvert === p.compte;
+                                const nbEcr = p.ecritures?.length ?? 0;
+                                return (
+                                  <div key={p.compte} className="rounded-lg border border-navy/[0.06] bg-white/70">
+                                    <button
+                                      onClick={() => setPosteOuvert(po ? null : p.compte)}
+                                      className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left"
+                                    >
+                                      <span className="flex items-center gap-1.5 text-sm text-slate-800">
+                                        <ChevronRight className={`h-3 w-3 text-slate-600 transition-transform ${po ? 'rotate-90' : ''}`} />
+                                        {p.libelle} <span className="text-[10px] text-slate-600">{p.compte}{nbEcr > 0 ? ` · ${nbEcr}` : ''}</span>
+                                      </span>
+                                      <span className="tabular-nums text-sm font-medium text-slate-800">{eur(p.montant)}</span>
+                                    </button>
+                                    {po && nbEcr > 0 && (
+                                      <div className="max-h-56 overflow-y-auto border-t border-slate-100 px-3 py-2">
+                                        <table className="w-full text-xs">
+                                          <tbody>
+                                            {p.ecritures!.map((ec, k) => (
+                                              <tr key={k} className="border-t border-slate-100 first:border-0">
+                                                <td className="whitespace-nowrap py-1 pr-3 text-slate-600">{formatDateFec(ec.date)}</td>
+                                                <td className="py-1 pr-3 text-slate-800">{ec.libelle}</td>
+                                                <td className="whitespace-nowrap py-1 text-right tabular-nums text-slate-800">{eur(ec.montant)}</td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </Section>
 
-      {postes.length > 0 && (
-        <Section title="Détail des charges par poste (annuel)">
+      {/* Saisie manuelle : produits et charges */}
+      <Section title="Ajouter un produit ou une charge">
+        <div className="mb-3 inline-flex rounded-full border border-navy/10 bg-slate-50 p-1">
+          {(['produit', 'charge'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTypeSaisie(t)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${typeSaisie === t ? 'bg-brand text-white' : 'text-slate-700 hover:text-navy'}`}
+            >
+              {t === 'produit' ? 'Produit (facture)' : 'Charge'}
+            </button>
+          ))}
+        </div>
+        <form onSubmit={soumettre} className="grid grid-cols-1 gap-3 md:grid-cols-12">
+          <input className={`${champ} md:col-span-3`} placeholder={typeSaisie === 'produit' ? 'Client / produit' : 'Libellé de la charge'} value={libelle} onChange={(e) => setLibelle(e.target.value)} />
+          <input type="number" className={`${champ} md:col-span-2`} placeholder="Montant HT" value={montant || ''} onChange={(e) => setMontant(Number(e.target.value))} />
+          <select className={`${champ} md:col-span-1`} value={tva} onChange={(e) => setTva(Number(e.target.value))}>
+            {[0, 5.5, 10, 20].map((t) => (<option key={t} value={t} className="bg-white">{t}%</option>))}
+          </select>
+          <select className={`${champ} md:col-span-2`} value={moisFact} onChange={(e) => setMoisFact(Number(e.target.value))}>
+            {MOIS.map((m, i) => (<option key={m} value={i} className="bg-white">{typeSaisie === 'produit' ? `Facture : ${m}` : `Mois : ${m}`}</option>))}
+          </select>
+          {typeSaisie === 'produit' ? (
+            <>
+              <select className={`${champ} md:col-span-2`} value={moisEnc} onChange={(e) => setMoisEnc(Number(e.target.value))}>
+                {MOIS.map((m, i) => (<option key={m} value={i} className="bg-white">Encaissé : {m}</option>))}
+              </select>
+              <select className={`${champ} md:col-span-1`} value={statut} onChange={(e) => setStatut(e.target.value as 'signee' | 'prevue')}>
+                <option value="signee" className="bg-white">Signé</option>
+                <option value="prevue" className="bg-white">Prévu</option>
+              </select>
+            </>
+          ) : (
+            <select className={`${champ} md:col-span-3`} value={categorie} onChange={(e) => setCategorie(e.target.value as CategorieCharge)}>
+              {CATEGORIES_SAISIE.map((c) => (<option key={c.valeur} value={c.valeur} className="bg-white">{c.label}</option>))}
+            </select>
+          )}
+          <button type="submit" className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft md:col-span-1">Ajouter</button>
+        </form>
+      </Section>
+
+      <Section title={`Saisies manuelles (${previsionnels.length})`}>
+        {previsionnels.length === 0 ? (
+          <p className="text-sm text-slate-700">Aucune saisie. Ajoutez vos produits (factures à venir) et charges pour affiner la projection.</p>
+        ) : (
           <div className="overflow-x-auto">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Poste</th>
-                  <th>Compte</th>
                   <th>Type</th>
-                  <th className="!text-center">Montant annuel</th>
-                  <th className="!text-center">% du CA</th>
+                  <th>Libellé</th>
+                  <th className="!text-center">Montant HT</th>
+                  <th>Mois</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
-                {postes.map((p) => {
-                  const ouvert = posteOuvert === p.compte;
-                  const nb = p.ecritures?.length ?? 0;
-                  return (
-                    <Fragment key={p.compte}>
-                      <tr
-                        className="cursor-pointer hover:bg-white/40"
-                        onClick={() => setPosteOuvert(ouvert ? null : p.compte)}
-                      >
-                        <td className="font-medium text-slate-800">
-                          <span className="inline-flex items-center gap-1.5">
-                            <ChevronRight className={`h-3.5 w-3.5 text-slate-600 transition-transform ${ouvert ? 'rotate-90' : ''}`} />
-                            {p.libelle}
-                            {nb > 0 && <span className="text-[10px] font-normal text-slate-600">({nb})</span>}
-                          </span>
-                        </td>
-                        <td className="text-slate-600">{p.compte}</td>
-                        <td>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                              p.fixe ? 'bg-slate-100 text-slate-600' : 'bg-brand/10 text-brand'
-                            }`}
-                          >
-                            {p.fixe ? 'Fixe' : 'Variable'}
-                          </span>
-                        </td>
-                        <td className="num text-slate-700">{eur(p.montant)}</td>
-                        <td className="num text-slate-700">{pct(p.montant / caHtAnnuel)}</td>
-                      </tr>
-                      {ouvert && (
-                        <tr>
-                          <td colSpan={5} className="bg-slate-50 !py-0">
-                            {nb > 0 ? (
-                              <div className="max-h-72 overflow-y-auto px-2 py-2">
-                                <table className="w-full text-xs">
-                                  <thead>
-                                    <tr className="text-left text-slate-600">
-                                      <th className="py-1 pr-3 font-medium">Date</th>
-                                      <th className="py-1 pr-3 font-medium">Libellé</th>
-                                      <th className="py-1 pr-3 font-medium">Réf.</th>
-                                      <th className="py-1 text-right font-medium">Montant</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {p.ecritures!.map((ec, i) => (
-                                      <tr key={i} className="border-t border-slate-100">
-                                        <td className="whitespace-nowrap py-1 pr-3 text-slate-700">{formatDateFec(ec.date)}</td>
-                                        <td className="py-1 pr-3 text-slate-700">{ec.libelle}</td>
-                                        <td className="whitespace-nowrap py-1 pr-3 text-slate-600">{ec.ref}</td>
-                                        <td className="whitespace-nowrap py-1 text-right tabular-nums text-slate-700">{eur(ec.montant)}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            ) : (
-                              <p className="px-3 py-3 text-xs text-slate-700">
-                                Détail des écritures indisponible pour ce poste (import balance ou données agrégées).
-                              </p>
-                            )}
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
-                  );
-                })}
+                {previsionnels.map((mv) => (
+                  <tr key={mv.id}>
+                    <td>
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${mv.type === 'facture_a_venir' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                        {LABEL_TYPE[mv.type]}
+                      </span>
+                    </td>
+                    <td className="font-medium text-slate-800">{mv.libelle}</td>
+                    <td className="num text-slate-700">{eur(mv.montantHt)}</td>
+                    <td className="text-slate-700">{MOIS[mv.moisIndex]}</td>
+                    <td className="!text-center">
+                      <button onClick={() => supprimerPrevisionnel(mv.id)} className="text-slate-600 hover:text-rose-600" aria-label="Supprimer">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-          <p className="mt-4 text-xs text-slate-700">
-            Charges fixes = structure (loyer, salaires, assurances...). Charges variables = liées à l’activité (achats,
-            sous-traitance). Cliquez sur un poste pour voir le détail des écritures qui le composent.
-          </p>
-        </Section>
-      )}
-
-      <Section title="Détail des charges par catégorie (mensuel)">
-        <div className="overflow-x-auto">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Mois</th>
-                {CATEGORIES_CHARGES.map((c) => (
-                  <th key={c.cle} className="!text-center">
-                    {c.label}
-                  </th>
-                ))}
-                <th className="!text-center">Total charges</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entrees.pnl.map((m, i) => (
-                <tr key={i}>
-                  <td className="font-medium text-slate-800">{MOIS[i]}</td>
-                  {CATEGORIES_CHARGES.map((c) => (
-                    <td key={c.cle} className="num text-slate-600">
-                      {eur(m[c.cle] as number)}
-                    </td>
-                  ))}
-                  <td className="num font-semibold text-slate-800">{eur(totalCharges(m))}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        )}
       </Section>
     </div>
   );
