@@ -82,7 +82,7 @@ h3 {
   @apply bg-white/40;
 }
 .num {
-  @apply text-center tabular;
+  @apply text-right tabular;
 }
 
 ::selection {

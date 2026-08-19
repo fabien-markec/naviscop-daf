@@ -144,9 +144,9 @@ export default function RentabilitePage() {
               <tr className="border-b border-navy/10 text-[11px] uppercase tracking-wide text-slate-700">
                 <th className="sticky left-0 z-10 bg-white py-2 pr-3 text-left font-semibold">Poste</th>
                 {MOIS_COURT.map((m) => (
-                  <th key={m} className="px-2 py-2 text-center font-semibold">{m}</th>
+                  <th key={m} className="px-2 py-2 text-right font-semibold">{m}</th>
                 ))}
-                <th className="px-2 py-2 text-center font-semibold text-navy">Année</th>
+                <th className="px-2 py-2 text-right font-semibold text-navy">Année</th>
               </tr>
             </thead>
             <tbody>
@@ -169,12 +169,12 @@ export default function RentabilitePage() {
                       {Array.from({ length: 12 }, (_, i) => {
                         const v = l.val(i);
                         return (
-                          <td key={i} className={`px-2 py-2 text-center tabular-nums ${v < 0 ? 'text-rose-600' : l.fort ? 'text-navy' : 'text-slate-700'}`}>
+                          <td key={i} className={`px-2 py-2 text-right tabular-nums ${v < 0 ? 'text-rose-600' : l.fort ? 'text-navy' : 'text-slate-700'}`}>
                             {v !== 0 || l.kind === 'solde' ? eur(v) : '—'}
                           </td>
                         );
                       })}
-                      <td className={`px-2 py-2 text-center font-semibold tabular-nums ${totalLigne(l) < 0 ? 'text-rose-600' : 'text-navy'}`}>{eur(totalLigne(l))}</td>
+                      <td className={`px-2 py-2 text-right font-semibold tabular-nums ${totalLigne(l) < 0 ? 'text-rose-600' : 'text-navy'}`}>{eur(totalLigne(l))}</td>
                     </tr>
                     {ouvert && (
                       <tr>
@@ -280,7 +280,7 @@ export default function RentabilitePage() {
                 <tr>
                   <th>Type</th>
                   <th>Libellé</th>
-                  <th className="!text-center">Montant HT</th>
+                  <th className="!text-right">Montant HT</th>
                   <th>Mois</th>
                   <th></th>
                 </tr>
@@ -296,7 +296,7 @@ export default function RentabilitePage() {
                     <td className="font-medium text-slate-800">{mv.libelle}</td>
                     <td className="num text-slate-700">{eur(mv.montantHt)}</td>
                     <td className="text-slate-700">{MOIS[mv.moisIndex]}</td>
-                    <td className="!text-center">
+                    <td className="!text-right">
                       <button onClick={() => supprimerPrevisionnel(mv.id)} className="text-slate-600 hover:text-rose-600" aria-label="Supprimer">
                         <Trash2 className="h-4 w-4" />
                       </button>
