@@ -5,7 +5,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
   return (
     <header className="mb-8">
       <h1 className="text-[1.7rem] font-semibold text-navy">{title}</h1>
-      {subtitle && <p className="mt-1.5 text-sm text-slate-500">{subtitle}</p>}
+      {subtitle && <p className="mt-1.5 text-sm font-medium text-slate-700">{subtitle}</p>}
     </header>
   );
 }

@@ -64,11 +64,11 @@ export default function RentabilitePage() {
             <thead>
               <tr>
                 <th>Mois</th>
-                <th className="!text-right">CA HT</th>
-                <th className="!text-right">Marge brute</th>
-                <th className="!text-right">EBE</th>
-                <th className="!text-right">Résultat</th>
-                <th className="!text-right">Cumulé</th>
+                <th className="!text-center">CA HT</th>
+                <th className="!text-center">Marge brute</th>
+                <th className="!text-center">EBE</th>
+                <th className="!text-center">Résultat</th>
+                <th className="!text-center">Cumulé</th>
               </tr>
             </thead>
             <tbody>
@@ -96,8 +96,8 @@ export default function RentabilitePage() {
                   <th>Poste</th>
                   <th>Compte</th>
                   <th>Type</th>
-                  <th className="!text-right">Montant annuel</th>
-                  <th className="!text-right">% du CA</th>
+                  <th className="!text-center">Montant annuel</th>
+                  <th className="!text-center">% du CA</th>
                 </tr>
               </thead>
               <tbody>
@@ -184,11 +184,11 @@ export default function RentabilitePage() {
               <tr>
                 <th>Mois</th>
                 {CATEGORIES_CHARGES.map((c) => (
-                  <th key={c.cle} className="!text-right">
+                  <th key={c.cle} className="!text-center">
                     {c.label}
                   </th>
                 ))}
-                <th className="!text-right">Total charges</th>
+                <th className="!text-center">Total charges</th>
               </tr>
             </thead>
             <tbody>

@@ -40,11 +40,11 @@ export default function TresoreriePage() {
             <thead>
               <tr>
                 <th>Mois</th>
-                <th className="!text-right">Solde début</th>
-                <th className="!text-right">Encaissements</th>
-                <th className="!text-right">Décaissements</th>
-                <th className="!text-right">Variation</th>
-                <th className="!text-right">Solde fin</th>
+                <th className="!text-center">Solde début</th>
+                <th className="!text-center">Encaissements</th>
+                <th className="!text-center">Décaissements</th>
+                <th className="!text-center">Variation</th>
+                <th className="!text-center">Solde fin</th>
               </tr>
             </thead>
             <tbody>

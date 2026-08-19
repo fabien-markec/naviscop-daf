@@ -212,7 +212,7 @@ export default function SaisiePage() {
                 <tr>
                   <th>Type</th>
                   <th>Libellé</th>
-                  <th className="!text-right">Montant HT</th>
+                  <th className="!text-center">Montant HT</th>
                   <th>Mois</th>
                   <th></th>
                 </tr>
@@ -224,7 +224,7 @@ export default function SaisiePage() {
                     <td className="font-medium text-slate-800">{mv.libelle}</td>
                     <td className="num text-slate-700">{eur(mv.montantHt)}</td>
                     <td className="text-slate-500">{MOIS[mv.moisIndex]}</td>
-                    <td className="!text-right">
+                    <td className="!text-center">
                       <button onClick={() => supprimerPrevisionnel(mv.id)} className="text-slate-500 hover:text-rose-600" aria-label="Supprimer">
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -271,11 +271,11 @@ export default function SaisiePage() {
             <thead>
               <tr>
                 <th>Mois</th>
-                <th className="!text-right">CA réalisé</th>
-                <th className="!text-right">CA prévu</th>
-                <th className="!text-right">Résultat réalisé</th>
-                <th className="!text-right">Résultat prévu</th>
-                <th className="!text-right">Écart</th>
+                <th className="!text-center">CA réalisé</th>
+                <th className="!text-center">CA prévu</th>
+                <th className="!text-center">Résultat réalisé</th>
+                <th className="!text-center">Résultat prévu</th>
+                <th className="!text-center">Écart</th>
               </tr>
             </thead>
             <tbody>
@@ -287,7 +287,7 @@ export default function SaisiePage() {
                       <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">clôturé</span>
                     )}
                   </td>
-                  <td className="!text-right">
+                  <td className="!text-center">
                     <input
                       type="number"
                       step={100}

@@ -73,7 +73,7 @@ h3 {
   @apply border-b border-navy/10 py-2.5 pr-4 text-left align-bottom text-[10.5px] font-semibold uppercase tracking-[0.07em] text-slate-500;
 }
 .data-table tbody td {
-  @apply border-t border-navy/[0.06] py-2.5 pr-4 text-left text-slate-600;
+  @apply border-t border-navy/[0.06] py-2.5 pr-4 text-slate-600;
 }
 .data-table tbody tr {
   @apply transition-colors;
@@ -82,7 +82,7 @@ h3 {
   @apply bg-white/40;
 }
 .num {
-  @apply text-right tabular;
+  @apply text-center tabular;
 }
 
 ::selection {

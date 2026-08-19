@@ -170,7 +170,7 @@ export default function PlanActionPage() {
                         ))}
                       </select>
                     </td>
-                    <td className="!text-right">
+                    <td className="!text-center">
                       <button
                         onClick={() => supprimer(it.id)}
                         className="text-slate-500 hover:text-rose-600"

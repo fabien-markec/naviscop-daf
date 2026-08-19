@@ -102,7 +102,7 @@ export default function CommandesPage() {
             <thead>
               <tr>
                 {MOIS_COURT.map((m) => (
-                  <th key={m} className="!text-right">{m}</th>
+                  <th key={m} className="!text-center">{m}</th>
                 ))}
               </tr>
             </thead>
@@ -126,7 +126,7 @@ export default function CommandesPage() {
               <thead>
                 <tr>
                   <th>Client / commande</th>
-                  <th className="!text-right">Montant HT</th>
+                  <th className="!text-center">Montant HT</th>
                   <th>Facturation</th>
                   <th>Encaissement</th>
                   <th>Statut</th>
@@ -145,7 +145,7 @@ export default function CommandesPage() {
                         {c.statut === 'prevue' ? 'Prévue' : 'Signée'}
                       </span>
                     </td>
-                    <td className="!text-right">
+                    <td className="!text-center">
                       <button onClick={() => supprimerPrevisionnel(c.id)} className="text-slate-500 hover:text-rose-600" aria-label="Supprimer">
                         <Trash2 className="h-4 w-4" />
                       </button>

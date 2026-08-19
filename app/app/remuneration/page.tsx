@@ -77,10 +77,10 @@ export default function RemunerationPage() {
             <thead>
               <tr>
                 <th>Rémunération nette</th>
-                <th className="!text-right">Coût total (avec charges)</th>
+                <th className="!text-center">Coût total (avec charges)</th>
                 <th>Finançable aujourd’hui ?</th>
-                <th className="!text-right">CA annuel minimum</th>
-                <th className="!text-right">CA à générer en plus</th>
+                <th className="!text-center">CA annuel minimum</th>
+                <th className="!text-center">CA à générer en plus</th>
               </tr>
             </thead>
             <tbody>

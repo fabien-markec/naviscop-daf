@@ -155,9 +155,9 @@ export default function ScenariosPage() {
             <thead>
               <tr>
                 <th>Mois</th>
-                <th className="!text-right">Chiffre d’affaires</th>
-                <th className="!text-right">Résultat</th>
-                <th className="!text-right">Trésorerie fin de mois</th>
+                <th className="!text-center">Chiffre d’affaires</th>
+                <th className="!text-center">Résultat</th>
+                <th className="!text-center">Trésorerie fin de mois</th>
               </tr>
             </thead>
             <tbody>
