@@ -125,10 +125,10 @@ export function AssistantBulle() {
               </span>
               <div>
                 <p className="text-sm font-semibold text-navy">Assistant NAVISCOP</p>
-                <p className="text-[11px] text-slate-400">{restant} question{restant > 1 ? 's' : ''} restante{restant > 1 ? 's' : ''} ce mois</p>
+                <p className="text-[11px] text-slate-600">{restant} question{restant > 1 ? 's' : ''} restante{restant > 1 ? 's' : ''} ce mois</p>
               </div>
             </div>
-            <button onClick={() => setOuvert(false)} aria-label="Fermer" className="text-slate-400 hover:text-navy">
+            <button onClick={() => setOuvert(false)} aria-label="Fermer" className="text-slate-600 hover:text-navy">
               <X className="h-5 w-5" />
             </button>
           </header>
@@ -136,7 +136,7 @@ export function AssistantBulle() {
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.length === 0 ? (
               <div className="space-y-3">
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-700">
                   Une question sur l’outil ou sur vos chiffres ? Je suis là pour vous aider à naviguer.
                 </p>
                 <div className="flex flex-col gap-2">
@@ -165,7 +165,7 @@ export function AssistantBulle() {
                 </div>
               ))
             )}
-            {enCours && <p className="text-xs text-slate-400">L’assistant réfléchit…</p>}
+            {enCours && <p className="text-xs text-slate-600">L’assistant réfléchit…</p>}
             {!connecte && messages.length === 0 && (
               <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
                 En démonstration, l’assistant peut être indisponible (il nécessite la configuration du serveur).

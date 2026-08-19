@@ -112,12 +112,12 @@ export default function RentabilitePage() {
                       >
                         <td className="font-medium text-slate-800">
                           <span className="inline-flex items-center gap-1.5">
-                            <ChevronRight className={`h-3.5 w-3.5 text-slate-400 transition-transform ${ouvert ? 'rotate-90' : ''}`} />
+                            <ChevronRight className={`h-3.5 w-3.5 text-slate-600 transition-transform ${ouvert ? 'rotate-90' : ''}`} />
                             {p.libelle}
-                            {nb > 0 && <span className="text-[10px] font-normal text-slate-400">({nb})</span>}
+                            {nb > 0 && <span className="text-[10px] font-normal text-slate-600">({nb})</span>}
                           </span>
                         </td>
-                        <td className="text-slate-400">{p.compte}</td>
+                        <td className="text-slate-600">{p.compte}</td>
                         <td>
                           <span
                             className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
@@ -128,7 +128,7 @@ export default function RentabilitePage() {
                           </span>
                         </td>
                         <td className="num text-slate-700">{eur(p.montant)}</td>
-                        <td className="num text-slate-500">{pct(p.montant / caHtAnnuel)}</td>
+                        <td className="num text-slate-700">{pct(p.montant / caHtAnnuel)}</td>
                       </tr>
                       {ouvert && (
                         <tr>
@@ -137,7 +137,7 @@ export default function RentabilitePage() {
                               <div className="max-h-72 overflow-y-auto px-2 py-2">
                                 <table className="w-full text-xs">
                                   <thead>
-                                    <tr className="text-left text-slate-400">
+                                    <tr className="text-left text-slate-600">
                                       <th className="py-1 pr-3 font-medium">Date</th>
                                       <th className="py-1 pr-3 font-medium">Libellé</th>
                                       <th className="py-1 pr-3 font-medium">Réf.</th>
@@ -147,9 +147,9 @@ export default function RentabilitePage() {
                                   <tbody>
                                     {p.ecritures!.map((ec, i) => (
                                       <tr key={i} className="border-t border-slate-100">
-                                        <td className="whitespace-nowrap py-1 pr-3 text-slate-500">{formatDateFec(ec.date)}</td>
+                                        <td className="whitespace-nowrap py-1 pr-3 text-slate-700">{formatDateFec(ec.date)}</td>
                                         <td className="py-1 pr-3 text-slate-700">{ec.libelle}</td>
-                                        <td className="whitespace-nowrap py-1 pr-3 text-slate-400">{ec.ref}</td>
+                                        <td className="whitespace-nowrap py-1 pr-3 text-slate-600">{ec.ref}</td>
                                         <td className="whitespace-nowrap py-1 text-right tabular-nums text-slate-700">{eur(ec.montant)}</td>
                                       </tr>
                                     ))}
@@ -157,7 +157,7 @@ export default function RentabilitePage() {
                                 </table>
                               </div>
                             ) : (
-                              <p className="px-3 py-3 text-xs text-slate-500">
+                              <p className="px-3 py-3 text-xs text-slate-700">
                                 Détail des écritures indisponible pour ce poste (import balance ou données agrégées).
                               </p>
                             )}
@@ -170,7 +170,7 @@ export default function RentabilitePage() {
               </tbody>
             </table>
           </div>
-          <p className="mt-4 text-xs text-slate-500">
+          <p className="mt-4 text-xs text-slate-700">
             Charges fixes = structure (loyer, salaires, assurances...). Charges variables = liées à l’activité (achats,
             sous-traitance). Cliquez sur un poste pour voir le détail des écritures qui le composent.
           </p>

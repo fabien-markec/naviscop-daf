@@ -27,7 +27,7 @@ function AuthGateSupabase({ children }: { children: React.ReactNode }) {
   if (!pret) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-slate-500">Chargement…</p>
+        <p className="text-sm text-slate-700">Chargement…</p>
       </div>
     );
   }
@@ -64,7 +64,7 @@ function LoginForm() {
           <span className="text-lg font-semibold tracking-tight text-navy">NAVISCOP</span>
         </div>
         <h1 className="mb-1 text-xl font-semibold text-navy">Connexion</h1>
-        <p className="mb-6 text-sm text-slate-500">Accédez à votre pilotage financier.</p>
+        <p className="mb-6 text-sm text-slate-700">Accédez à votre pilotage financier.</p>
         <form onSubmit={soumettre} className="space-y-3">
           <input
             type="email"
@@ -87,7 +87,7 @@ function LoginForm() {
               type="button"
               onClick={() => setVoir((v) => !v)}
               aria-label={voir ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-              className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-navy"
+              className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-600 hover:text-navy"
             >
               {voir ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>

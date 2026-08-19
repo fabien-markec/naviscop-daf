@@ -81,7 +81,7 @@ export function Sidebar() {
           </div>
           <span className="text-[15px] font-semibold tracking-tight text-navy">NAVISCOP</span>
         </div>
-        <span className="ml-auto max-w-[45%] truncate text-xs font-medium text-slate-500">{nom}</span>
+        <span className="ml-auto max-w-[45%] truncate text-xs font-medium text-slate-700">{nom}</span>
       </header>
 
       {/* Fond sombre quand le tiroir est ouvert (mobile). */}
@@ -107,7 +107,7 @@ export function Sidebar() {
           <button
             onClick={() => setOpen(false)}
             aria-label="Fermer le menu"
-            className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 lg:hidden"
+            className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 lg:hidden"
           >
             <X className="h-5 w-5" />
           </button>
@@ -115,7 +115,7 @@ export function Sidebar() {
 
         {/* Dossier actif */}
         <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-slate-500">
+          <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-slate-700">
             {role === 'daf' ? 'Dossier client' : 'Mon entreprise'}
           </p>
           {role === 'daf' ? (
@@ -138,7 +138,7 @@ export function Sidebar() {
           ) : (
             <p className="mt-1 truncate text-sm font-semibold text-slate-800">{nom}</p>
           )}
-          {metier && <p className="truncate text-[11px] text-slate-500">{metier}</p>}
+          {metier && <p className="truncate text-[11px] text-slate-700">{metier}</p>}
         </div>
 
         <nav className="flex flex-col gap-0.5">
@@ -154,7 +154,7 @@ export function Sidebar() {
                     : 'text-slate-600 hover:bg-slate-100 hover:text-navy'
                 }`}
               >
-                <Icon className={`h-[17px] w-[17px] ${active ? 'text-brand' : 'text-slate-500 group-hover:text-slate-700'}`} />
+                <Icon className={`h-[17px] w-[17px] ${active ? 'text-brand' : 'text-slate-700 group-hover:text-slate-700'}`} />
                 {label}
               </Link>
             );
@@ -172,7 +172,7 @@ export function Sidebar() {
             </button>
           ) : (
             <>
-              <p className="mb-2 px-1 text-[10px] font-medium uppercase tracking-[0.1em] text-slate-400">Vue (démo)</p>
+              <p className="mb-2 px-1 text-[10px] font-medium uppercase tracking-[0.1em] text-slate-600">Vue (démo)</p>
               <div className="flex gap-1 rounded-full border border-slate-200 bg-slate-50 p-1">
                 {(['daf', 'client'] as const).map((r) => (
                   <button
@@ -182,7 +182,7 @@ export function Sidebar() {
                       if (r === 'client') router.push('/');
                     }}
                     className={`flex-1 rounded-full py-1.5 text-xs font-semibold transition ${
-                      role === r ? 'bg-brand text-white shadow-[0_4px_12px_-4px_rgba(0,98,184,0.4)]' : 'text-slate-500 hover:text-navy'
+                      role === r ? 'bg-brand text-white shadow-[0_4px_12px_-4px_rgba(0,98,184,0.4)]' : 'text-slate-700 hover:text-navy'
                     }`}
                   >
                     {r === 'daf' ? 'DAF' : 'Client'}

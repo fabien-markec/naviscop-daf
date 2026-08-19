@@ -42,12 +42,12 @@ export function KpiCard({
     <div className="group card relative overflow-hidden p-4 transition-all duration-200 hover:bg-white/70">
       <span className={`absolute inset-x-0 top-0 h-px ${TONE_BAR[tone]} opacity-60`} />
       <div className="flex items-start justify-between gap-2">
-        <p className="text-[10.5px] font-medium uppercase tracking-[0.08em] text-slate-500">{label}</p>
+        <p className="text-[10.5px] font-medium uppercase tracking-[0.08em] text-slate-700">{label}</p>
         {info && (
           <span className="group/info relative flex-none">
             <span
               tabIndex={0}
-              className="flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-semibold text-slate-400 hover:border-brand/50 hover:text-brand"
+              className="flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-semibold text-slate-600 hover:border-brand/50 hover:text-brand"
               aria-label={info}
             >
               ?
@@ -59,7 +59,7 @@ export function KpiCard({
         )}
       </div>
       <p className={`tabular mt-2 text-[1.7rem] font-semibold leading-none ${TONE[tone]}`}>{value}</p>
-      {hint && <p className="mt-1.5 text-xs text-slate-500">{hint}</p>}
+      {hint && <p className="mt-1.5 text-xs text-slate-700">{hint}</p>}
     </div>
   );
 }
@@ -73,9 +73,9 @@ export function StatBar({
     <div className="card flex flex-col divide-y divide-navy/[0.08] md:flex-row md:divide-x md:divide-y-0">
       {stats.map((s) => (
         <div key={s.label} className="flex-1 px-5 py-4">
-          <p className="text-[10.5px] font-medium uppercase tracking-[0.08em] text-slate-500">{s.label}</p>
+          <p className="text-[10.5px] font-medium uppercase tracking-[0.08em] text-slate-700">{s.label}</p>
           <p className={`tabular mt-2 text-[1.85rem] font-semibold leading-none ${TONE[s.tone ?? 'neutral']}`}>{s.value}</p>
-          {s.hint && <p className="mt-1.5 text-xs text-slate-500">{s.hint}</p>}
+          {s.hint && <p className="mt-1.5 text-xs text-slate-700">{s.hint}</p>}
         </div>
       ))}
     </div>
@@ -86,7 +86,7 @@ export function Section({ title, action, children }: { title: string; action?: R
   return (
     <section className="card p-5">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-500">{title}</h2>
+        <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-700">{title}</h2>
         {action}
       </div>
       {children}

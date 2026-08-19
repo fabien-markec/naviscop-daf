@@ -12,7 +12,7 @@ export function CascadeCash({ data }: { data: CashDisponible }) {
   return (
     <div className="card p-5">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-500">
+        <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-700">
           Votre cash réellement disponible
         </h2>
         <span className="rounded-full bg-brand/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-brand">
@@ -72,12 +72,12 @@ function Ligne({
       <span className={`flex items-center gap-2 text-sm ${fort ? 'font-medium text-navy' : 'text-slate-600'}`}>
         {libelle}
         {tag && (
-          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-slate-400">
+          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-slate-600">
             {tag}
           </span>
         )}
       </span>
-      <span className={`tabular flex-none text-sm ${fort ? 'font-semibold text-navy' : montant < 0 ? 'text-slate-500' : 'text-navy'}`}>
+      <span className={`tabular flex-none text-sm ${fort ? 'font-semibold text-navy' : montant < 0 ? 'text-slate-700' : 'text-navy'}`}>
         {montant < 0 ? `− ${eur(Math.abs(montant))}` : eur(montant)}
       </span>
     </div>

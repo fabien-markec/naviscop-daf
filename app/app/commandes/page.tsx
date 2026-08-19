@@ -119,7 +119,7 @@ export default function CommandesPage() {
 
       <Section title={`Commandes (${commandes.length})`}>
         {commandes.length === 0 ? (
-          <p className="text-sm text-slate-500">Aucune commande. Ajoutez vos devis signés et opportunités pour projeter votre chiffre d'affaires.</p>
+          <p className="text-sm text-slate-700">Aucune commande. Ajoutez vos devis signés et opportunités pour projeter votre chiffre d'affaires.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="data-table">
@@ -138,15 +138,15 @@ export default function CommandesPage() {
                   <tr key={c.id}>
                     <td className="font-medium text-slate-800">{c.libelle}</td>
                     <td className="num text-slate-700">{eur(c.montantHt)}</td>
-                    <td className="text-slate-500">{MOIS[c.moisIndex]}</td>
-                    <td className="text-slate-500">{MOIS[c.moisEncaissement ?? c.moisIndex]}</td>
+                    <td className="text-slate-700">{MOIS[c.moisIndex]}</td>
+                    <td className="text-slate-700">{MOIS[c.moisEncaissement ?? c.moisIndex]}</td>
                     <td>
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${c.statut === 'prevue' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
                         {c.statut === 'prevue' ? 'Prévue' : 'Signée'}
                       </span>
                     </td>
                     <td className="!text-center">
-                      <button onClick={() => supprimerPrevisionnel(c.id)} className="text-slate-500 hover:text-rose-600" aria-label="Supprimer">
+                      <button onClick={() => supprimerPrevisionnel(c.id)} className="text-slate-700 hover:text-rose-600" aria-label="Supprimer">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </td>
@@ -156,7 +156,7 @@ export default function CommandesPage() {
             </table>
           </div>
         )}
-        <p className="mt-4 text-xs text-slate-500">
+        <p className="mt-4 text-xs text-slate-700">
           Ces commandes alimentent le chiffre d'affaires (au mois de facturation) et la trésorerie (au mois d'encaissement).
         </p>
       </Section>

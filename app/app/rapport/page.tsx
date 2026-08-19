@@ -36,7 +36,7 @@ export default function RapportPage() {
       <div className="no-print flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-navy">Rapport de rendez-vous</h1>
-          <p className="mt-1 text-sm text-slate-500">Export prêt à présenter en rendez-vous DAF.</p>
+          <p className="mt-1 text-sm text-slate-700">Export prêt à présenter en rendez-vous DAF.</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <button
@@ -67,12 +67,12 @@ export default function RapportPage() {
             <p className="text-xs font-semibold uppercase tracking-widest text-brand">NAVISCOP</p>
             <h2 className="text-xl font-bold text-slate-900">{nom}</h2>
           </div>
-          <p className="text-sm text-slate-500">Rapport du {date}</p>
+          <p className="text-sm text-slate-700">Rapport du {date}</p>
         </header>
 
         <section>
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">Synthèse du mois de {syntheseMois.mois}</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700">Synthèse du mois de {syntheseMois.mois}</h3>
             <select
               value={moisSynthese}
               onChange={(e) => setMoisSynthese(Number(e.target.value))}
@@ -87,16 +87,16 @@ export default function RapportPage() {
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-500">Synthèse de l’année</h3>
+          <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-700">Synthèse de l’année</h3>
           <p className="text-[15px] leading-relaxed text-slate-800">{analyse.synthese}</p>
         </section>
 
         <section>
-          <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">Indicateurs clés</h3>
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-700">Indicateurs clés</h3>
           <div className="grid grid-cols-2 gap-x-8 gap-y-2 md:grid-cols-4">
             {kpiRows.map(([label, val]) => (
               <div key={label} className="border-b border-slate-100 py-1.5">
-                <p className="text-[11px] text-slate-500">{label}</p>
+                <p className="text-[11px] text-slate-700">{label}</p>
                 <p className="font-semibold tabular-nums text-slate-900">{val}</p>
               </div>
             ))}
@@ -104,10 +104,10 @@ export default function RapportPage() {
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-500">Plan de trésorerie</h3>
+          <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-700">Plan de trésorerie</h3>
           <table className="w-full text-xs tabular-nums">
             <thead>
-              <tr className="text-left text-slate-500">
+              <tr className="text-left text-slate-700">
                 <th className="py-1 pr-2">Mois</th>
                 <th className="py-1 pr-2 text-right">Encaissements</th>
                 <th className="py-1 pr-2 text-right">Décaissements</th>
@@ -131,7 +131,7 @@ export default function RapportPage() {
 
         {alertes.length > 0 && (
           <section>
-            <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-500">Alertes</h3>
+            <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-700">Alertes</h3>
             <ul className="space-y-1 text-sm">
               {alertes.map((a) => (
                 <li key={a.code} className={a.niveau === 'rouge' ? 'text-rose-600' : 'text-amber-600'}>
@@ -143,7 +143,7 @@ export default function RapportPage() {
         )}
 
         <section>
-          <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-500">Recommandations</h3>
+          <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-700">Recommandations</h3>
           <ol className="list-decimal space-y-1 pl-5 text-sm text-slate-800">
             {analyse.recommandations.map((t, i) => (
               <li key={i}>{t}</li>

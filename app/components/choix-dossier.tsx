@@ -11,13 +11,13 @@ export function ChoixDossier() {
   return (
     <div className="mx-auto max-w-2xl py-10">
       <h1 className="text-[1.7rem] font-semibold text-navy">Choisissez un dossier</h1>
-      <p className="mt-1.5 text-sm text-slate-500">
+      <p className="mt-1.5 text-sm text-slate-700">
         Sélectionnez le dossier client sur lequel vous voulez travailler.
       </p>
 
       {dossiers.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-navy/15 bg-white/60 px-5 py-8 text-center">
-          <p className="text-sm text-slate-500">Aucun dossier pour le moment.</p>
+          <p className="text-sm text-slate-700">Aucun dossier pour le moment.</p>
           <Link
             href="/import"
             className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft"
@@ -39,7 +39,7 @@ export function ChoixDossier() {
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-semibold text-navy">{d.nom}</span>
-                  {d.metier && <span className="block truncate text-xs text-slate-500">{d.metier}</span>}
+                  {d.metier && <span className="block truncate text-xs text-slate-700">{d.metier}</span>}
                 </span>
               </button>
             ))}

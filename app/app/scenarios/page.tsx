@@ -52,11 +52,11 @@ function Impact({ label, base, sim }: { label: string; base: number; sim: number
   const delta = sim - base;
   return (
     <div className="card p-4">
-      <p className="text-[11px] uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="text-[11px] uppercase tracking-wide text-slate-700">{label}</p>
       <p className={`mt-1.5 text-xl font-semibold tabular-nums ${sim < 0 ? 'text-rose-600' : 'text-navy'}`}>
         {eur(sim)}
       </p>
-      <p className={`mt-1 text-xs tabular-nums ${delta < 0 ? 'text-rose-600' : delta > 0 ? 'text-emerald-600' : 'text-slate-500'}`}>
+      <p className={`mt-1 text-xs tabular-nums ${delta < 0 ? 'text-rose-600' : delta > 0 ? 'text-emerald-600' : 'text-slate-700'}`}>
         {delta >= 0 ? '+' : ''}
         {eur(delta)} vs base
       </p>
@@ -110,7 +110,7 @@ export default function ScenariosPage() {
                   </option>
                 ))}
               </select>
-              <span className="mt-1 block text-xs text-slate-500">
+              <span className="mt-1 block text-xs text-slate-700">
                 Avant ce mois, rien ne change. Une hausse en octobre ne joue que sur octobre à décembre.
               </span>
             </label>
@@ -128,14 +128,14 @@ export default function ScenariosPage() {
             <Impact label="Trésorerie fin d’année" base={res.base.soldeFinAnnee} sim={res.scenario.soldeFinAnnee} />
             <Impact label="Point de tréso le plus bas" base={res.base.soldeFinLePlusBas} sim={res.scenario.soldeFinLePlusBas} />
             <div className="card p-4">
-              <p className="text-[11px] uppercase tracking-wide text-slate-500">Mois critique</p>
+              <p className="text-[11px] uppercase tracking-wide text-slate-700">Mois critique</p>
               <p className="mt-1.5 text-xl font-semibold text-amber-600">
                 {MOIS_COURT[res.scenario.moisCritiqueIndex]}
               </p>
-              <p className="mt-1 text-xs text-slate-500">le plus tendu</p>
+              <p className="mt-1 text-xs text-slate-700">le plus tendu</p>
             </div>
           </div>
-          <div className="card p-4 text-sm text-slate-500">
+          <div className="card p-4 text-sm text-slate-700">
             {res.scenario.soldeFinLePlusBas < 0 ? (
               <span className="text-rose-600">
                 ⚠️ Avec ces hypothèses, la trésorerie devient négative en cours d’année.

@@ -31,9 +31,9 @@ function ChampNombre({
           onChange={(e) => onChange(Number(e.target.value))}
           className="w-40 rounded-xl border border-navy/10 bg-white/60 px-3 py-2 text-sm tabular-nums text-navy outline-none focus:border-brand/50"
         />
-        {suffix && <span className="text-sm text-slate-500">{suffix}</span>}
+        {suffix && <span className="text-sm text-slate-700">{suffix}</span>}
       </div>
-      {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs text-slate-700">{hint}</span>}
     </label>
   );
 }
@@ -98,7 +98,7 @@ export default function ParametresPage() {
           </Section>
 
           <Section title="Provisions (cash réellement disponible)">
-            <p className="mb-4 text-xs text-slate-500">
+            <p className="mb-4 text-xs text-slate-700">
               Les montants déjà dus ou à mettre de côté. Ils sont déduits du solde bancaire pour calculer le cash
               réellement disponible affiché sur le tableau de bord.
             </p>
@@ -176,7 +176,7 @@ export default function ParametresPage() {
           {!connecte && (
             <button
               onClick={reinitialiser}
-              className="rounded-full border border-navy/15 px-5 py-2 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+              className="rounded-full border border-navy/15 px-5 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-800"
             >
               Réinitialiser le dossier de démo
             </button>
@@ -191,17 +191,17 @@ export default function ParametresPage() {
           <Section title="Repères">
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-slate-500">Résultat prévisionnel</dt>
+                <dt className="text-slate-700">Résultat prévisionnel</dt>
                 <dd className={tableauDeBord.kpis.resultatPrevisionnel < 0 ? 'text-rose-600' : 'text-emerald-600'}>
                   {eur(tableauDeBord.kpis.resultatPrevisionnel)}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-slate-500">Seuil de rentabilité</dt>
+                <dt className="text-slate-700">Seuil de rentabilité</dt>
                 <dd className="text-slate-800">{eur(tableauDeBord.kpis.seuilRentabilite)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-slate-500">Mois de tréso d’avance</dt>
+                <dt className="text-slate-700">Mois de tréso d’avance</dt>
                 <dd className="text-slate-800">{tableauDeBord.kpis.moisTresorerieAvance.toFixed(1)}</dd>
               </div>
             </dl>

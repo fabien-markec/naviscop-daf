@@ -14,7 +14,7 @@ const STATUT_LABEL: Record<string, string> = {
   fait: 'Fait',
 };
 const STATUT_STYLE: Record<string, string> = {
-  a_faire: 'border-slate-200 bg-slate-50 text-slate-500',
+  a_faire: 'border-slate-200 bg-slate-50 text-slate-700',
   en_cours: 'border-amber-200 bg-amber-50 text-amber-700',
   fait: 'border-emerald-200 bg-emerald-50 text-emerald-700',
 };
@@ -88,7 +88,7 @@ export default function DashboardPage() {
         }
       >
         {actionsPrioritaires.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-700">
             Aucune action en attente. Les préconisations de l’analyse viendront alimenter cette liste.
           </p>
         ) : (
@@ -100,7 +100,7 @@ export default function DashboardPage() {
               >
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-navy">{a.action}</p>
-                  <p className="mt-0.5 truncate text-xs text-slate-500">
+                  <p className="mt-0.5 truncate text-xs text-slate-700">
                     {[a.responsable, a.echeance].filter(Boolean).join(' · ') || 'À planifier'}
                   </p>
                 </div>
@@ -119,10 +119,10 @@ export default function DashboardPage() {
 
       {/* Voyants de gestion : est-ce que l'activité gagne de l'argent ? */}
       <div>
-        <h2 className="mb-3 px-1 text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-500">
+        <h2 className="mb-3 px-1 text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-700">
           Voyants de gestion
         </h2>
-        <p className="mb-3 px-1 text-xs text-slate-500">Est-ce que votre activité gagne réellement de l’argent ?</p>
+        <p className="mb-3 px-1 text-xs text-slate-700">Est-ce que votre activité gagne réellement de l’argent ?</p>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <KpiCard
             label="Chiffre d’affaires"
@@ -153,10 +153,10 @@ export default function DashboardPage() {
 
       {/* Voyants financiers : est-ce que la trésorerie tient ? */}
       <div>
-        <h2 className="mb-3 px-1 text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-500">
+        <h2 className="mb-3 px-1 text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-700">
           Voyants financiers
         </h2>
-        <p className="mb-3 px-1 text-xs text-slate-500">Est-ce que votre trésorerie tient dans le temps ?</p>
+        <p className="mb-3 px-1 text-xs text-slate-700">Est-ce que votre trésorerie tient dans le temps ?</p>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
           <KpiCard
             label="Trésorerie à 3 mois"
@@ -214,7 +214,7 @@ export default function DashboardPage() {
                       <span className="truncate text-sm text-navy">{c.libelle}</span>
                       <span className="tabular flex-none text-sm font-semibold text-navy">
                         {eur(c.montant)}
-                        <span className="ml-1.5 text-xs font-normal text-slate-400">{pct(c.montant / caHt)} du CA</span>
+                        <span className="ml-1.5 text-xs font-normal text-slate-600">{pct(c.montant / caHt)} du CA</span>
                       </span>
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
@@ -242,7 +242,7 @@ export default function DashboardPage() {
                         <span className="truncate text-sm text-navy">{cl.nom}</span>
                         <span className="tabular flex-none text-sm font-semibold text-navy">
                           {eur(cl.caHt)}
-                          <span className="ml-1.5 text-xs font-normal text-slate-400">{pct(part)}</span>
+                          <span className="ml-1.5 text-xs font-normal text-slate-600">{pct(part)}</span>
                         </span>
                       </div>
                       <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">

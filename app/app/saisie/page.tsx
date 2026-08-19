@@ -186,15 +186,15 @@ export default function SaisiePage() {
       {previsionnels.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="card px-5 py-4">
-            <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Factures à venir (HT)</p>
+            <p className="text-[11px] uppercase tracking-[0.08em] text-slate-700">Factures à venir (HT)</p>
             <p className="mt-1 text-lg font-semibold text-emerald-600">{eur(totaux.facture_a_venir)}</p>
           </div>
           <div className="card px-5 py-4">
-            <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Charges prévues (HT)</p>
+            <p className="text-[11px] uppercase tracking-[0.08em] text-slate-700">Charges prévues (HT)</p>
             <p className="mt-1 text-lg font-semibold text-rose-600">{eur(totaux.charge_prevue)}</p>
           </div>
           <div className="card px-5 py-4">
-            <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Investissements (HT)</p>
+            <p className="text-[11px] uppercase tracking-[0.08em] text-slate-700">Investissements (HT)</p>
             <p className="mt-1 text-lg font-semibold text-navy">{eur(totaux.investissement)}</p>
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function SaisiePage() {
 
       <Section title={`Mouvements prévisionnels (${previsionnels.length})`}>
         {previsionnels.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-700">
             Aucun mouvement prévisionnel. Ajoutez vos devis en cours et charges à venir pour projeter la trésorerie.
           </p>
         ) : (
@@ -223,9 +223,9 @@ export default function SaisiePage() {
                     <td className="text-slate-700">{LABEL_TYPE[mv.type]}</td>
                     <td className="font-medium text-slate-800">{mv.libelle}</td>
                     <td className="num text-slate-700">{eur(mv.montantHt)}</td>
-                    <td className="text-slate-500">{MOIS[mv.moisIndex]}</td>
+                    <td className="text-slate-700">{MOIS[mv.moisIndex]}</td>
                     <td className="!text-center">
-                      <button onClick={() => supprimerPrevisionnel(mv.id)} className="text-slate-500 hover:text-rose-600" aria-label="Supprimer">
+                      <button onClick={() => supprimerPrevisionnel(mv.id)} className="text-slate-700 hover:text-rose-600" aria-label="Supprimer">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </td>
@@ -235,7 +235,7 @@ export default function SaisiePage() {
             </table>
           </div>
         )}
-        <p className="mt-4 text-xs text-slate-500">
+        <p className="mt-4 text-xs text-slate-700">
           Ces mouvements se superposent aux données réelles importées et alimentent directement le dashboard, le plan de trésorerie et les scénarios.
         </p>
       </Section>
@@ -261,7 +261,7 @@ export default function SaisiePage() {
               </option>
             ))}
           </select>
-          <span className="w-full text-xs leading-snug text-slate-500">
+          <span className="w-full text-xs leading-snug text-slate-700">
             Jusqu’à ce mois, le réalisé remplace la prévision : les mouvements prévisionnels portant sur un mois clôturé sont
             ignorés (plus de double compte). Les mois suivants restent prévisionnels.
           </span>
@@ -296,10 +296,10 @@ export default function SaisiePage() {
                       className="w-28 rounded-lg border border-navy/10 bg-white/60 px-2 py-1 text-right text-sm tabular-nums text-navy outline-none focus:border-brand/50"
                     />
                   </td>
-                  <td className="num text-slate-500">{eur(l.caPrev)}</td>
+                  <td className="num text-slate-700">{eur(l.caPrev)}</td>
                   <td className={`num ${l.resReel < 0 ? 'text-rose-600' : 'text-slate-700'}`}>{eur(l.resReel)}</td>
-                  <td className="num text-slate-500">{eur(l.resPrev)}</td>
-                  <td className={`num font-medium ${l.ecart < 0 ? 'text-rose-600' : l.ecart > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                  <td className="num text-slate-700">{eur(l.resPrev)}</td>
+                  <td className={`num font-medium ${l.ecart < 0 ? 'text-rose-600' : l.ecart > 0 ? 'text-emerald-600' : 'text-slate-600'}`}>
                     {l.ecart > 0 ? '+' : ''}
                     {eur(l.ecart)}
                   </td>
@@ -321,7 +321,7 @@ export default function SaisiePage() {
             </tfoot>
           </table>
         </div>
-        <p className="mt-4 text-xs text-slate-500">
+        <p className="mt-4 text-xs text-slate-700">
           Le réalisé, c’est ce que dit votre comptabilité (import FEC ou balance). Le prévisionnel ajoute vos mouvements
           saisis ci-dessus. L’analyse de ces écarts est centralisée dans la page Analyse.
         </p>

@@ -51,7 +51,7 @@ export default function RemunerationPage() {
                 onChange={(e) => setRemuSouhaitee(Number(e.target.value))}
                 className={champ}
               />
-              <span className="text-sm text-slate-500">€ / mois</span>
+              <span className="text-sm text-slate-700">€ / mois</span>
             </div>
           </label>
           <label className="block">
@@ -64,9 +64,9 @@ export default function RemunerationPage() {
                 onChange={(e) => setTauxPct(Number(e.target.value))}
                 className={champ}
               />
-              <span className="text-sm text-slate-500">%</span>
+              <span className="text-sm text-slate-700">%</span>
             </div>
-            <span className="mt-1 block text-xs text-slate-500">TNS ≈ 45 %, assimilé salarié ≈ 80 %.</span>
+            <span className="mt-1 block text-xs text-slate-700">TNS ≈ 45 %, assimilé salarié ≈ 80 %.</span>
           </label>
         </div>
       </Section>
@@ -99,7 +99,7 @@ export default function RemunerationPage() {
                     )}
                   </td>
                   <td className="num text-slate-700">{eur(l.caMinimumAnnuel)}</td>
-                  <td className={`num font-medium ${l.effortCaMensuel > 0 ? 'text-amber-700' : 'text-slate-400'}`}>
+                  <td className={`num font-medium ${l.effortCaMensuel > 0 ? 'text-amber-700' : 'text-slate-600'}`}>
                     {l.effortCaMensuel > 0 ? `+ ${eur(l.effortCaMensuel)} / mois` : '—'}
                   </td>
                 </tr>

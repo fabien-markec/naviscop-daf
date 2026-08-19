@@ -65,7 +65,7 @@ export default function PlanActionPage() {
         }
       >
         {recommandations.length === 0 ? (
-          <p className="text-sm text-slate-500">Aucune recommandation particulière : maintenez le cap.</p>
+          <p className="text-sm text-slate-700">Aucune recommandation particulière : maintenez le cap.</p>
         ) : (
           <ul className="space-y-2">
             {recommandations.map((r, i) => {
@@ -132,7 +132,7 @@ export default function PlanActionPage() {
 
       <Section title={`Actions (${items.length})`}>
         {items.length === 0 ? (
-          <p className="text-sm text-slate-500">Aucune action pour l’instant. Ajoutez la première décision à suivre.</p>
+          <p className="text-sm text-slate-700">Aucune action pour l’instant. Ajoutez la première décision à suivre.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="data-table">
@@ -150,11 +150,11 @@ export default function PlanActionPage() {
                 {items.map((it) => (
                   <tr key={it.id}>
                     <td className="font-medium text-slate-800">{it.action}</td>
-                    <td className="text-slate-500">{it.responsable || '—'}</td>
-                    <td className="text-slate-500">
+                    <td className="text-slate-700">{it.responsable || '—'}</td>
+                    <td className="text-slate-700">
                       {it.echeance ? new Date(it.echeance).toLocaleDateString('fr-FR') : '—'}
                     </td>
-                    <td className="text-slate-500">{it.impact || '—'}</td>
+                    <td className="text-slate-700">{it.impact || '—'}</td>
                     <td>
                       <select
                         value={it.statut}
@@ -173,7 +173,7 @@ export default function PlanActionPage() {
                     <td className="!text-center">
                       <button
                         onClick={() => supprimer(it.id)}
-                        className="text-slate-500 hover:text-rose-600"
+                        className="text-slate-700 hover:text-rose-600"
                         aria-label="Supprimer"
                       >
                         <Trash2 className="h-4 w-4" />

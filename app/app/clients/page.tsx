@@ -31,7 +31,7 @@ export default function ClientsPage() {
       <div className="space-y-6">
         <PageHeader title="Portefeuille clients" />
         <Section title="Accès réservé">
-          <p className="text-sm text-slate-500">Cette vue est réservée au DAF. Vous accédez uniquement à votre entreprise.</p>
+          <p className="text-sm text-slate-700">Cette vue est réservée au DAF. Vous accédez uniquement à votre entreprise.</p>
         </Section>
       </div>
     );
@@ -66,7 +66,7 @@ export default function ClientsPage() {
               <div className="mb-3 flex items-start justify-between">
                 <div>
                   <h3 className="font-semibold text-navy">{d.nom}</h3>
-                  <p className="text-xs text-slate-500">{d.metier || 'Activité non précisée'}</p>
+                  <p className="text-xs text-slate-700">{d.metier || 'Activité non précisée'}</p>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {r.rouges > 0 && (
@@ -81,11 +81,11 @@ export default function ClientsPage() {
               </div>
 
               <dl className="grid grid-cols-2 gap-y-2 text-sm">
-                <dt className="text-slate-500">CA</dt>
+                <dt className="text-slate-700">CA</dt>
                 <dd className="text-right tabular-nums text-slate-800">{eur(r.ca)}</dd>
-                <dt className="text-slate-500">Résultat</dt>
+                <dt className="text-slate-700">Résultat</dt>
                 <dd className={`text-right tabular-nums ${r.resultat < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{eur(r.resultat)}</dd>
-                <dt className="text-slate-500">Tréso 12 mois</dt>
+                <dt className="text-slate-700">Tréso 12 mois</dt>
                 <dd className={`text-right tabular-nums ${r.treso12 < 0 ? 'text-rose-600' : 'text-slate-800'}`}>{eur(r.treso12)}</dd>
               </dl>
 
@@ -103,7 +103,7 @@ export default function ClientsPage() {
                   onClick={() => {
                     if (confirm(`Supprimer le dossier ${d.nom} ?`)) supprimerDossier(d.id);
                   }}
-                  className="text-slate-400 hover:text-rose-600"
+                  className="text-slate-600 hover:text-rose-600"
                   aria-label="Supprimer"
                 >
                   <Trash2 className="h-4 w-4" />

@@ -109,14 +109,14 @@ export default function ImportPage() {
                 setContenu('');
               }}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-                mode === m ? 'bg-brand text-white shadow-[0_4px_12px_-4px_rgba(0,98,184,0.4)]' : 'text-slate-500 hover:text-navy'
+                mode === m ? 'bg-brand text-white shadow-[0_4px_12px_-4px_rgba(0,98,184,0.4)]' : 'text-slate-700 hover:text-navy'
               }`}
             >
               {m === 'fec' ? 'FEC (écritures)' : 'Balance comptable'}
             </button>
           ))}
         </div>
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-slate-700">
           {mode === 'fec'
             ? 'Le FEC contient le détail des écritures : ventilation mensuelle exacte, trésorerie réelle, clients.'
             : 'La balance donne les soldes par compte. Le compte de résultat annuel et le détail des charges sont exacts ; la trésorerie mensuelle est lissée (à affiner avec un FEC).'}
@@ -149,7 +149,7 @@ export default function ImportPage() {
                 </select>
               </div>
             )}
-            <p className="mt-3 text-xs leading-relaxed text-slate-500">
+            <p className="mt-3 text-xs leading-relaxed text-slate-700">
               Une balance cumulée contient les soldes depuis le 1<sup>er</sup> janvier jusqu’au mois choisi. À chaque nouvelle
               balance, NAVISCOP <strong>fige les mois déjà validés</strong> : seule la différence avec la balance précédente
               alimente le nouveau mois. Ainsi, si votre comptable corrige une facture d’un mois passé, cela n’écrase pas votre
@@ -181,7 +181,7 @@ export default function ImportPage() {
           {contenu && (
             <button
               onClick={() => setContenu('')}
-              className="rounded-lg px-3 py-2 text-sm text-slate-500 hover:text-slate-700"
+              className="rounded-lg px-3 py-2 text-sm text-slate-700 hover:text-slate-700"
             >
               Effacer
             </button>
@@ -220,7 +220,7 @@ export default function ImportPage() {
               ? '…ou collez ici le contenu du FEC (tabulations, point-virgules ou pipes).'
               : '…ou collez ici la balance (colonnes CompteNum, Libellé, Solde débiteur / créditeur, ou Débit / Crédit).'
           }
-          className="mt-4 h-28 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-500 outline-none focus:border-brand/50"
+          className="mt-4 h-28 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-700 outline-none focus:border-brand/50"
         />
       </Section>
 

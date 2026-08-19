@@ -53,7 +53,7 @@ export function InviterClient() {
 
   return (
     <Section title="Accès client">
-      <p className="mb-3 text-xs text-slate-500">
+      <p className="mb-3 text-xs text-slate-700">
         Donnez au dirigeant de <b className="text-slate-700">{nom}</b> un accès à ce dossier uniquement. Il se connectera avec
         l&apos;email et le mot de passe ci-dessous.
       </p>
@@ -76,7 +76,7 @@ export function InviterClient() {
               setCopie(true);
               setTimeout(() => setCopie(false), 1500);
             }}
-            className="flex h-9 w-9 flex-none items-center justify-center rounded-xl border border-navy/10 text-slate-500 hover:bg-slate-100"
+            className="flex h-9 w-9 flex-none items-center justify-center rounded-xl border border-navy/10 text-slate-700 hover:bg-slate-100"
           >
             {copie ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
           </button>

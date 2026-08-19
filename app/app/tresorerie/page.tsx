@@ -53,7 +53,7 @@ export default function TresoreriePage() {
                 return (
                   <tr key={i} className={critique ? 'bg-rose-50' : ''}>
                     <td className="font-medium text-slate-800">{MOIS[i]}</td>
-                    <td className="num text-slate-500">{eur(m.soldeDebut)}</td>
+                    <td className="num text-slate-700">{eur(m.soldeDebut)}</td>
                     <td className="num text-emerald-600">{eur(m.encaissements)}</td>
                     <td className="num text-rose-600">{eur(m.decaissements)}</td>
                     <td className={`num ${m.variation < 0 ? 'text-rose-600' : 'text-slate-700'}`}>{eur(m.variation)}</td>
@@ -64,7 +64,7 @@ export default function TresoreriePage() {
             </tbody>
           </table>
         </div>
-        <p className="mt-4 text-xs text-slate-500">
+        <p className="mt-4 text-xs text-slate-700">
           Mois critique : <span className="text-amber-600">{MOIS[tresorerie.moisCritiqueIndex]}</span>{' '}
           ({eur(tresorerie.soldeFinLePlusBas)}). Décaissement mensuel moyen :{' '}
           {eur(tresorerie.decaissementMensuelMoyen)}.
