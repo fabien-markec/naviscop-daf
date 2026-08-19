@@ -1,5 +1,13 @@
-import type { ReactNode } from 'react';
+'use client';
+
+import { useState, type ReactNode } from 'react';
 import type { Alerte } from '@naviscop/finance-engine';
+
+/** Détail d'un calcul : la formule et les nombres qui y entrent. */
+export interface DetailCalcul {
+  formule: string;
+  lignes?: { label: string; valeur: string }[];
+}
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
@@ -29,6 +37,7 @@ export function KpiCard({
   value,
   hint,
   info,
+  calcul,
   tone = 'neutral',
 }: {
   label: string;
@@ -36,8 +45,11 @@ export function KpiCard({
   hint?: string;
   /** Explication en langage dirigeant, révélée au survol du point d'interrogation. */
   info?: string;
+  /** Détail du calcul (formule + nombres), révélé au clic sur la valeur. */
+  calcul?: DetailCalcul;
   tone?: keyof typeof TONE;
 }) {
+  const [ouvert, setOuvert] = useState(false);
   return (
     <div className="group card relative p-4 transition-all duration-200 hover:bg-white/70">
       <span className={`absolute inset-x-4 top-0 h-px ${TONE_BAR[tone]} opacity-60`} />
@@ -58,8 +70,33 @@ export function KpiCard({
           </span>
         )}
       </div>
-      <p className={`tabular mt-2 text-[1.7rem] font-semibold leading-none ${TONE[tone]}`}>{value}</p>
+      {calcul ? (
+        <button
+          onClick={() => setOuvert((o) => !o)}
+          className={`tabular mt-2 block text-left text-[1.7rem] font-semibold leading-none ${TONE[tone]} cursor-pointer decoration-dotted underline-offset-4 hover:underline`}
+          title="Voir le détail du calcul"
+        >
+          {value}
+        </button>
+      ) : (
+        <p className={`tabular mt-2 text-[1.7rem] font-semibold leading-none ${TONE[tone]}`}>{value}</p>
+      )}
       {hint && <p className="mt-1.5 text-xs text-slate-700">{hint}</p>}
+      {calcul && ouvert && (
+        <div className="mt-3 rounded-xl border border-navy/10 bg-slate-50 p-3 text-xs text-slate-700">
+          <p className="font-medium text-navy">{calcul.formule}</p>
+          {calcul.lignes && calcul.lignes.length > 0 && (
+            <dl className="mt-2 space-y-0.5">
+              {calcul.lignes.map((l, i) => (
+                <div key={i} className="flex justify-between gap-3">
+                  <dt className="text-slate-700">{l.label}</dt>
+                  <dd className="tabular font-medium text-navy">{l.valeur}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -194,18 +194,44 @@ export default function DashboardPage() {
             value={eur(kpis.margeBrute)}
             hint={`Taux de marque ${pct(kpis.tauxMarque)}`}
             info="Ce qui reste du chiffre d’affaires une fois payés vos achats directs. C’est l’argent réellement disponible pour couvrir vos charges et vous payer."
+            calcul={{
+              formule: 'Marge brute = CA HT − Achats directs',
+              lignes: [
+                { label: 'Chiffre d’affaires HT', valeur: eur(pnl.annuel.caHt) },
+                { label: '− Achats directs', valeur: eur(pnl.annuel.achatsMarchandisesMp) },
+                { label: '= Marge brute', valeur: eur(kpis.margeBrute) },
+              ],
+            }}
           />
           <KpiCard
             label="EBE"
             value={eur(kpis.excedentBrutExploitation)}
             tone={kpis.excedentBrutExploitation < 0 ? 'negative' : 'positive'}
             info="L’argent que votre activité dégage vraiment, avant impôts et financements. S’il est négatif, l’activité ne couvre pas ses charges courantes."
+            calcul={{
+              formule: 'EBE = Marge brute − charges externes − salaires − impôts',
+              lignes: [
+                { label: 'Marge brute', valeur: eur(kpis.margeBrute) },
+                { label: '− Charges externes', valeur: eur(pnl.annuel.autresAchatsChargesExternes) },
+                { label: '− Salaires et charges', valeur: eur(pnl.annuel.salairesEtCharges) },
+                { label: '− Impôts et taxes', valeur: eur(pnl.annuel.impotsEtTaxes) },
+                { label: '= EBE', valeur: eur(kpis.excedentBrutExploitation) },
+              ],
+            }}
           />
           <KpiCard
             label="Seuil de rentabilité"
             value={eur(kpis.seuilRentabilite)}
             hint="CA à atteindre"
             info="Le chiffre d’affaires minimum à réaliser pour couvrir toutes vos charges. En dessous, vous perdez de l’argent ; au-dessus, vous en gagnez."
+            calcul={{
+              formule: 'Seuil = Charges fixes ÷ taux de marge',
+              lignes: [
+                { label: 'Charges fixes (annuelles)', valeur: eur(pnl.annuel.chargesFixesTotales) },
+                { label: 'Taux de marge', valeur: pct(kpis.tauxMarque) },
+                { label: '= Seuil de rentabilité', valeur: eur(kpis.seuilRentabilite) },
+              ],
+            }}
           />
         </div>
       </div>
@@ -237,6 +263,14 @@ export default function DashboardPage() {
             hint="par mois"
             tone={kpis.capaciteRemunerationMensuelle < 0 ? 'negative' : 'neutral'}
             info="Ce que vous pouvez raisonnablement vous verser chaque mois sans mettre la trésorerie en danger, d’après le cash généré par l’activité."
+            calcul={{
+              formule: 'Capacité = Cash généré sur l’année ÷ 12',
+              lignes: [
+                { label: 'Cash généré (CAF annuelle)', valeur: eur(kpis.cashflowGenere) },
+                { label: '÷ 12 mois', valeur: '' },
+                { label: '= Capacité mensuelle', valeur: eur(kpis.capaciteRemunerationMensuelle) },
+              ],
+            }}
           />
           <KpiCard
             label="Créances clients"
