@@ -38,8 +38,17 @@ const MODULES = [
 export function Sidebar() {
   const path = usePathname();
   const router = useRouter();
-  const { role, setRole, nom, metier, dossiers, actifId, ouvrirDossier, connecte, deconnexion } = useDossier();
+  const { role, setRole, nom, metier, dossiers, actifId, exercice, dateBilan, ouvrirDossier, creerExerciceSuivant, connecte, deconnexion } = useDossier();
   const [open, setOpen] = useState(false);
+
+  // Exercices du même client (même nom sans l'année finale), triés par année.
+  const nomBase = (n: string) => n.replace(/\s+\d{4}$/, '').trim();
+  const baseActif = nomBase(nom);
+  const exercices = dossiers
+    .filter((d) => actifId && d.exercice && nomBase(d.nom) === baseActif)
+    .sort((a, b) => a.exercice - b.exercice);
+  const peutCreerSuivant =
+    !!actifId && !!dateBilan && !exercices.some((d) => d.exercice === (exercice || 0) + 1);
 
   // Ferme le tiroir à chaque changement de page (mobile).
   useEffect(() => {
@@ -136,6 +145,34 @@ export function Sidebar() {
           )}
           {metier && <p className="truncate text-[11px] text-slate-700">{metier}</p>}
         </div>
+
+        {/* Bascule d'exercice (N / N+1) */}
+        {actifId && dateBilan && (
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+            <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-slate-700">Exercice</p>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {exercices.map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => ouvrirDossier(d.id)}
+                  className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+                    d.id === actifId ? 'bg-brand text-white' : 'bg-white text-slate-600 hover:text-navy'
+                  }`}
+                >
+                  {d.exercice}
+                </button>
+              ))}
+            </div>
+            {peutCreerSuivant && (
+              <button
+                onClick={() => creerExerciceSuivant()}
+                className="mt-2 w-full rounded-full border border-brand/30 bg-white py-1.5 text-[11px] font-semibold text-brand transition hover:bg-brand/5"
+              >
+                + Créer l'exercice {(exercice || 0) + 1}
+              </button>
+            )}
+          </div>
+        )}
 
         <nav className="flex flex-col gap-0.5">
           {nav.map(({ href, label, icon: Icon }) => {

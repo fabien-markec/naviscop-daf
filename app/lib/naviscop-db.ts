@@ -19,6 +19,8 @@ export interface DossierRow {
   previsionnels: MouvementPrevisionnel[];
   planActions: ActionItem[];
   moisClotureIndex: number;
+  dateBilan: string;
+  exercice: number;
 }
 
 const n = (v: unknown) => Number(v ?? 0);
@@ -112,7 +114,7 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
   const s = db();
   const { data: dossiers, error } = await s
     .from('dossiers')
-    .select('id, nom, metier, detail_financier, mois_cloture_index, charges_fixes')
+    .select('id, nom, metier, detail_financier, mois_cloture_index, charges_fixes, date_bilan, exercice')
     .order('created_at');
   if (error) throw error;
   if (!dossiers || dossiers.length === 0) return [];
@@ -159,7 +161,9 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
       entreesBase,
       previsionnels: ((prevMap.get(d.id as string) ?? []) as Record<string, unknown>[]).map(mapPrevisionnel),
       planActions: ((actionMap.get(d.id as string) ?? []) as Record<string, unknown>[]).map(mapAction),
-      moisClotureIndex: (d as Record<string, unknown>).mois_cloture_index == null ? -1 : n((d as Record<string, unknown>).mois_cloture_index),
+      moisClotureIndex: dr.mois_cloture_index == null ? -1 : n(dr.mois_cloture_index),
+      dateBilan: (dr.date_bilan as string) ?? '',
+      exercice: dr.exercice == null ? 0 : n(dr.exercice),
     };
   });
 }
@@ -170,6 +174,8 @@ export async function creerDossier(
   entreesBase: EntreesMoteur,
   metier = '',
   moisClotureIndex = -1,
+  dateBilan = '',
+  exercice = 0,
 ): Promise<string> {
   const s = db();
   const { data, error } = await s
@@ -180,6 +186,8 @@ export async function creerDossier(
       detail_financier: entreesBase.detail ?? null,
       mois_cloture_index: moisClotureIndex,
       charges_fixes: entreesBase.chargesFixes ?? null,
+      date_bilan: dateBilan || null,
+      exercice: exercice || null,
     })
     .select('id')
     .single();
@@ -312,6 +320,12 @@ export async function majMoisClotureDb(dossierId: string, moisClotureIndex: numb
 /** Met à jour la liste des charges fixes mensuelles d'un dossier. */
 export async function majChargesFixesDb(dossierId: string, chargesFixes: EntreesMoteur['chargesFixes']): Promise<void> {
   const { error } = await db().from('dossiers').update({ charges_fixes: chargesFixes ?? null }).eq('id', dossierId);
+  if (error) throw error;
+}
+
+/** Met à jour la date de bilan (clôture) et l'année d'exercice d'un dossier. */
+export async function majDateBilanDb(dossierId: string, dateBilan: string, exercice: number): Promise<void> {
+  const { error } = await db().from('dossiers').update({ date_bilan: dateBilan || null, exercice: exercice || null }).eq('id', dossierId);
   if (error) throw error;
 }
 

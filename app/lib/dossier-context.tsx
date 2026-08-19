@@ -24,6 +24,7 @@ import {
   avancerDossierDb,
   majMoisClotureDb,
   majChargesFixesDb,
+  majDateBilanDb,
   ajouterPrevisionnelDb,
   supprimerPrevisionnelDb,
   ajouterActionDb,
@@ -46,6 +47,10 @@ export interface DossierEntry {
   planActions: ActionItem[];
   /** Dernier mois clôturé (réalisé connu). -1 = aucun. */
   moisClotureIndex: number;
+  /** Date de clôture (bilan), ex. "2025-12-31". Vide = à renseigner à la 1re connexion. */
+  dateBilan: string;
+  /** Année de l'exercice comptable, ex. 2025. 0 = non défini. */
+  exercice: number;
 }
 
 interface Workspace {
@@ -90,6 +95,14 @@ interface DossierContextValue {
   supprimerChargeFixe: (id: string) => void;
   /** Définit le dernier mois clôturé (réalisé) du dossier actif. */
   majMoisCloture: (moisClotureIndex: number) => void;
+  /** Date de clôture (bilan) du dossier actif, ex. "2025-12-31". */
+  dateBilan: string;
+  /** Année de l'exercice comptable du dossier actif. */
+  exercice: number;
+  /** Renseigne la date de bilan (et déduit l'année d'exercice) du dossier actif. */
+  majDateBilan: (dateBilan: string) => void;
+  /** Crée l'exercice suivant (N+1) pour le même client et bascule dessus. */
+  creerExerciceSuivant: () => void;
   ajouterPrevisionnel: (mv: Omit<MouvementPrevisionnel, 'id'>) => void;
   supprimerPrevisionnel: (id: string) => void;
   ajouterAction: (a: Omit<ActionItem, 'id' | 'statut'>) => void;
@@ -121,7 +134,7 @@ function entreesVides(): EntreesMoteur {
 }
 
 function defautWorkspace(): Workspace {
-  const dossiers: DossierEntry[] = dossiersDemo.map((d) => ({ ...d, previsionnels: [], planActions: [], moisClotureIndex: -1 }));
+  const dossiers: DossierEntry[] = dossiersDemo.map((d) => ({ ...d, previsionnels: [], planActions: [], moisClotureIndex: -1, dateBilan: '2025-12-31', exercice: 2025 }));
   return { role: 'daf', dossiers, actifId: dossiers[0].id };
 }
 
@@ -201,6 +214,8 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       previsionnels: actif ? actif.previsionnels : [],
       planActions: actif?.planActions ?? [],
       moisClotureIndex: actif?.moisClotureIndex ?? -1,
+      dateBilan: actif?.dateBilan ?? '',
+      exercice: actif?.exercice ?? 0,
       tableauDeBord: calculerTableauDeBord(entrees),
       chargement,
       connecte: supabaseConfigured,
@@ -210,10 +225,10 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
         const clot = dernierMoisActif(entreesBase);
         if (supabaseConfigured) {
           const id = await creerDossier(nom, entreesBase, metier, clot);
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot }], actifId: id }));
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot, dateBilan: '', exercice: 0 }], actifId: id }));
         } else {
           const id = crypto.randomUUID();
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot }], actifId: id }));
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier, entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot, dateBilan: '', exercice: 0 }], actifId: id }));
         }
       },
 
@@ -237,10 +252,10 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
         const clot = dernierMoisActif(entreesBase);
         if (supabaseConfigured) {
           const id = await creerDossier(nom, entreesBase, '', clot);
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot }], actifId: id }));
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot, dateBilan: '', exercice: 0 }], actifId: id }));
         } else {
           const id = crypto.randomUUID();
-          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot }], actifId: id }));
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: '', entreesBase, previsionnels: [], planActions: [], moisClotureIndex: clot, dateBilan: '', exercice: 0 }], actifId: id }));
         }
       },
 
@@ -271,6 +286,42 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       majMoisCloture: (moisClotureIndex) => {
         majActif((d) => ({ ...d, moisClotureIndex }));
         if (supabaseConfigured) majMoisClotureDb(ws.actifId, moisClotureIndex).catch((e) => console.error('MAJ clôture échouée', e));
+      },
+
+      majDateBilan: (dateBilan) => {
+        const annee = Number((dateBilan || '').slice(0, 4)) || 0;
+        majActif((d) => ({ ...d, dateBilan, exercice: annee }));
+        if (supabaseConfigured) majDateBilanDb(ws.actifId, dateBilan, annee).catch((e) => console.error('MAJ date de bilan échouée', e));
+      },
+
+      creerExerciceSuivant: async () => {
+        const actifCourant = ws.dossiers.find((d) => d.id === ws.actifId);
+        if (!actifCourant || !actifCourant.dateBilan) return;
+        const anneeN = actifCourant.exercice || Number(actifCourant.dateBilan.slice(0, 4)) || 0;
+        const anneeSuiv = anneeN + 1;
+        const dateSuiv = `${anneeSuiv}${actifCourant.dateBilan.slice(4)}`;
+        // Déjà créé ? On bascule simplement dessus.
+        const nomBase = actifCourant.nom.replace(/\s+\d{4}$/, '').trim();
+        const existant = ws.dossiers.find((d) => d.nom.replace(/\s+\d{4}$/, '').trim() === nomBase && d.exercice === anneeSuiv);
+        if (existant) {
+          setWs((s) => ({ ...s, actifId: existant.id }));
+          return;
+        }
+        // Nouvel exercice : structure vide, on conserve le paramétrage et le solde de clôture N comme solde d'ouverture.
+        const soldeOuverture = actifCourant.entreesBase.parametrage.soldeInitialTresorerie;
+        const nouvelles: EntreesMoteur = {
+          ...entreesVides(),
+          parametrage: { ...actifCourant.entreesBase.parametrage, soldeInitialTresorerie: soldeOuverture },
+          chargesFixes: actifCourant.entreesBase.chargesFixes,
+        };
+        const nom = `${nomBase} ${anneeSuiv}`;
+        if (supabaseConfigured) {
+          const id = await creerDossier(nom, nouvelles, actifCourant.metier, -1, dateSuiv, anneeSuiv);
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: actifCourant.metier, entreesBase: nouvelles, previsionnels: [], planActions: [], moisClotureIndex: -1, dateBilan: dateSuiv, exercice: anneeSuiv }], actifId: id }));
+        } else {
+          const id = crypto.randomUUID();
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom, metier: actifCourant.metier, entreesBase: nouvelles, previsionnels: [], planActions: [], moisClotureIndex: -1, dateBilan: dateSuiv, exercice: anneeSuiv }], actifId: id }));
+        }
       },
 
       ajouterChargeFixe: (charge) => {
