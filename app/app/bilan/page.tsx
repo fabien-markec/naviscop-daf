@@ -52,19 +52,6 @@ export default function AnalysePage() {
         </Section>
       </div>
 
-      <Section title="Recommandations du DAF">
-        <ol className="space-y-3">
-          {analyse.recommandations.map((t, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm text-slate-800">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-semibold text-brand">
-                {i + 1}
-              </span>
-              {t}
-            </li>
-          ))}
-        </ol>
-      </Section>
-
       <div className="card border-brand/20 bg-brand/5 p-5">
         <h2 className="mb-2 flex items-center gap-2 text-sm font-medium text-brand">
           <span>🧸</span> Si je devais l’expliquer à un enfant de 5 ans

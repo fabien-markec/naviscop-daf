@@ -28,6 +28,7 @@ import {
   supprimerPrevisionnelDb,
   ajouterActionDb,
   majStatutActionDb,
+  majActionDb,
   supprimerActionDb,
   type DossierRow,
 } from './naviscop-db';
@@ -93,6 +94,7 @@ interface DossierContextValue {
   supprimerPrevisionnel: (id: string) => void;
   ajouterAction: (a: Omit<ActionItem, 'id' | 'statut'>) => void;
   majStatutAction: (id: string, statut: StatutAction) => void;
+  majAction: (id: string, patch: Partial<ActionItem>) => void;
   supprimerAction: (id: string) => void;
   reinitialiser: () => void;
   deconnexion: () => void;
@@ -319,6 +321,11 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       majStatutAction: (id, statut) => {
         majActif((d) => ({ ...d, planActions: (d.planActions ?? []).map((i) => (i.id === id ? { ...i, statut } : i)) }));
         if (supabaseConfigured) majStatutActionDb(id, statut).catch((e) => console.error('MAJ statut action échouée', e));
+      },
+
+      majAction: (id, patch) => {
+        majActif((d) => ({ ...d, planActions: (d.planActions ?? []).map((i) => (i.id === id ? { ...i, ...patch } : i)) }));
+        if (supabaseConfigured) majActionDb(id, patch).catch((e) => console.error('MAJ action échouée', e));
       },
 
       supprimerAction: (id) => {

@@ -14,7 +14,7 @@ const STATUTS: { valeur: StatutAction; label: string; classe: string }[] = [
 ];
 
 export default function PlanActionPage() {
-  const { planActions: items, ajouterAction: ajouter, majStatutAction: majStatut, supprimerAction: supprimer, entrees } = useDossier();
+  const { planActions: items, ajouterAction: ajouter, majStatutAction: majStatut, majAction, supprimerAction: supprimer, entrees } = useDossier();
   const [action, setAction] = useState('');
   const [responsable, setResponsable] = useState('');
   const [echeance, setEcheance] = useState('');
@@ -150,9 +150,21 @@ export default function PlanActionPage() {
                 {items.map((it) => (
                   <tr key={it.id}>
                     <td className="font-medium text-slate-800">{it.action}</td>
-                    <td className="text-slate-700">{it.responsable || '—'}</td>
-                    <td className="text-slate-700">
-                      {it.echeance ? new Date(it.echeance).toLocaleDateString('fr-FR') : '—'}
+                    <td>
+                      <input
+                        value={it.responsable}
+                        onChange={(e) => majAction(it.id, { responsable: e.target.value })}
+                        placeholder="Qui ?"
+                        className="w-28 rounded-lg border border-navy/10 bg-white/60 px-2 py-1 text-sm text-navy outline-none focus:border-brand/50"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="date"
+                        value={it.echeance}
+                        onChange={(e) => majAction(it.id, { echeance: e.target.value })}
+                        className="rounded-lg border border-navy/10 bg-white/60 px-2 py-1 text-sm text-navy outline-none focus:border-brand/50"
+                      />
                     </td>
                     <td className="text-slate-700">{it.impact || '—'}</td>
                     <td>

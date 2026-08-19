@@ -358,6 +358,18 @@ export async function majStatutActionDb(id: string, statut: StatutAction): Promi
   if (error) throw error;
 }
 
+/** Met à jour les champs d'une action (responsable, échéance, action, impact, statut). */
+export async function majActionDb(id: string, patch: Partial<ActionItem>): Promise<void> {
+  const map: Record<string, string> = {
+    action: 'action', responsable: 'responsable', echeance: 'echeance', impact: 'impact', statut: 'statut',
+  };
+  const upd: Record<string, string> = {};
+  for (const [k, v] of Object.entries(patch)) if (map[k] && v != null) upd[map[k]] = v as string;
+  if (Object.keys(upd).length === 0) return;
+  const { error } = await db().from('plan_actions').update(upd).eq('id', id);
+  if (error) throw error;
+}
+
 export async function supprimerActionDb(id: string): Promise<void> {
   const { error } = await db().from('plan_actions').delete().eq('id', id);
   if (error) throw error;
