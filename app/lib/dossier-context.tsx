@@ -10,6 +10,7 @@ import {
   type ParametrageFinancier,
   type MouvementPrevisionnel,
   type LignePnlMensuelle,
+  type LigneCashMensuelle,
   type ChargeFixe,
   type ProfilFiscal,
 } from '@naviscop/finance-engine';
@@ -22,6 +23,7 @@ import {
   supprimerDossier as supprimerDossierDb,
   majParametrageDb,
   majPnlMoisDb,
+  majCashMoisDb,
   avancerDossierDb,
   majMoisClotureDb,
   majChargesFixesDb,
@@ -90,6 +92,8 @@ interface DossierContextValue {
   majParametrage: (patch: Partial<ParametrageFinancier>) => void;
   /** Corrige le réalisé d'un mois à la main (factures manquantes, compte pas à jour). */
   majReelMois: (moisIndex: number, patch: Partial<LignePnlMensuelle>) => void;
+  /** Saisit / corrige la trésorerie d'un mois (encaissements / décaissements TTC). */
+  majCashMois: (moisIndex: number, patch: Partial<LigneCashMensuelle>) => void;
   /** Avance le dossier actif avec une balance cumulée : mois figés, nouveau mois = différence. */
   avancerDossierCumule: (contenuBalance: string, moisArrete: number) => void;
   /** Ajoute une charge fixe mensuelle. */
@@ -285,6 +289,17 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
           },
         }));
         if (supabaseConfigured) majPnlMoisDb(ws.actifId, moisIndex, patch).catch((e) => console.error('MAJ réalisé échouée', e));
+      },
+
+      majCashMois: (moisIndex, patch) => {
+        majActif((d) => ({
+          ...d,
+          entreesBase: {
+            ...d.entreesBase,
+            cash: d.entreesBase.cash.map((m, i) => (i === moisIndex ? { ...m, ...patch } : m)),
+          },
+        }));
+        if (supabaseConfigured) majCashMoisDb(ws.actifId, moisIndex, patch).catch((e) => console.error('MAJ trésorerie échouée', e));
       },
 
       avancerDossierCumule: (contenuBalance, moisArrete) => {

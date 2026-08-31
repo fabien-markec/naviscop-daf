@@ -288,6 +288,20 @@ export async function majPnlMoisDb(
   if (error) throw error;
 }
 
+/** Corrige la trésorerie d'un mois (une ligne de dossier_cash) : encaissements / décaissements TTC. */
+export async function majCashMoisDb(
+  dossierId: string,
+  moisIndex: number,
+  patch: Partial<LigneCashMensuelle>,
+): Promise<void> {
+  const map: Record<string, string> = { encaissements: 'encaissements', decaissements: 'decaissements' };
+  const upd: Record<string, number> = {};
+  for (const [k, v] of Object.entries(patch)) if (map[k] && v != null) upd[map[k]] = v as number;
+  if (Object.keys(upd).length === 0) return;
+  const { error } = await db().from('dossier_cash').update(upd).eq('dossier_id', dossierId).eq('mois', moisIndex);
+  if (error) throw error;
+}
+
 /**
  * Avance un dossier avec une balance cumulée : seul le mois `moisArrete` change (les mois
  * précédents sont figés). On met à jour la ligne P&L et la ligne cash du mois, les créances et le détail.

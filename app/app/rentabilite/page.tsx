@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useMemo, useState } from 'react';
-import { ChevronRight, Trash2 } from 'lucide-react';
+import { ChevronRight, Trash2, Pencil } from 'lucide-react';
 import {
   MOIS,
   resultatMensuel,
@@ -13,6 +13,7 @@ import { useDossier } from '@/lib/dossier-context';
 import { eur, pct } from '@/lib/format';
 import { KpiCard, PageHeader, Section } from '@/components/ui';
 import { ResultatChart } from '@/components/charts';
+import { GrilleMensuelle, type LigneGrille } from '@/components/grille-mensuelle';
 
 const MOIS_COURT = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
 
@@ -56,7 +57,7 @@ const CATEGORIES_SAISIE: { valeur: CategorieCharge; label: string }[] = [
 ];
 
 export default function RentabilitePage() {
-  const { entrees, tableauDeBord, previsionnels, ajouterPrevisionnel, supprimerPrevisionnel } = useDossier();
+  const { entrees, pnlReel, tableauDeBord, previsionnels, ajouterPrevisionnel, supprimerPrevisionnel, majReelMois } = useDossier();
   const { pnl } = tableauDeBord;
   const a = pnl.annuel;
   const pnlMensuel = entrees.pnl;
@@ -64,6 +65,19 @@ export default function RentabilitePage() {
 
   const [catOuverte, setCatOuverte] = useState<keyof LignePnlMensuelle | null>(null);
   const [posteOuvert, setPosteOuvert] = useState<string | null>(null);
+  const [saisieOuverte, setSaisieOuverte] = useState(false);
+
+  // Grille de saisie manuelle du compte de résultat (réalisé, mois par mois).
+  const lignesSaisie: LigneGrille[] = [
+    { key: 'ca', label: "Chiffre d'affaires HT", get: (i) => pnlReel[i].caHt, set: (i, v) => majReelMois(i, { caHt: v }) },
+    { key: 'achats', label: 'Achats consommés', charge: true, get: (i) => pnlReel[i].achatsMarchandisesMp, set: (i, v) => majReelMois(i, { achatsMarchandisesMp: v }) },
+    { key: 'externes', label: 'Charges externes', charge: true, get: (i) => pnlReel[i].autresAchatsChargesExternes, set: (i, v) => majReelMois(i, { autresAchatsChargesExternes: v }) },
+    { key: 'salaires', label: 'Salaires et charges', charge: true, get: (i) => pnlReel[i].salairesEtCharges, set: (i, v) => majReelMois(i, { salairesEtCharges: v }) },
+    { key: 'impots', label: 'Impôts et taxes', charge: true, get: (i) => pnlReel[i].impotsEtTaxes, set: (i, v) => majReelMois(i, { impotsEtTaxes: v }) },
+    { key: 'fin', label: 'Charges financières', charge: true, get: (i) => pnlReel[i].chargesFinancieres, set: (i, v) => majReelMois(i, { chargesFinancieres: v }) },
+    { key: 'exc', label: 'Charges exceptionnelles', charge: true, get: (i) => pnlReel[i].chargesExceptionnelles, set: (i, v) => majReelMois(i, { chargesExceptionnelles: v }) },
+    { key: 'amort', label: 'Dotations aux amortissements', charge: true, get: (i) => pnlReel[i].amortissements, set: (i, v) => majReelMois(i, { amortissements: v }) },
+  ];
 
   // Saisie manuelle produit / charge.
   const [typeSaisie, setTypeSaisie] = useState<'produit' | 'charge'>('produit');
@@ -227,6 +241,34 @@ export default function RentabilitePage() {
             </tbody>
           </table>
         </div>
+      </Section>
+
+      {/* Saisie manuelle du compte de résultat mois par mois (dossier sans FEC) */}
+      <Section
+        title="Saisir le compte de résultat mois par mois"
+        action={
+          <button
+            onClick={() => setSaisieOuverte((o) => !o)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-navy/15 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
+          >
+            <Pencil className="h-3.5 w-3.5" /> {saisieOuverte ? 'Masquer la saisie' : 'Saisir à la main'}
+          </button>
+        }
+      >
+        {saisieOuverte ? (
+          <>
+            <p className="mb-3 text-xs text-slate-700">
+              Pas de FEC ni de balance ? Saisissez directement le chiffre d’affaires et les charges de chaque mois. Les soldes
+              (marge, EBE, résultat) se recalculent automatiquement.
+            </p>
+            <GrilleMensuelle lignes={lignesSaisie} />
+          </>
+        ) : (
+          <p className="text-sm text-slate-700">
+            Pour un dossier sans import comptable, cliquez sur « Saisir à la main » pour renseigner le compte de résultat mois
+            par mois.
+          </p>
+        )}
       </Section>
 
       {/* Saisie manuelle : produits et charges */}
