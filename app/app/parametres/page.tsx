@@ -4,6 +4,9 @@ import { useDossier } from '@/lib/dossier-context';
 import { eur } from '@/lib/format';
 import { PageHeader, Section, ListeAlertes } from '@/components/ui';
 import { InviterClient } from '@/components/inviter-client';
+import { FormulaireProfil } from '@/components/formulaire-profil';
+import { profilFiscalParDefaut } from '@naviscop/finance-engine';
+import { useState } from 'react';
 
 function ChampNombre({
   label,
@@ -39,8 +42,9 @@ function ChampNombre({
 }
 
 export default function ParametresPage() {
-  const { entrees, majParametrage, tableauDeBord, reinitialiser, connecte } = useDossier();
+  const { entrees, majParametrage, majProfilFiscal, profilFiscal, tableauDeBord, reinitialiser, connecte } = useDossier();
   const p = entrees.parametrage;
+  const [profilEnregistre, setProfilEnregistre] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -51,6 +55,23 @@ export default function ParametresPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
+          <Section title="Profil fiscal & social">
+            <p className="mb-4 text-xs text-slate-700">
+              Statut juridique, régime fiscal et paramètres URSSAF / impôt / TVA. Quand un profil est renseigné, les provisions
+              TVA, URSSAF et impôt ci-dessous sont calculées automatiquement à partir du chiffre d’affaires et des charges.
+            </p>
+            <FormulaireProfil
+              montrerIdentite={false}
+              profilInitial={profilFiscal ?? profilFiscalParDefaut()}
+              labelSubmit={profilEnregistre ? 'Profil enregistré ✓' : 'Enregistrer le profil fiscal'}
+              onSubmit={({ profil }) => {
+                majProfilFiscal(profil);
+                setProfilEnregistre(true);
+                setTimeout(() => setProfilEnregistre(false), 2500);
+              }}
+            />
+          </Section>
+
           <Section title="Objectifs">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <ChampNombre

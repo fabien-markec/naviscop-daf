@@ -137,4 +137,6 @@ export interface EntreesMoteur {
   detail?: DetailFinancier;
   /** Charges fixes mensuelles saisies à la main. Si renseignées, elles priment sur l'estimation. */
   chargesFixes?: ChargeFixe[];
+  /** Profil fiscal & social (statut juridique, régime, URSSAF/impôt/TVA). Optionnel. */
+  profilFiscal?: import('./profil-fiscal.ts').ProfilFiscal;
 }

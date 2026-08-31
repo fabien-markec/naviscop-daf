@@ -24,6 +24,7 @@ export * from './fec/index.ts';
 export * from './balance.ts';
 export * from './analyse/daf.ts';
 export * from './previsionnel.ts';
+export * from './profil-fiscal.ts';
 
 import type { EntreesMoteur } from './types.ts';
 import { calculerPnl } from './pnl.ts';

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Folder, Upload } from 'lucide-react';
+import { Folder, Upload, Plus } from 'lucide-react';
 import { useDossier } from '@/lib/dossier-context';
 
 /** Écran de sélection : tant qu'aucun dossier n'est choisi, le DAF doit en sélectionner un. */
@@ -18,12 +18,20 @@ export function ChoixDossier() {
       {dossiers.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-navy/15 bg-white/60 px-5 py-8 text-center">
           <p className="text-sm text-slate-700">Aucun dossier pour le moment.</p>
-          <Link
-            href="/import"
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft"
-          >
-            <Upload className="h-4 w-4" /> Importer un FEC ou une balance
-          </Link>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <Link
+              href="/nouveau"
+              className="inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft"
+            >
+              <Plus className="h-4 w-4" /> Créer un dossier
+            </Link>
+            <Link
+              href="/import"
+              className="inline-flex items-center gap-2 rounded-full border border-navy/15 px-5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              <Upload className="h-4 w-4" /> Importer un FEC / balance
+            </Link>
+          </div>
         </div>
       ) : (
         <>
@@ -44,12 +52,14 @@ export function ChoixDossier() {
               </button>
             ))}
           </div>
-          <Link
-            href="/import"
-            className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-brand hover:underline"
-          >
-            <Upload className="h-4 w-4" /> Nouveau dossier (import FEC / balance)
-          </Link>
+          <div className="mt-5 flex flex-wrap items-center gap-4">
+            <Link href="/nouveau" className="inline-flex items-center gap-2 text-sm font-medium text-brand hover:underline">
+              <Plus className="h-4 w-4" /> Créer un dossier
+            </Link>
+            <Link href="/import" className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:underline">
+              <Upload className="h-4 w-4" /> Importer un FEC / balance
+            </Link>
+          </div>
         </>
       )}
     </div>

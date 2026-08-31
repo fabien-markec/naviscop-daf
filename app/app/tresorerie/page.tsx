@@ -7,9 +7,10 @@ import { PageHeader, Section } from '@/components/ui';
 import { FluxChart } from '@/components/charts';
 import { CascadeCash } from '@/components/cash-disponible';
 import { EnveloppesProvision } from '@/components/enveloppes';
+import { ProjectionFiscale } from '@/components/projection-fiscale';
 
 export default function TresoreriePage() {
-  const { tableauDeBord, chargesFixes, ajouterChargeFixe, supprimerChargeFixe } = useDossier();
+  const { tableauDeBord, entrees, profilFiscal, chargesFixes, ajouterChargeFixe, supprimerChargeFixe } = useDossier();
   const { tresorerie, cashDisponible } = tableauDeBord;
   const chartData = tresorerie.parMois.map((m, i) => ({
     mois: MOIS[i].slice(0, 3),
@@ -29,6 +30,8 @@ export default function TresoreriePage() {
         <CascadeCash data={cashDisponible} chargesFixes={chargesFixes} onAjouterCharge={ajouterChargeFixe} onSupprimerCharge={supprimerChargeFixe} />
         <EnveloppesProvision data={cashDisponible} />
       </div>
+
+      {profilFiscal && <ProjectionFiscale entrees={entrees} profil={profilFiscal} />}
 
       <Section title="Encaissements, décaissements et solde">
         <FluxChart data={chartData} />

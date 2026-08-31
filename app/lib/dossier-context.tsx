@@ -11,6 +11,7 @@ import {
   type MouvementPrevisionnel,
   type LignePnlMensuelle,
   type ChargeFixe,
+  type ProfilFiscal,
 } from '@naviscop/finance-engine';
 import { dossiersDemo } from './demo-data';
 import { supabase, supabaseConfigured } from './supabase';
@@ -25,6 +26,8 @@ import {
   majMoisClotureDb,
   majChargesFixesDb,
   majDateBilanDb,
+  majProfilFiscalDb,
+  renommerDossierDb,
   ajouterPrevisionnelDb,
   supprimerPrevisionnelDb,
   ajouterActionDb,
@@ -103,6 +106,14 @@ interface DossierContextValue {
   majDateBilan: (dateBilan: string) => void;
   /** Crée l'exercice suivant (N+1) pour le même client et bascule dessus. */
   creerExerciceSuivant: () => void;
+  /** Profil fiscal & social du dossier actif (statut, régime, URSSAF/impôt/TVA). */
+  profilFiscal: ProfilFiscal | undefined;
+  /** Enregistre le profil fiscal du dossier actif. */
+  majProfilFiscal: (profil: ProfilFiscal) => void;
+  /** Renomme le dossier actif. */
+  renommerDossier: (nom: string) => void;
+  /** Crée un dossier vierge (sans import) avec son identité et son profil fiscal, puis bascule dessus. */
+  creerDossierVierge: (nom: string, profil: ProfilFiscal, dateBilan: string) => void;
   ajouterPrevisionnel: (mv: Omit<MouvementPrevisionnel, 'id'>) => void;
   supprimerPrevisionnel: (id: string) => void;
   ajouterAction: (a: Omit<ActionItem, 'id' | 'statut'>) => void;
@@ -216,6 +227,7 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       moisClotureIndex: actif?.moisClotureIndex ?? -1,
       dateBilan: actif?.dateBilan ?? '',
       exercice: actif?.exercice ?? 0,
+      profilFiscal: actif?.entreesBase.profilFiscal,
       tableauDeBord: calculerTableauDeBord(entrees),
       chargement,
       connecte: supabaseConfigured,
@@ -292,6 +304,28 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
         const annee = Number((dateBilan || '').slice(0, 4)) || 0;
         majActif((d) => ({ ...d, dateBilan, exercice: annee }));
         if (supabaseConfigured) majDateBilanDb(ws.actifId, dateBilan, annee).catch((e) => console.error('MAJ date de bilan échouée', e));
+      },
+
+      majProfilFiscal: (profil) => {
+        majActif((d) => ({ ...d, entreesBase: { ...d.entreesBase, profilFiscal: profil } }));
+        if (supabaseConfigured) majProfilFiscalDb(ws.actifId, profil).catch((e) => console.error('MAJ profil fiscal échouée', e));
+      },
+
+      renommerDossier: (nomDossier) => {
+        majActif((d) => ({ ...d, nom: nomDossier }));
+        if (supabaseConfigured) renommerDossierDb(ws.actifId, nomDossier).catch((e) => console.error('Renommage dossier échoué', e));
+      },
+
+      creerDossierVierge: async (nomDossier, profil, dateBilan) => {
+        const annee = Number((dateBilan || '').slice(0, 4)) || 0;
+        const base: EntreesMoteur = { ...entreesVides(), profilFiscal: profil };
+        if (supabaseConfigured) {
+          const id = await creerDossier(nomDossier, base, '', -1, dateBilan, annee);
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom: nomDossier, metier: '', entreesBase: base, previsionnels: [], planActions: [], moisClotureIndex: -1, dateBilan, exercice: annee }], actifId: id }));
+        } else {
+          const id = crypto.randomUUID();
+          setWs((s) => ({ ...s, dossiers: [...s.dossiers, { id, nom: nomDossier, metier: '', entreesBase: base, previsionnels: [], planActions: [], moisClotureIndex: -1, dateBilan, exercice: annee }], actifId: id }));
+        }
       },
 
       creerExerciceSuivant: async () => {

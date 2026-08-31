@@ -15,12 +15,14 @@ import {
   FileDown,
   Users,
   Coins,
+  FilePlus,
   Menu,
   X,
   LogOut,
 } from 'lucide-react';
 import { useDossier } from '@/lib/dossier-context';
 
+const NOUVEAU = { href: '/nouveau', label: 'Nouveau dossier', icon: FilePlus };
 const IMPORT = { href: '/import', label: 'Import FEC / balance', icon: Upload };
 
 const MODULES = [
@@ -66,7 +68,7 @@ export function Sidebar() {
   // Import placé juste sous Portefeuille clients (vue DAF), en tête sinon.
   const nav =
     role === 'daf'
-      ? [{ href: '/clients', label: 'Portefeuille clients', icon: Users }, IMPORT, ...MODULES]
+      ? [{ href: '/clients', label: 'Portefeuille clients', icon: Users }, NOUVEAU, IMPORT, ...MODULES]
       : [IMPORT, ...MODULES];
 
   return (

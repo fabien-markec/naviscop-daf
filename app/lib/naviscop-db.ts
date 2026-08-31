@@ -7,6 +7,7 @@ import type {
   LigneCashMensuelle,
   MouvementPrevisionnel,
   DetailFinancier,
+  ProfilFiscal,
 } from '@naviscop/finance-engine';
 import { supabase } from './supabase';
 import type { ActionItem, StatutAction } from './use-plan-action';
@@ -114,7 +115,7 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
   const s = db();
   const { data: dossiers, error } = await s
     .from('dossiers')
-    .select('id, nom, metier, detail_financier, mois_cloture_index, charges_fixes, date_bilan, exercice')
+    .select('id, nom, metier, detail_financier, mois_cloture_index, charges_fixes, date_bilan, exercice, profil_fiscal')
     .order('created_at');
   if (error) throw error;
   if (!dossiers || dossiers.length === 0) return [];
@@ -146,6 +147,7 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
     const dr = d as Record<string, unknown>;
     const detailBrut = dr.detail_financier as DetailFinancier | null;
     const chargesFixesBrut = dr.charges_fixes as EntreesMoteur['chargesFixes'] | null;
+    const profilBrut = dr.profil_fiscal as ProfilFiscal | null;
     const entreesBase: EntreesMoteur = {
       parametrage,
       pnl: mapPnl((pnlMap.get(d.id as string) ?? []) as Record<string, unknown>[]),
@@ -153,6 +155,7 @@ export async function chargerDossiers(): Promise<DossierRow[]> {
       creancesClients,
       detail: detailBrut ?? undefined,
       chargesFixes: chargesFixesBrut ?? undefined,
+      profilFiscal: profilBrut ?? undefined,
     };
     return {
       id: d.id as string,
@@ -188,6 +191,7 @@ export async function creerDossier(
       charges_fixes: entreesBase.chargesFixes ?? null,
       date_bilan: dateBilan || null,
       exercice: exercice || null,
+      profil_fiscal: entreesBase.profilFiscal ?? null,
     })
     .select('id')
     .single();
@@ -326,6 +330,18 @@ export async function majChargesFixesDb(dossierId: string, chargesFixes: Entrees
 /** Met à jour la date de bilan (clôture) et l'année d'exercice d'un dossier. */
 export async function majDateBilanDb(dossierId: string, dateBilan: string, exercice: number): Promise<void> {
   const { error } = await db().from('dossiers').update({ date_bilan: dateBilan || null, exercice: exercice || null }).eq('id', dossierId);
+  if (error) throw error;
+}
+
+/** Met à jour le profil fiscal (statut, régime, URSSAF/impôt/TVA) d'un dossier. */
+export async function majProfilFiscalDb(dossierId: string, profil: ProfilFiscal | null): Promise<void> {
+  const { error } = await db().from('dossiers').update({ profil_fiscal: profil ?? null }).eq('id', dossierId);
+  if (error) throw error;
+}
+
+/** Renomme un dossier. */
+export async function renommerDossierDb(dossierId: string, nom: string): Promise<void> {
+  const { error } = await db().from('dossiers').update({ nom }).eq('id', dossierId);
   if (error) throw error;
 }
 

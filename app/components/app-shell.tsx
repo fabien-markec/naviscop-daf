@@ -8,14 +8,15 @@ import { ModuleDateBilan } from '@/components/date-bilan';
 import { useDossier } from '@/lib/dossier-context';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { connecte, actifId, dateBilan } = useDossier();
+  const { connecte, actifId, dateBilan, profilFiscal } = useDossier();
   const path = usePathname();
 
   // En mode connecté, tant qu'aucun dossier n'est choisi, on impose la sélection.
-  // Exception : /import sert justement à créer un dossier.
-  const imposerChoix = connecte && !actifId && path !== '/import';
-  // Dossier choisi mais sans date de bilan : on impose de la renseigner d'abord.
-  const imposerDateBilan = connecte && !!actifId && !dateBilan && path !== '/import';
+  // Exception : /import et /nouveau servent justement à créer un dossier.
+  const horsCreation = path !== '/import' && path !== '/nouveau';
+  const imposerChoix = connecte && !actifId && horsCreation;
+  // Dossier choisi mais non configuré (date de bilan ou profil fiscal manquant) : on impose la config.
+  const imposerDateBilan = connecte && !!actifId && (!dateBilan || !profilFiscal) && horsCreation;
   const bloque = imposerChoix || imposerDateBilan;
 
   return (

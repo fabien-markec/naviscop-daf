@@ -10,6 +10,7 @@
 import type { EntreesMoteur } from './types.ts';
 import { calculerPnl } from './pnl.ts';
 import { calculerTresorerie } from './cashflow.ts';
+import { projeterFiscalite } from './profil-fiscal.ts';
 
 /** Une ligne de la cascade (un engagement déduit du solde bancaire). */
 export interface LigneCashDisponible {
@@ -45,10 +46,17 @@ export function calculerCashDisponible(entrees: EntreesMoteur, soldeBancaireOver
       ? entrees.chargesFixes.reduce((acc, c) => acc + c.montant, 0)
       : pnl.annuel.chargesFixesTotales / 12;
 
+  // Si un profil fiscal est renseigné, TVA/URSSAF/impôt sont projetés automatiquement
+  // (provision mensuelle moyenne) à partir du CA et des charges. Sinon, valeurs saisies à la main.
+  const proj = entrees.profilFiscal ? projeterFiscalite(entrees, entrees.profilFiscal) : null;
+  const tvaProv = proj ? proj.provisionMensuelle.tva : r(p.tvaAProvisionner ?? 0);
+  const urssafProv = proj ? proj.provisionMensuelle.urssaf : r(p.chargesSocialesAProvisionner ?? 0);
+  const impotProv = proj ? proj.provisionMensuelle.impot : r(p.impotsAProvisionner ?? 0);
+
   const deductions: LigneCashDisponible[] = [
-    { libelle: 'TVA à provisionner', montant: r(p.tvaAProvisionner ?? 0), saisi: true },
-    { libelle: 'URSSAF / charges sociales', montant: r(p.chargesSocialesAProvisionner ?? 0), saisi: true },
-    { libelle: 'Impôts à venir', montant: r(p.impotsAProvisionner ?? 0), saisi: true },
+    { libelle: 'TVA à provisionner', montant: r(tvaProv), saisi: !proj },
+    { libelle: 'URSSAF / charges sociales', montant: r(urssafProv), saisi: !proj },
+    { libelle: 'Impôts à venir', montant: r(impotProv), saisi: !proj },
     { libelle: 'Charges fixes du mois à venir', montant: r(chargesFixesMois), saisi: false },
     { libelle: 'Rémunération minimale dirigeant', montant: r(p.objectifRemunerationMensuelle || 0), saisi: true },
     { libelle: 'Sécurité de trésorerie', montant: r(p.securiteTresorerieCible ?? 0), saisi: true },
