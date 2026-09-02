@@ -101,9 +101,8 @@ export default function DashboardPage() {
 
       {sansPrevision && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-          Vous n’avez pas encore saisi de prévisions (factures et charges à venir) dans les autres modules. Cette vue reprend
-          donc simplement le réalisé. Ajoutez vos mouvements dans « Saisie prévisionnelle » et « Carnet de commandes » pour une
-          vraie projection.
+          Vous n’avez pas encore saisi de prévisions (factures et charges à venir). Cette vue reprend donc simplement le
+          réalisé. Ajoutez vos produits et charges à venir dans « Rentabilité » pour une vraie projection.
         </div>
       )}
 

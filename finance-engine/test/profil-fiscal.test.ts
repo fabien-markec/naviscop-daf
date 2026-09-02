@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { projeterFiscalite, profilFiscalParDefaut, type ProfilFiscal } from '../src/profil-fiscal.ts';
+import { projeterFiscalite, tresorerieApresFiscalite, profilFiscalParDefaut, type ProfilFiscal } from '../src/profil-fiscal.ts';
 import type { EntreesMoteur, LignePnlMensuelle } from '../src/types.ts';
 
 function pnl(caMensuel: number, achatsMensuel = 0): LignePnlMensuelle[] {
@@ -92,6 +92,39 @@ test('réel IR — échéancier URSSAF et IR saisis à la main', () => {
   assert.equal(p.parMois[3].impot, 500);
   assert.equal(p.annuel.urssaf, 2000);
   assert.equal(p.annuel.impot, 2000);
+});
+
+test('trésorerie après fiscalité — la TVA projetée réduit le solde de fin d’année', () => {
+  const profil: ProfilFiscal = {
+    statutJuridique: 'SAS_SASU', regimeFiscal: 'REEL_IS',
+    chargesSociales: { periodicite: 'mensuel', tauxTnsSurRemuneration: 0.45 },
+    impot: { periodicite: 'mensuel', echeancierManuel: Array(12).fill(0) },
+    tva: { assujetti: true, periodicite: 'mensuel', taux: 0.2 },
+  };
+  const e = entrees(10000); e.profilFiscal = profil; // CA 10000/mois, pas d'achats, rému 0 → seule la TVA joue (2000/mois)
+  e.parametrage.soldeInitialTresorerie = 30000;
+  e.cash = Array.from({ length: 12 }, () => ({ encaissements: 12000, decaissements: 0 }));
+  const tf = tresorerieApresFiscalite(e, -1)!;
+  assert.equal(tf.parMois[0].fiscal, 2000);
+  // solde de fin avant = 30000 + 12×12000 = 174000 ; après = 174000 − 12×2000 = 150000
+  assert.equal(tf.soldeFinAvant, 174000);
+  assert.equal(tf.soldeFinApres, 150000);
+});
+
+test('trésorerie après fiscalité — les mois clôturés ne sont pas prélevés une 2e fois', () => {
+  const profil: ProfilFiscal = {
+    statutJuridique: 'SAS_SASU', regimeFiscal: 'REEL_IS',
+    chargesSociales: { periodicite: 'mensuel', tauxTnsSurRemuneration: 0.45 },
+    impot: { periodicite: 'mensuel', echeancierManuel: Array(12).fill(0) },
+    tva: { assujetti: true, periodicite: 'mensuel', taux: 0.2 },
+  };
+  const e = entrees(10000); e.profilFiscal = profil;
+  e.cash = Array.from({ length: 12 }, () => ({ encaissements: 12000, decaissements: 0 }));
+  const tf = tresorerieApresFiscalite(e, 5)!; // clôturé jusqu'à juin (index 5)
+  // mois 0..5 : pas de prélèvement (déjà réalisé) ; mois 6..11 : TVA 2000
+  assert.equal(tf.parMois[0].fiscal, 0);
+  assert.equal(tf.parMois[5].fiscal, 0);
+  assert.equal(tf.parMois[6].fiscal, 2000);
 });
 
 test('profil par défaut = SASU à l’IS assujettie TVA', () => {

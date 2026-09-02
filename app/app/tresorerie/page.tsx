@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { MOIS } from '@naviscop/finance-engine';
+import { useMemo, useState } from 'react';
+import { MOIS, tresorerieApresFiscalite } from '@naviscop/finance-engine';
 import { Pencil } from 'lucide-react';
 import { useDossier } from '@/lib/dossier-context';
 import { eur } from '@/lib/format';
@@ -13,9 +13,10 @@ import { ProjectionFiscale } from '@/components/projection-fiscale';
 import { GrilleMensuelle, type LigneGrille } from '@/components/grille-mensuelle';
 
 export default function TresoreriePage() {
-  const { tableauDeBord, entrees, entreesReel, profilFiscal, chargesFixes, ajouterChargeFixe, supprimerChargeFixe, majCashMois, majParametrage } = useDossier();
+  const { tableauDeBord, entrees, entreesReel, profilFiscal, moisClotureIndex, chargesFixes, ajouterChargeFixe, supprimerChargeFixe, majCashMois, majParametrage } = useDossier();
   const { tresorerie, cashDisponible } = tableauDeBord;
   const [saisieOuverte, setSaisieOuverte] = useState(false);
+  const tresoFiscale = useMemo(() => tresorerieApresFiscalite(entrees, moisClotureIndex ?? -1), [entrees, moisClotureIndex]);
 
   const lignesCash: LigneGrille[] = [
     { key: 'enc', label: 'Encaissements (TTC)', get: (i) => entreesReel.cash[i].encaissements, set: (i, v) => majCashMois(i, { encaissements: v }) },
@@ -84,6 +85,17 @@ export default function TresoreriePage() {
         <FluxChart data={chartData} />
       </Section>
 
+      {tresoFiscale && (
+        <div className="rounded-2xl border border-brand/20 bg-brand/5 px-4 py-3 text-sm leading-relaxed text-slate-800">
+          Une fois les cotisations et taxes projetées payées, votre trésorerie de fin d’année passe de{' '}
+          <strong>{eur(tresoFiscale.soldeFinAvant)}</strong> à{' '}
+          <strong className={tresoFiscale.soldeFinApres < 0 ? 'text-rose-600' : 'text-emerald-700'}>{eur(tresoFiscale.soldeFinApres)}</strong>.
+          {tresoFiscale.moisNegatifApres >= 0 && (
+            <> Attention : elle devient négative dès <strong>{MOIS[tresoFiscale.moisNegatifApres]}</strong>.</>
+          )}
+        </div>
+      )}
+
       <Section title="Détail mensuel">
         <div className="overflow-x-auto">
           <table className="data-table">
@@ -95,11 +107,14 @@ export default function TresoreriePage() {
                 <th className="!text-right">Décaissements</th>
                 <th className="!text-right">Variation</th>
                 <th className="!text-right">Solde fin</th>
+                {tresoFiscale && <th className="!text-right">Prélèvements fiscaux</th>}
+                {tresoFiscale && <th className="!text-right">Solde après fiscalité</th>}
               </tr>
             </thead>
             <tbody>
               {tresorerie.parMois.map((m, i) => {
                 const critique = i === tresorerie.moisCritiqueIndex;
+                const tf = tresoFiscale?.parMois[i];
                 return (
                   <tr key={i} className={critique ? 'bg-rose-50' : ''}>
                     <td className="font-medium text-slate-800">{MOIS[i]}</td>
@@ -108,6 +123,8 @@ export default function TresoreriePage() {
                     <td className="num text-rose-600">{eur(m.decaissements)}</td>
                     <td className={`num ${m.variation < 0 ? 'text-rose-600' : 'text-slate-700'}`}>{eur(m.variation)}</td>
                     <td className={`num font-semibold ${m.soldeFin < 0 ? 'text-rose-600' : 'text-navy'}`}>{eur(m.soldeFin)}</td>
+                    {tf && <td className="num text-rose-600">{tf.fiscal ? `− ${eur(tf.fiscal)}` : '—'}</td>}
+                    {tf && <td className={`num font-semibold ${tf.soldeApres < 0 ? 'text-rose-600' : 'text-navy'}`}>{eur(tf.soldeApres)}</td>}
                   </tr>
                 );
               })}

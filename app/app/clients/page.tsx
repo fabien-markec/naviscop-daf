@@ -8,7 +8,7 @@ import { eur } from '@/lib/format';
 import { PageHeader, Section } from '@/components/ui';
 
 function resume(d: DossierEntry) {
-  const tdb = calculerTableauDeBord(fusionnerPrevisionnels(d.entreesBase, d.previsionnels));
+  const tdb = calculerTableauDeBord(fusionnerPrevisionnels(d.entreesBase, d.previsionnels, d.moisClotureIndex ?? -1));
   const rouges = tdb.alertes.filter((a) => a.niveau === 'rouge').length;
   const oranges = tdb.alertes.filter((a) => a.niveau === 'orange').length;
   return {
@@ -47,7 +47,7 @@ export default function ClientsPage() {
       <div className="flex items-center justify-between">
         <PageHeader title="Portefeuille clients" subtitle={`${dossiers.length} dossiers suivis. Vue d'ensemble et accès rapide.`} />
         <button
-          onClick={() => router.push('/import')}
+          onClick={() => router.push('/nouveau')}
           className="flex items-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft"
         >
           <Plus className="h-4 w-4" /> Nouveau client

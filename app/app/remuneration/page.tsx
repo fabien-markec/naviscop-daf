@@ -7,11 +7,18 @@ import { eur, pct } from '@/lib/format';
 import { PageHeader, Section, KpiCard } from '@/components/ui';
 
 export default function RemunerationPage() {
-  const { entrees } = useDossier();
+  const { entrees, profilFiscal } = useDossier();
   const [remuSouhaitee, setRemuSouhaitee] = useState(
     entrees.parametrage.objectifRemunerationMensuelle || 3000,
   );
-  const [tauxPct, setTauxPct] = useState(Math.round(TAUX_CHARGES_SOCIALES_DEFAUT * 100));
+  // Taux prérempli depuis le profil fiscal si disponible (cotisations gérant TNS ou micro),
+  // sinon valeur par défaut du moteur.
+  const tauxProfil =
+    profilFiscal?.chargesSociales.tauxTnsSurRemuneration ??
+    profilFiscal?.chargesSociales.tauxMicroSocial;
+  const [tauxPct, setTauxPct] = useState(
+    Math.round((tauxProfil ?? TAUX_CHARGES_SOCIALES_DEFAUT) * 100),
+  );
 
   const capacite = useMemo(
     () => calculerCapaciteRemuneration(entrees, remuSouhaitee, tauxPct / 100),

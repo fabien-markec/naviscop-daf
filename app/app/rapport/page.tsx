@@ -2,16 +2,18 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Printer, Download } from 'lucide-react';
-import { analyserCommeDaf, synthetiserMois, dernierMoisActif, MOIS } from '@naviscop/finance-engine';
+import { analyserCommeDaf, synthetiserMois, dernierMoisActif, projeterFiscalite, tresorerieApresFiscalite, MOIS } from '@naviscop/finance-engine';
 import { useDossier } from '@/lib/dossier-context';
 import { construireCsv, telechargerCsv } from '@/lib/export-csv';
 import { telechargerXlsx } from '@/lib/export-xlsx';
 import { eur, pct } from '@/lib/format';
 
 export default function RapportPage() {
-  const { entrees, nom, tableauDeBord } = useDossier();
-  const { kpis, tresorerie, pnl, alertes } = tableauDeBord;
+  const { entrees, nom, tableauDeBord, profilFiscal, moisClotureIndex } = useDossier();
+  const { kpis, tresorerie, pnl, alertes, cashDisponible } = tableauDeBord;
   const analyse = useMemo(() => analyserCommeDaf(entrees), [entrees]);
+  const projFiscale = useMemo(() => (profilFiscal ? projeterFiscalite(entrees, profilFiscal) : null), [entrees, profilFiscal]);
+  const tresoFiscale = useMemo(() => tresorerieApresFiscalite(entrees, moisClotureIndex ?? -1), [entrees, moisClotureIndex]);
   const [moisSynthese, setMoisSynthese] = useState(() => dernierMoisActif(entrees));
   const syntheseMois = useMemo(() => synthetiserMois(entrees, moisSynthese), [entrees, moisSynthese]);
   const [date, setDate] = useState('');
@@ -26,7 +28,8 @@ export default function RapportPage() {
     ['EBE', eur(kpis.excedentBrutExploitation)],
     ['Résultat prévisionnel', eur(kpis.resultatPrevisionnel)],
     ['Seuil de rentabilité', eur(kpis.seuilRentabilite)],
-    ['Trésorerie à 12 mois', eur(kpis.tresorerie12Mois)],
+    ['Trésorerie fin d’année', eur(kpis.tresorerie12Mois)],
+    ['Cash réellement disponible', eur(cashDisponible.cashDisponible)],
     ['Créances clients', eur(kpis.creancesClients)],
     ['Mois de trésorerie d’avance', kpis.moisTresorerieAvance.toFixed(1)],
   ];
@@ -128,6 +131,35 @@ export default function RapportPage() {
             </tbody>
           </table>
         </section>
+
+        {projFiscale && (projFiscale.annuel.total > 0) && (
+          <section>
+            <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-700">Charges & taxes projetées (année)</h3>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-2 md:grid-cols-4">
+              {[
+                ['URSSAF / charges sociales', projFiscale.annuel.urssaf],
+                ['Impôt (IR / IS)', projFiscale.annuel.impot],
+                ['TVA', projFiscale.annuel.tva],
+                ['Total prélèvements', projFiscale.annuel.total],
+              ].filter(([, v]) => (v as number) !== 0).map(([label, v]) => (
+                <div key={label as string} className="border-b border-slate-100 py-1.5">
+                  <p className="text-[11px] text-slate-700">{label as string}</p>
+                  <p className="font-semibold tabular-nums text-slate-900">{eur(v as number)}</p>
+                </div>
+              ))}
+            </div>
+            {tresoFiscale && (
+              <p className="mt-3 rounded-xl bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-800">
+                Après paiement des cotisations et taxes projetées, la trésorerie de fin d’année passe de{' '}
+                <strong>{eur(tresoFiscale.soldeFinAvant)}</strong> à{' '}
+                <strong className={tresoFiscale.soldeFinApres < 0 ? 'text-rose-600' : ''}>{eur(tresoFiscale.soldeFinApres)}</strong>
+                {tresoFiscale.moisNegatifApres >= 0 && (
+                  <> — attention, elle devient négative dès {MOIS[tresoFiscale.moisNegatifApres]}.</>
+                )}
+              </p>
+            )}
+          </section>
+        )}
 
         {alertes.length > 0 && (
           <section>

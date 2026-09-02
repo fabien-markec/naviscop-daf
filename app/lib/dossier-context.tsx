@@ -362,6 +362,7 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
           ...entreesVides(),
           parametrage: { ...actifCourant.entreesBase.parametrage, soldeInitialTresorerie: soldeOuverture },
           chargesFixes: actifCourant.entreesBase.chargesFixes,
+          profilFiscal: actifCourant.entreesBase.profilFiscal,
         };
         const nom = `${nomBase} ${anneeSuiv}`;
         if (supabaseConfigured) {

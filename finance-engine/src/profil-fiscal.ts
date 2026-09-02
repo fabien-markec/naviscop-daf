@@ -12,6 +12,7 @@
  */
 
 import type { EntreesMoteur } from './types.ts';
+import { calculerTresorerie } from './cashflow.ts';
 
 export type StatutJuridique = 'EI' | 'SARL_EURL' | 'SAS_SASU';
 export type RegimeFiscal = 'MICRO' | 'REEL_IR' | 'REEL_IS';
@@ -201,5 +202,43 @@ export function projeterFiscalite(entrees: EntreesMoteur, profil: ProfilFiscal):
       impot: r(annuel.impot / 12),
       tva: r(annuel.tva / 12),
     },
+  };
+}
+
+export interface TresorerieFiscale {
+  /** Par mois : le prélèvement fiscal projeté et le solde de trésorerie une fois ces prélèvements payés. */
+  parMois: { fiscal: number; soldeAvant: number; soldeApres: number }[];
+  /** Solde de fin d'année après paiement de tous les prélèvements projetés. */
+  soldeFinApres: number;
+  /** Solde de fin d'année avant prélèvements (trésorerie de base). */
+  soldeFinAvant: number;
+  /** Premier mois où la trésorerie après prélèvements passe sous zéro (-1 si jamais). */
+  moisNegatifApres: number;
+}
+
+/**
+ * Superpose les prélèvements fiscaux projetés (URSSAF + impôt + TVA) à la trésorerie de base,
+ * pour montrer ce qu'il reste réellement une fois les échéances payées.
+ * Les prélèvements ne sont appliqués qu'aux mois NON clôturés (les mois réalisés contiennent
+ * déjà leurs paiements réels ; on ne compte donc pas deux fois).
+ */
+export function tresorerieApresFiscalite(entrees: EntreesMoteur, moisClotureIndex = -1): TresorerieFiscale | null {
+  if (!entrees.profilFiscal) return null;
+  const treso = calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash);
+  const proj = projeterFiscalite(entrees, entrees.profilFiscal);
+  let cumulFiscal = 0;
+  let moisNegatifApres = -1;
+  const parMois = treso.parMois.map((m, i) => {
+    const fiscal = i > moisClotureIndex ? proj.parMois[i].total : 0;
+    cumulFiscal += fiscal;
+    const soldeApres = r(m.soldeFin - cumulFiscal);
+    if (moisNegatifApres === -1 && soldeApres < 0) moisNegatifApres = i;
+    return { fiscal: r(fiscal), soldeAvant: r(m.soldeFin), soldeApres };
+  });
+  return {
+    parMois,
+    soldeFinApres: parMois[11].soldeApres,
+    soldeFinAvant: parMois[11].soldeAvant,
+    moisNegatifApres,
   };
 }
