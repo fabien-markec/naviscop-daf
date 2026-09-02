@@ -57,7 +57,7 @@ const CATEGORIES_SAISIE: { valeur: CategorieCharge; label: string }[] = [
 ];
 
 export default function RentabilitePage() {
-  const { entrees, pnlReel, tableauDeBord, previsionnels, ajouterPrevisionnel, supprimerPrevisionnel, majReelMois } = useDossier();
+  const { entrees, pnlReel, tableauDeBord, previsionnels, ajouterPrevisionnel, supprimerPrevisionnel, majReelMois, moisClotureIndex, majMoisCloture } = useDossier();
   const { pnl } = tableauDeBord;
   const a = pnl.annuel;
   const pnlMensuel = entrees.pnl;
@@ -261,6 +261,22 @@ export default function RentabilitePage() {
               Pas de FEC ni de balance ? Saisissez directement le chiffre d’affaires et les charges de chaque mois. Les soldes
               (marge, EBE, résultat) se recalculent automatiquement.
             </p>
+            <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-navy/10 bg-slate-50 px-3.5 py-2.5">
+              <label className="text-sm text-slate-700">Dernier mois clôturé (réalisé connu)</label>
+              <select
+                value={moisClotureIndex ?? -1}
+                onChange={(e) => majMoisCloture(Number(e.target.value))}
+                className="rounded-lg border border-navy/10 bg-white px-2.5 py-1.5 text-sm text-navy outline-none focus:border-brand/50"
+              >
+                <option value={-1}>Aucun</option>
+                {MOIS.map((m, i) => (
+                  <option key={m} value={i}>{m}</option>
+                ))}
+              </select>
+              <span className="text-xs text-slate-600">
+                Au-delà de ce mois, seules vos prévisions comptent. En deçà, c’est le réalisé — évite de compter deux fois une facture prévue puis réalisée.
+              </span>
+            </div>
             <GrilleMensuelle lignes={lignesSaisie} />
           </>
         ) : (

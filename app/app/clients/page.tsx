@@ -8,7 +8,7 @@ import { eur } from '@/lib/format';
 import { PageHeader, Section } from '@/components/ui';
 
 function resume(d: DossierEntry) {
-  const tdb = calculerTableauDeBord(fusionnerPrevisionnels(d.entreesBase, d.previsionnels, d.moisClotureIndex ?? -1));
+  const tdb = calculerTableauDeBord(fusionnerPrevisionnels(d.entreesBase, d.previsionnels, d.moisClotureIndex ?? -1), d.moisClotureIndex ?? -1);
   const rouges = tdb.alertes.filter((a) => a.niveau === 'rouge').length;
   const oranges = tdb.alertes.filter((a) => a.niveau === 'orange').length;
   return {

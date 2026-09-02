@@ -13,7 +13,7 @@ import { ProjectionFiscale } from '@/components/projection-fiscale';
 import { GrilleMensuelle, type LigneGrille } from '@/components/grille-mensuelle';
 
 export default function TresoreriePage() {
-  const { tableauDeBord, entrees, entreesReel, profilFiscal, moisClotureIndex, chargesFixes, ajouterChargeFixe, supprimerChargeFixe, majCashMois, majParametrage } = useDossier();
+  const { tableauDeBord, entrees, entreesReel, profilFiscal, moisClotureIndex, chargesFixes, ajouterChargeFixe, supprimerChargeFixe, majCashMois, majParametrage, majCreances } = useDossier();
   const { tresorerie, cashDisponible } = tableauDeBord;
   const [saisieOuverte, setSaisieOuverte] = useState(false);
   const tresoFiscale = useMemo(() => tresorerieApresFiscalite(entrees, moisClotureIndex ?? -1), [entrees, moisClotureIndex]);
@@ -55,16 +55,33 @@ export default function TresoreriePage() {
       >
         {saisieOuverte ? (
           <>
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <label className="text-sm text-slate-700">Solde de trésorerie de départ</label>
-              <input
-                type="number"
-                value={entrees.parametrage.soldeInitialTresorerie || ''}
-                onChange={(e) => majParametrage({ soldeInitialTresorerie: Number(e.target.value) || 0 })}
-                className="w-40 rounded-xl border border-navy/10 bg-white px-3 py-1.5 text-sm tabular-nums text-navy outline-none focus:border-brand/50"
-                placeholder="0"
-              />
-              <span className="text-sm text-slate-700">€</span>
+            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block text-sm text-slate-700">
+                Solde de trésorerie de départ
+                <div className="mt-1 flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={entrees.parametrage.soldeInitialTresorerie || ''}
+                    onChange={(e) => majParametrage({ soldeInitialTresorerie: Number(e.target.value) || 0 })}
+                    className="w-40 rounded-xl border border-navy/10 bg-white px-3 py-1.5 text-sm tabular-nums text-navy outline-none focus:border-brand/50"
+                    placeholder="0"
+                  />
+                  <span className="text-slate-700">€</span>
+                </div>
+              </label>
+              <label className="block text-sm text-slate-700">
+                Créances clients (facturé non encaissé)
+                <div className="mt-1 flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={entrees.creancesClients || ''}
+                    onChange={(e) => majCreances(Number(e.target.value) || 0)}
+                    className="w-40 rounded-xl border border-navy/10 bg-white px-3 py-1.5 text-sm tabular-nums text-navy outline-none focus:border-brand/50"
+                    placeholder="0"
+                  />
+                  <span className="text-slate-700">€</span>
+                </div>
+              </label>
             </div>
             <p className="mb-3 text-xs text-slate-700">
               Pas de FEC ni de balance ? Saisissez les encaissements et décaissements réels (TTC) de chaque mois. Le solde se

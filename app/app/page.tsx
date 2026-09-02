@@ -23,13 +23,13 @@ const STATUT_STYLE: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const { entrees, entreesReel, previsionnels, planActions, chargesFixes, ajouterChargeFixe, supprimerChargeFixe } = useDossier();
+  const { entrees, entreesReel, moisClotureIndex, previsionnels, planActions, chargesFixes, ajouterChargeFixe, supprimerChargeFixe } = useDossier();
   const [vue, setVue] = useState<VueDashboard>('aujourdhui');
   const [moisPerso, setMoisPerso] = useState(() => dernierMoisActif(entreesReel));
 
   // Vue « à aujourd'hui » = réalisé seul ; « fin d'année » / « personnalisé » = base + prévisions.
   const entreesVue = vue === 'aujourdhui' ? entreesReel : entrees;
-  const tdb = useMemo(() => calculerTableauDeBord(entreesVue), [entreesVue]);
+  const tdb = useMemo(() => calculerTableauDeBord(entreesVue, moisClotureIndex ?? -1), [entreesVue, moisClotureIndex]);
   const { kpis, tresorerie, pnl, alertes } = tdb;
   const moisRef =
     vue === 'annee' ? 11 : vue === 'perso' ? moisPerso : tresorerie.moisADateIndex >= 0 ? tresorerie.moisADateIndex : 11;

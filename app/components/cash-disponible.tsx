@@ -72,7 +72,7 @@ export function CascadeCash({
       {editable && ouvert && (
         <div className="mt-2 rounded-xl border border-navy/10 bg-slate-50 p-3">
           {(chargesFixes?.length ?? 0) === 0 ? (
-            <p className="mb-2 text-xs text-slate-700">Aucune charge fixe saisie : le montant est estimé (charges annuelles ÷ 12). Ajoutez vos charges pour un montant précis.</p>
+            <p className="mb-2 text-xs text-slate-700">Aucune charge fixe saisie : le montant est estimé (charges annuelles ÷ 12). Ajoutez vos charges pour un montant précis. Ces charges servent au calcul du cash disponible ; le compte de résultat et le plan de trésorerie se saisissent dans « Rentabilité ».</p>
           ) : (
             <ul className="mb-2 space-y-1">
               {chargesFixes!.map((c) => (

@@ -34,12 +34,12 @@ import { calculerCashDisponible } from './cash-disponible.ts';
 import { evaluerAlertes } from './alerts.ts';
 
 /** Calcule tout le tableau de bord d'un dossier en une passe. */
-export function calculerTableauDeBord(entrees: EntreesMoteur) {
+export function calculerTableauDeBord(entrees: EntreesMoteur, moisClotureIndex = -1) {
   return {
     pnl: calculerPnl(entrees.pnl),
     tresorerie: calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash),
     kpis: calculerKpis(entrees),
     cashDisponible: calculerCashDisponible(entrees),
-    alertes: evaluerAlertes(entrees),
+    alertes: evaluerAlertes(entrees, moisClotureIndex),
   };
 }

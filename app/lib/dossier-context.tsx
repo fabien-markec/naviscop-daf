@@ -30,6 +30,7 @@ import {
   majDateBilanDb,
   majProfilFiscalDb,
   renommerDossierDb,
+  majCreancesDb,
   ajouterPrevisionnelDb,
   supprimerPrevisionnelDb,
   ajouterActionDb,
@@ -94,6 +95,8 @@ interface DossierContextValue {
   majReelMois: (moisIndex: number, patch: Partial<LignePnlMensuelle>) => void;
   /** Saisit / corrige la trésorerie d'un mois (encaissements / décaissements TTC). */
   majCashMois: (moisIndex: number, patch: Partial<LigneCashMensuelle>) => void;
+  /** Saisit les créances clients (facturé non encaissé) à la main. */
+  majCreances: (montant: number) => void;
   /** Avance le dossier actif avec une balance cumulée : mois figés, nouveau mois = différence. */
   avancerDossierCumule: (contenuBalance: string, moisArrete: number) => void;
   /** Ajoute une charge fixe mensuelle. */
@@ -232,7 +235,7 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
       dateBilan: actif?.dateBilan ?? '',
       exercice: actif?.exercice ?? 0,
       profilFiscal: actif?.entreesBase.profilFiscal,
-      tableauDeBord: calculerTableauDeBord(entrees),
+      tableauDeBord: calculerTableauDeBord(entrees, actif?.moisClotureIndex ?? -1),
       chargement,
       connecte: supabaseConfigured,
       ouvrirDossier: (id) => setWs((s) => ({ ...s, actifId: id })),
@@ -300,6 +303,11 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
           },
         }));
         if (supabaseConfigured) majCashMoisDb(ws.actifId, moisIndex, patch).catch((e) => console.error('MAJ trésorerie échouée', e));
+      },
+
+      majCreances: (montant) => {
+        majActif((d) => ({ ...d, entreesBase: { ...d.entreesBase, creancesClients: montant } }));
+        if (supabaseConfigured) majCreancesDb(ws.actifId, montant).catch((e) => console.error('MAJ créances échouée', e));
       },
 
       avancerDossierCumule: (contenuBalance, moisArrete) => {

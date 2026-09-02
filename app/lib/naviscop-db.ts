@@ -359,6 +359,12 @@ export async function renommerDossierDb(dossierId: string, nom: string): Promise
   if (error) throw error;
 }
 
+/** Met à jour les créances clients (facturé non encaissé) saisies à la main. */
+export async function majCreancesDb(dossierId: string, creances: number): Promise<void> {
+  const { error } = await db().from('dossier_parametrage').update({ creances_clients: creances }).eq('dossier_id', dossierId);
+  if (error) throw error;
+}
+
 export async function ajouterPrevisionnelDb(
   dossierId: string,
   mv: Omit<MouvementPrevisionnel, 'id'>,

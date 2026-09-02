@@ -7,6 +7,7 @@ import { MOIS } from './types.ts';
 import { calculerPnl } from './pnl.ts';
 import { calculerTresorerie } from './cashflow.ts';
 import { calculerCashDisponible } from './cash-disponible.ts';
+import { tresorerieApresFiscalite } from './profil-fiscal.ts';
 
 export type NiveauAlerte = 'rouge' | 'orange';
 
@@ -25,7 +26,7 @@ function pct(n: number): string {
   return `${Math.round(n * 100)} %`;
 }
 
-export function evaluerAlertes(entrees: EntreesMoteur): Alerte[] {
+export function evaluerAlertes(entrees: EntreesMoteur, moisClotureIndex = -1): Alerte[] {
   const { parametrage: p } = entrees;
   const pnl = calculerPnl(entrees.pnl);
   const treso = calculerTresorerie(p.soldeInitialTresorerie, entrees.cash);
@@ -63,6 +64,19 @@ export function evaluerAlertes(entrees: EntreesMoteur): Alerte[] {
       code: 'cash_disponible_faible',
       niveau: 'orange',
       message: `Votre solde bancaire est positif, mais votre cash réellement disponible est faible (${eur(cd.cashDisponible)}) après provisions. Prudence avant toute dépense.`,
+    });
+  }
+
+  // 2 bis. Échéance fiscale non couverte : la trésorerie tient, mais plus une fois les
+  // cotisations et taxes projetées payées.
+  const tf = tresorerieApresFiscalite(entrees, moisClotureIndex);
+  if (tf && tf.moisNegatifApres >= 0 && treso.parMois[tf.moisNegatifApres].soldeFin >= 0) {
+    const mois = MOIS[tf.moisNegatifApres];
+    alertes.push({
+      code: 'echeance_fiscale_tendue',
+      niveau: 'rouge',
+      message: `Votre trésorerie tient, mais elle ne couvre pas vos échéances fiscales : en ${mois}, une fois l'URSSAF, l'impôt et la TVA payés, vous passez dans le rouge. Provisionnez ces montants dès maintenant.`,
+      mois,
     });
   }
 

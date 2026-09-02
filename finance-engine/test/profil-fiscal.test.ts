@@ -4,6 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { projeterFiscalite, tresorerieApresFiscalite, profilFiscalParDefaut, type ProfilFiscal } from '../src/profil-fiscal.ts';
+import { evaluerAlertes } from '../src/alerts.ts';
 import type { EntreesMoteur, LignePnlMensuelle } from '../src/types.ts';
 
 function pnl(caMensuel: number, achatsMensuel = 0): LignePnlMensuelle[] {
@@ -125,6 +126,19 @@ test('trésorerie après fiscalité — les mois clôturés ne sont pas prélev�
   assert.equal(tf.parMois[0].fiscal, 0);
   assert.equal(tf.parMois[5].fiscal, 0);
   assert.equal(tf.parMois[6].fiscal, 2000);
+});
+
+test('alerte échéance fiscale — tréso positive mais négative une fois la TVA payée', () => {
+  const profil: ProfilFiscal = {
+    statutJuridique: 'SAS_SASU', regimeFiscal: 'REEL_IS',
+    chargesSociales: { periodicite: 'mensuel', tauxTnsSurRemuneration: 0.45 },
+    impot: { periodicite: 'mensuel', echeancierManuel: Array(12).fill(0) },
+    tva: { assujetti: true, periodicite: 'mensuel', taux: 0.2 },
+  };
+  const e = entrees(10000); e.profilFiscal = profil; // CA 10000 → TVA 2000/mois
+  e.parametrage.soldeInitialTresorerie = 1000; // tréso de base = 1000 (aucun flux cash saisi)
+  const alertes = evaluerAlertes(e, -1);
+  assert.ok(alertes.some((a) => a.code === 'echeance_fiscale_tendue'));
 });
 
 test('profil par défaut = SASU à l’IS assujettie TVA', () => {
