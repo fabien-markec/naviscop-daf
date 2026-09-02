@@ -35,10 +35,11 @@ git fetch /tmp/naviscop.bundle main
 git reset --hard FETCH_HEAD
 echo "    commit : \$(git log --oneline -1)"
 
-set -a; . /opt/naviscop-supabase/.env; set +a
+# On extrait la clé anon par grep (sourcer le .env échoue sous set -e : il contient des lignes non-shell).
+ANON=\$(grep -E '^ANON_KEY=' /opt/naviscop-supabase/.env | head -1 | cut -d= -f2-)
 docker build \
   --build-arg NEXT_PUBLIC_SUPABASE_URL=$SUPA_URL \
-  --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="\$ANON_KEY" \
+  --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="\$ANON" \
   -t naviscop-app:new . >/dev/null
 echo "    build OK"
 
