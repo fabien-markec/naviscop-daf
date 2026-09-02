@@ -235,6 +235,8 @@ export function tresorerieApresFiscalite(entrees: EntreesMoteur, moisClotureInde
     if (moisNegatifApres === -1 && soldeApres < 0) moisNegatifApres = i;
     return { fiscal: r(fiscal), soldeAvant: r(m.soldeFin), soldeApres };
   });
+  // Rien à projeter (dossier entièrement clôturé, ou aucune fiscalité) : pas de superposition utile.
+  if (parMois.every((m) => m.fiscal === 0)) return null;
   return {
     parMois,
     soldeFinApres: parMois[11].soldeApres,
