@@ -50,7 +50,7 @@ export function Sidebar() {
     .filter((d) => actifId && d.exercice && nomBase(d.nom) === baseActif)
     .sort((a, b) => a.exercice - b.exercice);
   const peutCreerSuivant =
-    !!actifId && !!dateBilan && !exercices.some((d) => d.exercice === (exercice || 0) + 1);
+    role === 'daf' && !!actifId && !!dateBilan && !exercices.some((d) => d.exercice === (exercice || 0) + 1);
 
   // Ferme le tiroir à chaque changement de page (mobile).
   useEffect(() => {
