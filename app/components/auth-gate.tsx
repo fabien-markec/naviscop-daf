@@ -45,6 +45,7 @@ function LoginForm() {
   const [voir, setVoir] = useState(false);
   const [erreur, setErreur] = useState('');
   const [enCours, setEnCours] = useState(false);
+  const [oubli, setOubli] = useState(false);
 
   const soumettre = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +106,20 @@ function LoginForm() {
             {enCours ? 'Connexion…' : 'Se connecter'}
           </button>
         </form>
+
+        <button
+          type="button"
+          onClick={() => setOubli((o) => !o)}
+          className="mt-4 text-xs font-medium text-slate-600 hover:text-navy"
+        >
+          Mot de passe oublié ?
+        </button>
+        {oubli && (
+          <p className="mt-2 rounded-xl border border-navy/10 bg-slate-50 px-3.5 py-2.5 text-xs leading-relaxed text-slate-700">
+            Demandez un <b className="text-navy">nouveau lien d’accès</b> à votre conseiller. En choisissant un nouveau mot de
+            passe sur ce lien, votre accès est réinitialisé — pas besoin d’email.
+          </p>
+        )}
       </div>
     </div>
   );

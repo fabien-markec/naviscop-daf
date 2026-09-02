@@ -110,6 +110,21 @@ function mapAction(r: Record<string, unknown>): ActionItem {
 }
 
 // ---------- lecture ----------
+/**
+ * Détermine le rôle de l'utilisateur connecté : « daf » s'il est DAF (propriétaire)
+ * d'au moins un dossier ou n'a encore aucun dossier (il pourra en créer un) ; « client »
+ * s'il n'est que membre-client de dossiers (accès invité, pas de création).
+ */
+export async function chargerRoleUtilisateur(): Promise<'daf' | 'client'> {
+  const s = db();
+  const { data: u } = await s.auth.getUser();
+  const uid = u.user?.id;
+  if (!uid) return 'daf';
+  const { data, error } = await s.from('dossier_membres').select('role').eq('user_id', uid);
+  if (error || !data || data.length === 0) return 'daf';
+  return data.some((m) => (m.role as string) === 'daf') ? 'daf' : 'client';
+}
+
 /** Charge tous les dossiers accessibles à l'utilisateur, prêts pour le moteur. */
 export async function chargerDossiers(): Promise<DossierRow[]> {
   const s = db();

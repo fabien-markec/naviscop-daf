@@ -66,10 +66,11 @@ export function Sidebar() {
   }, [open]);
 
   // Import placé juste sous Portefeuille clients (vue DAF), en tête sinon.
+  // Le client (accès invité) est verrouillé sur son dossier : pas de portefeuille, ni création, ni import.
   const nav =
     role === 'daf'
       ? [{ href: '/clients', label: 'Portefeuille clients', icon: Users }, NOUVEAU, IMPORT, ...MODULES]
-      : [IMPORT, ...MODULES];
+      : [...MODULES];
 
   return (
     <>

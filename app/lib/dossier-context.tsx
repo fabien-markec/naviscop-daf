@@ -19,6 +19,7 @@ import { supabase, supabaseConfigured } from './supabase';
 import type { ActionItem, StatutAction } from './use-plan-action';
 import {
   chargerDossiers,
+  chargerRoleUtilisateur,
   creerDossier,
   supprimerDossier as supprimerDossierDb,
   majParametrageDb,
@@ -168,9 +169,10 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
     let annule = false;
     (async () => {
       try {
-        const dossiers: DossierRow[] = await chargerDossiers();
-        // Aucun dossier auto-créé : le DAF choisit (ou importe) son dossier. Pas de sélection par défaut.
-        if (!annule) setWs({ role: 'daf', dossiers, actifId: '' });
+        const [dossiers, role] = await Promise.all([chargerDossiers(), chargerRoleUtilisateur()]);
+        // Un client (accès invité) est verrouillé sur son dossier : sélection auto, pas de choix multiple.
+        const actifId = role === 'client' && dossiers.length > 0 ? dossiers[0].id : '';
+        if (!annule) setWs({ role, dossiers, actifId });
       } catch (e) {
         console.error('Chargement des dossiers échoué', e);
       } finally {

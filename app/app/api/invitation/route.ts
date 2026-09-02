@@ -70,9 +70,12 @@ export async function POST(req: Request) {
   if (created?.user) {
     clientId = created.user.id;
   } else if (createErr) {
+    // Le compte existe déjà : on le retrouve et on réinitialise son mot de passe.
+    // Un nouveau lien d'accès sert ainsi aussi de récupération de mot de passe (sans email).
     const { data: liste } = await db.auth.admin.listUsers();
     clientId = liste?.users.find((u) => u.email?.toLowerCase() === email)?.id;
     if (!clientId) return NextResponse.json({ error: createErr.message }, { status: 400 });
+    await db.auth.admin.updateUserById(clientId, { password: motDePasse });
   }
 
   // Rattacher au dossier en tant que client.
