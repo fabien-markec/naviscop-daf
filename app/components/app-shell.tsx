@@ -11,6 +11,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { connecte, actifId, dateBilan, profilFiscal } = useDossier();
   const path = usePathname();
 
+  // La page d'invitation est autonome (plein écran, sans barre latérale ni bulle).
+  if (path?.startsWith('/invite')) return <>{children}</>;
+
   // En mode connecté, tant qu'aucun dossier n'est choisi, on impose la sélection.
   // Exception : /import et /nouveau servent justement à créer un dossier.
   const horsCreation = path !== '/import' && path !== '/nouveau';

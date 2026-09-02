@@ -1,11 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase, supabaseConfigured } from '@/lib/supabase';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
+  const path = usePathname();
+  // La page d'invitation par lien est publique (le client n'a pas encore de compte).
+  if (path?.startsWith('/invite')) return <>{children}</>;
   // Mode démo (pas de Supabase configuré) : aucun login, on passe tout.
   if (!supabaseConfigured) return <>{children}</>;
   return <AuthGateSupabase>{children}</AuthGateSupabase>;
