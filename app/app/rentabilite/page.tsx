@@ -136,7 +136,7 @@ export default function RentabilitePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Rentabilité" subtitle="L’activité gagne-t-elle vraiment de l’argent ? Compte de résultat détaillé (SIG)." />
+      <PageHeader title="Rentabilité" subtitle="L’activité gagne-t-elle vraiment de l’argent ? Compte de résultat détaillé, mois par mois." />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard label="CA HT annuel" value={eur(a.caHt)} />
@@ -149,8 +149,8 @@ export default function RentabilitePage() {
         <ResultatChart data={chartData} />
       </Section>
 
-      {/* Soldes intermédiaires de gestion — mois en colonnes, SIG en lignes */}
-      <Section title="Soldes intermédiaires de gestion (mensuel)">
+      {/* Compte de résultat détaillé — mois en colonnes, postes en lignes */}
+      <Section title="Résultat détaillé (mensuel)">
         <p className="mb-3 text-xs text-slate-700">Cliquez sur une ligne de charge pour voir le détail des postes qui la composent.</p>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
