@@ -54,6 +54,8 @@ export function fusionnerPrevisionnels(
 ): EntreesMoteur {
   const pnl: LignePnlMensuelle[] = base.pnl.map((m) => ({ ...m }));
   const cash: LigneCashMensuelle[] = base.cash.map((m) => ({ ...m }));
+  // Les charges saisies « fixe » alimentent aussi la liste des charges fixes (cash réellement disponible).
+  const chargesFixes = [...(base.chargesFixes ?? [])];
 
   for (const mv of mouvements) {
     const i = mv.moisIndex;
@@ -73,6 +75,9 @@ export function fusionnerPrevisionnels(
       case 'charge_prevue': {
         const cat = mv.categorie ?? 'autresAchatsChargesExternes';
         const dec = decalageMois(mv.delaiPaiementJours);
+        if (mv.estFixe && i > moisClotureIndex) {
+          chargesFixes.push({ id: mv.id, libelle: mv.libelle, montant: mv.montantHt });
+        }
         // Mois d'application : une seule fois, ou chaque mois (charge fixe) du mois de départ à décembre.
         const moisApplication = mv.estFixe ? Array.from({ length: 12 - i }, (_, k) => i + k) : [i];
         for (const m of moisApplication) {
@@ -90,7 +95,7 @@ export function fusionnerPrevisionnels(
     }
   }
 
-  return { ...base, pnl, cash };
+  return { ...base, pnl, cash, chargesFixes };
 }
 
 /**

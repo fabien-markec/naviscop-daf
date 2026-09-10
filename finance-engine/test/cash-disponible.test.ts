@@ -32,6 +32,22 @@ test('cash dispo — solde de fin de mois moins rémunération et charges fixes 
   assert.equal(cd.cashDisponible, 20000);
 });
 
+test('cash dispo — les salaires du résultat ne sont PAS comptés comme charges fixes (anti double-compte)', () => {
+  const entrees: EntreesMoteur = {
+    parametrage: {
+      soldeInitialTresorerie: 50000, objectifCaAnnuel: 0, objectifRemunerationMensuelle: 3000,
+      moisSecuriteTresorerie: 2, objectifTauxMarque: 0, seuilChargesFixesPctCa: 0.3, objectifResultatNetAnnuel: 0,
+    },
+    // Salaires présents dans le résultat, mais AUCUNE charge fixe déclarée.
+    pnl: pnlVide().map((m) => ({ ...m, salairesEtCharges: 5000 })),
+    cash: Array.from({ length: 12 }, () => ({ encaissements: 0, decaissements: 0 })),
+  };
+  const cd = calculerCashDisponible(entrees, 10); // décembre à venir
+  // Seule la rémunération est déduite (3000). Pas de ligne « charges fixes » (salaires non recomptés).
+  assert.equal(cd.totalEngage, 3000);
+  assert.equal(cd.deductions.some((d) => d.libelle.includes('Charges fixes')), false);
+});
+
 test('cash dispo — TVA à venir déduite (profil à l’IS)', () => {
   const profil: ProfilFiscal = {
     statutJuridique: 'SAS_SASU', regimeFiscal: 'REEL_IS',

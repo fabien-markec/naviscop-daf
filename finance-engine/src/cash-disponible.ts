@@ -7,7 +7,6 @@
  *   solde fin de mois − (TVA + URSSAF + impôt + rémunération + charges fixes) des mois suivants.
  */
 import type { EntreesMoteur } from './types.ts';
-import { calculerPnl } from './pnl.ts';
 import { calculerTresorerie } from './cashflow.ts';
 import { projeterFiscalite } from './profil-fiscal.ts';
 
@@ -45,7 +44,6 @@ export function calculerCashDisponible(
   soldeOverride?: number,
 ): CashDisponible {
   const p = entrees.parametrage;
-  const pnl = calculerPnl(entrees.pnl);
   const treso = calculerTresorerie(p.soldeInitialTresorerie, entrees.cash);
 
   const moisRef = clamp(moisReference ?? new Date().getMonth(), 0, 11);
@@ -64,11 +62,10 @@ export function calculerCashDisponible(
   }
 
   // Rémunération et charges fixes à venir (mensuel × nombre de mois restants).
+  // NB : on N'UTILISE PAS pnl.chargesFixesTotales (qui inclut les salaires/rému, déjà comptés
+  // dans la ligne « Rémunération à venir ») — uniquement les charges fixes déclarées / saisies « fixe ».
   const remuFutur = (p.objectifRemunerationMensuelle || 0) * nbMoisRestants;
-  const chargesFixesMensuel =
-    entrees.chargesFixes && entrees.chargesFixes.length > 0
-      ? entrees.chargesFixes.reduce((acc, c) => acc + c.montant, 0)
-      : pnl.annuel.chargesFixesTotales / 12;
+  const chargesFixesMensuel = (entrees.chargesFixes ?? []).reduce((acc, c) => acc + c.montant, 0);
   const chargesFutur = chargesFixesMensuel * nbMoisRestants;
 
   const deductions: LigneCashDisponible[] = [

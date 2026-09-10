@@ -135,7 +135,9 @@ export default function RentabilitePage() {
         if (!lib || !mnt || mnt <= 0) continue;
         const mFact = Math.min(11, Math.max(0, (Number(cols[2]) || 1) - 1));
         const mEnc = cols[3] ? Math.min(11, Math.max(0, (Number(cols[3]) || 1) - 1)) : mFact;
-        const t = cols[4] !== undefined && cols[4] !== '' ? Number(cols[4]) : 20;
+        // Taux TVA : tolère « 20 », « 20% », « 20,0 » ; défaut 20 si vide ou illisible.
+        const tParse = Number(String(cols[4] ?? '').replace(/[^0-9.,]/g, '').replace(',', '.'));
+        const t = cols[4] !== undefined && cols[4] !== '' && !isNaN(tParse) ? tParse : 20;
         ajouterPrevisionnel({ type: 'facture_a_venir', libelle: lib, montantHt: mnt, tauxTva: t, moisIndex: mFact, moisEncaissement: mEnc, statut: 'signee' });
         n++;
       }
