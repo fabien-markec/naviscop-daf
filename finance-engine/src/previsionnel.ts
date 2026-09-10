@@ -31,6 +31,15 @@ export interface MouvementPrevisionnel {
   moisEncaissement?: number;
   /** Statut d'une commande : signée (sûre) ou seulement prévue. */
   statut?: 'signee' | 'prevue';
+  /** Charge fixe récurrente : le montant se répète chaque mois du mois de départ jusqu'à décembre. */
+  estFixe?: boolean;
+  /** Délai de paiement d'une charge en jours (0, 30, 45, 60). Décale le décaissement, pas le résultat. */
+  delaiPaiementJours?: number;
+}
+
+/** Convertit un délai de paiement (jours) en décalage de mois pour le décaissement. */
+function decalageMois(delaiJours = 0): number {
+  return Math.round((delaiJours || 0) / 30); // 0j→0, 30j→1, 45j→2 (1,5 arrondi), 60j→2
 }
 
 /**
@@ -63,8 +72,15 @@ export function fusionnerPrevisionnels(
       }
       case 'charge_prevue': {
         const cat = mv.categorie ?? 'autresAchatsChargesExternes';
-        pnl[i][cat] += mv.montantHt;
-        cash[i].decaissements += ttc;
+        const dec = decalageMois(mv.delaiPaiementJours);
+        // Mois d'application : une seule fois, ou chaque mois (charge fixe) du mois de départ à décembre.
+        const moisApplication = mv.estFixe ? Array.from({ length: 12 - i }, (_, k) => i + k) : [i];
+        for (const m of moisApplication) {
+          if (m <= moisClotureIndex) continue;
+          pnl[m][cat] += mv.montantHt;
+          const p = m + dec;
+          if (p >= 0 && p <= 11) cash[p].decaissements += ttc;
+        }
         break;
       }
       case 'investissement':
@@ -75,4 +91,21 @@ export function fusionnerPrevisionnels(
   }
 
   return { ...base, pnl, cash };
+}
+
+/**
+ * Pour un dossier à l'IS : reporte automatiquement dans le résultat (rentabilité) la
+ * rémunération du dirigeant et ses charges sociales (URSSAF), calculées sur la rémunération.
+ * N'affecte que les mois non clôturés (les mois réalisés contiennent déjà les vrais salaires).
+ */
+export function appliquerCoutDirigeantIS(entrees: EntreesMoteur, moisClotureIndex = -1): EntreesMoteur {
+  const p = entrees.profilFiscal;
+  const remu = entrees.parametrage.objectifRemunerationMensuelle || 0;
+  if (!p || p.regimeFiscal !== 'REEL_IS' || remu <= 0) return entrees;
+  const taux = p.chargesSociales.tauxTnsSurRemuneration ?? 0.45;
+  const cout = remu + remu * taux; // rémunération + charges sociales patronales/personnelles
+  const pnl = entrees.pnl.map((m, i) =>
+    i > moisClotureIndex ? { ...m, salairesEtCharges: m.salairesEtCharges + cout } : m,
+  );
+  return { ...entrees, pnl };
 }

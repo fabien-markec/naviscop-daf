@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useMemo, useState } from 'react';
-import { ChevronRight, Trash2, Pencil } from 'lucide-react';
+import { ChevronRight, Trash2, Upload } from 'lucide-react';
 import {
   MOIS,
   resultatMensuel,
@@ -13,7 +13,6 @@ import { useDossier } from '@/lib/dossier-context';
 import { eur, pct } from '@/lib/format';
 import { KpiCard, PageHeader, Section } from '@/components/ui';
 import { ResultatChart } from '@/components/charts';
-import { GrilleMensuelle, type LigneGrille } from '@/components/grille-mensuelle';
 
 const MOIS_COURT = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
 
@@ -57,7 +56,7 @@ const CATEGORIES_SAISIE: { valeur: CategorieCharge; label: string }[] = [
 ];
 
 export default function RentabilitePage() {
-  const { entrees, pnlReel, tableauDeBord, previsionnels, ajouterPrevisionnel, supprimerPrevisionnel, majReelMois, moisClotureIndex, majMoisCloture } = useDossier();
+  const { entrees, tableauDeBord, previsionnels, ajouterPrevisionnel, supprimerPrevisionnel, majPrevisionnel } = useDossier();
   const { pnl } = tableauDeBord;
   const a = pnl.annuel;
   const pnlMensuel = entrees.pnl;
@@ -65,19 +64,6 @@ export default function RentabilitePage() {
 
   const [catOuverte, setCatOuverte] = useState<keyof LignePnlMensuelle | null>(null);
   const [posteOuvert, setPosteOuvert] = useState<string | null>(null);
-  const [saisieOuverte, setSaisieOuverte] = useState(false);
-
-  // Grille de saisie manuelle du compte de résultat (réalisé, mois par mois).
-  const lignesSaisie: LigneGrille[] = [
-    { key: 'ca', label: "Chiffre d'affaires HT", get: (i) => pnlReel[i].caHt, set: (i, v) => majReelMois(i, { caHt: v }) },
-    { key: 'achats', label: 'Achats consommés', charge: true, get: (i) => pnlReel[i].achatsMarchandisesMp, set: (i, v) => majReelMois(i, { achatsMarchandisesMp: v }) },
-    { key: 'externes', label: 'Charges externes', charge: true, get: (i) => pnlReel[i].autresAchatsChargesExternes, set: (i, v) => majReelMois(i, { autresAchatsChargesExternes: v }) },
-    { key: 'salaires', label: 'Salaires et charges', charge: true, get: (i) => pnlReel[i].salairesEtCharges, set: (i, v) => majReelMois(i, { salairesEtCharges: v }) },
-    { key: 'impots', label: 'Impôts et taxes', charge: true, get: (i) => pnlReel[i].impotsEtTaxes, set: (i, v) => majReelMois(i, { impotsEtTaxes: v }) },
-    { key: 'fin', label: 'Charges financières', charge: true, get: (i) => pnlReel[i].chargesFinancieres, set: (i, v) => majReelMois(i, { chargesFinancieres: v }) },
-    { key: 'exc', label: 'Charges exceptionnelles', charge: true, get: (i) => pnlReel[i].chargesExceptionnelles, set: (i, v) => majReelMois(i, { chargesExceptionnelles: v }) },
-    { key: 'amort', label: 'Dotations aux amortissements', charge: true, get: (i) => pnlReel[i].amortissements, set: (i, v) => majReelMois(i, { amortissements: v }) },
-  ];
 
   // Saisie manuelle produit / charge.
   const [typeSaisie, setTypeSaisie] = useState<'produit' | 'charge'>('produit');
@@ -88,6 +74,9 @@ export default function RentabilitePage() {
   const [moisEnc, setMoisEnc] = useState(new Date().getMonth());
   const [statut, setStatut] = useState<'signee' | 'prevue'>('signee');
   const [categorie, setCategorie] = useState<CategorieCharge>('autresAchatsChargesExternes');
+  const [estFixe, setEstFixe] = useState(false);
+  const [delaiPaiement, setDelaiPaiement] = useState(0);
+  const [importMsg, setImportMsg] = useState('');
 
   const rm = useMemo(() => pnlMensuel.map((m) => resultatMensuel(m)), [pnlMensuel]);
   const cumul = useMemo(() => {
@@ -122,11 +111,43 @@ export default function RentabilitePage() {
     if (typeSaisie === 'produit') {
       ajouterPrevisionnel({ type: 'facture_a_venir', libelle: libelle.trim(), montantHt: montant, tauxTva: tva, moisIndex: moisFact, moisEncaissement: moisEnc, statut });
     } else {
-      ajouterPrevisionnel({ type: 'charge_prevue', libelle: libelle.trim(), montantHt: montant, tauxTva: tva, moisIndex: moisFact, categorie });
+      ajouterPrevisionnel({ type: 'charge_prevue', libelle: libelle.trim(), montantHt: montant, tauxTva: tva, moisIndex: moisFact, categorie, estFixe, delaiPaiementJours: delaiPaiement });
     }
     setLibelle('');
     setMontant(0);
   };
+
+  // Import de produits depuis un CSV : colonnes libellé, montant HT, mois facturation (1-12),
+  // mois encaissement (1-12, optionnel), taux TVA (optionnel). Séparateur , ou ;
+  const importerCsv = (f: File | undefined) => {
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const txt = String(reader.result ?? '');
+      const lignesCsv = txt.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      let n = 0;
+      for (const [idx, ligne] of lignesCsv.entries()) {
+        const cols = ligne.split(/[;,\t]/).map((c) => c.trim());
+        // Ignore un éventuel en-tête (première ligne non numérique en 2e colonne).
+        if (idx === 0 && isNaN(Number(cols[1]?.replace(',', '.')))) continue;
+        const lib = cols[0];
+        const mnt = Number((cols[1] ?? '').replace(',', '.'));
+        if (!lib || !mnt || mnt <= 0) continue;
+        const mFact = Math.min(11, Math.max(0, (Number(cols[2]) || 1) - 1));
+        const mEnc = cols[3] ? Math.min(11, Math.max(0, (Number(cols[3]) || 1) - 1)) : mFact;
+        const t = cols[4] !== undefined && cols[4] !== '' ? Number(cols[4]) : 20;
+        ajouterPrevisionnel({ type: 'facture_a_venir', libelle: lib, montantHt: mnt, tauxTva: t, moisIndex: mFact, moisEncaissement: mEnc, statut: 'signee' });
+        n++;
+      }
+      setImportMsg(n > 0 ? `${n} produit(s) importé(s).` : 'Aucune ligne exploitable. Colonnes attendues : libellé, montant, mois.');
+      setTimeout(() => setImportMsg(''), 5000);
+    };
+    reader.readAsText(f, 'utf-8');
+  };
+
+  // Saisies manuelles rattachées à une catégorie de charge (pour le détail sous « Résultat détaillé »).
+  const saisiesCategorie = (cat: keyof LignePnlMensuelle) =>
+    previsionnels.filter((mv) => mv.type === 'charge_prevue' && (mv.categorie ?? 'autresAchatsChargesExternes') === cat);
 
   const LABEL_TYPE: Record<TypePrevisionnel, string> = {
     facture_a_venir: 'Produit',
@@ -193,10 +214,21 @@ export default function RentabilitePage() {
                     {ouvert && (
                       <tr>
                         <td colSpan={14} className="bg-slate-50 px-3 py-2">
-                          {postesCategorie(l.cat as keyof LignePnlMensuelle).length === 0 ? (
-                            <p className="text-xs text-slate-700">Détail des postes indisponible (pas d’import FEC pour cette catégorie).</p>
+                          {postesCategorie(l.cat as keyof LignePnlMensuelle).length === 0 && saisiesCategorie(l.cat as keyof LignePnlMensuelle).length === 0 ? (
+                            <p className="text-xs text-slate-700">Aucun détail pour cette catégorie (importez un FEC ou ajoutez une charge en saisie manuelle).</p>
                           ) : (
                             <div className="space-y-1.5">
+                              {/* Charges saisies à la main dans cette catégorie */}
+                              {saisiesCategorie(l.cat as keyof LignePnlMensuelle).map((mv) => (
+                                <div key={mv.id} className="flex items-center justify-between gap-3 rounded-lg border border-brand/15 bg-brand/[0.04] px-3 py-2 text-sm">
+                                  <span className="flex flex-wrap items-center gap-2 text-slate-800">
+                                    {mv.libelle}
+                                    <span className="rounded-full bg-brand/10 px-1.5 py-0.5 text-[10px] font-medium text-brand">saisi{mv.estFixe ? ' · fixe' : ''}</span>
+                                    <span className="text-[10px] text-slate-500">dès {MOIS_COURT[mv.moisIndex]}{mv.delaiPaiementJours ? ` · paiement +${mv.delaiPaiementJours}j` : ''}</span>
+                                  </span>
+                                  <span className="tabular-nums font-medium text-slate-800">{eur(mv.montantHt)}{mv.estFixe ? ' /mois' : ''}</span>
+                                </div>
+                              ))}
                               {postesCategorie(l.cat as keyof LignePnlMensuelle).map((p) => {
                                 const po = posteOuvert === p.compte;
                                 const nbEcr = p.ecritures?.length ?? 0;
@@ -243,52 +275,18 @@ export default function RentabilitePage() {
         </div>
       </Section>
 
-      {/* Saisie manuelle du compte de résultat mois par mois (dossier sans FEC) */}
+      {/* Saisie manuelle : produits et charges */}
       <Section
-        title="Saisir le compte de résultat mois par mois"
+        title="Ajouter un produit ou une charge"
         action={
-          <button
-            onClick={() => setSaisieOuverte((o) => !o)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-navy/15 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
-          >
-            <Pencil className="h-3.5 w-3.5" /> {saisieOuverte ? 'Masquer la saisie' : 'Saisir à la main'}
-          </button>
+          typeSaisie === 'produit' ? (
+            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-navy/15 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100">
+              <Upload className="h-3.5 w-3.5" /> Importer un CSV
+              <input type="file" accept=".csv,.txt" className="hidden" onChange={(e) => importerCsv(e.target.files?.[0])} />
+            </label>
+          ) : null
         }
       >
-        {saisieOuverte ? (
-          <>
-            <p className="mb-3 text-xs text-slate-700">
-              Pas de FEC ni de balance ? Saisissez directement le chiffre d’affaires et les charges de chaque mois. Les soldes
-              (marge, EBE, résultat) se recalculent automatiquement.
-            </p>
-            <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-navy/10 bg-slate-50 px-3.5 py-2.5">
-              <label className="text-sm text-slate-700">Dernier mois clôturé (réalisé connu)</label>
-              <select
-                value={moisClotureIndex ?? -1}
-                onChange={(e) => majMoisCloture(Number(e.target.value))}
-                className="rounded-lg border border-navy/10 bg-white px-2.5 py-1.5 text-sm text-navy outline-none focus:border-brand/50"
-              >
-                <option value={-1}>Aucun</option>
-                {MOIS.map((m, i) => (
-                  <option key={m} value={i}>{m}</option>
-                ))}
-              </select>
-              <span className="text-xs text-slate-600">
-                Au-delà de ce mois, seules vos prévisions comptent. En deçà, c’est le réalisé — évite de compter deux fois une facture prévue puis réalisée.
-              </span>
-            </div>
-            <GrilleMensuelle lignes={lignesSaisie} />
-          </>
-        ) : (
-          <p className="text-sm text-slate-700">
-            Pour un dossier sans import comptable, cliquez sur « Saisir à la main » pour renseigner le compte de résultat mois
-            par mois.
-          </p>
-        )}
-      </Section>
-
-      {/* Saisie manuelle : produits et charges */}
-      <Section title="Ajouter un produit ou une charge">
         <div className="mb-3 inline-flex rounded-full border border-navy/10 bg-slate-50 p-1">
           {(['produit', 'charge'] as const).map((t) => (
             <button
@@ -318,14 +316,28 @@ export default function RentabilitePage() {
                 <option value="signee" className="bg-white">Signé</option>
                 <option value="prevue" className="bg-white">Prévu</option>
               </select>
+              <button type="submit" className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft md:col-span-1">Ajouter</button>
             </>
           ) : (
-            <select className={`${champ} md:col-span-3`} value={categorie} onChange={(e) => setCategorie(e.target.value as CategorieCharge)}>
-              {CATEGORIES_SAISIE.map((c) => (<option key={c.valeur} value={c.valeur} className="bg-white">{c.label}</option>))}
-            </select>
+            <>
+              <select className={`${champ} md:col-span-2`} value={categorie} onChange={(e) => setCategorie(e.target.value as CategorieCharge)}>
+                {CATEGORIES_SAISIE.map((c) => (<option key={c.valeur} value={c.valeur} className="bg-white">{c.label}</option>))}
+              </select>
+              <select className={`${champ} md:col-span-1`} value={estFixe ? 'fixe' : 'ponctuelle'} onChange={(e) => setEstFixe(e.target.value === 'fixe')} title="Charge fixe (répétée chaque mois) ou ponctuelle">
+                <option value="ponctuelle" className="bg-white">Ponctuelle</option>
+                <option value="fixe" className="bg-white">Fixe (12 mois)</option>
+              </select>
+              <select className={`${champ} md:col-span-1`} value={delaiPaiement} onChange={(e) => setDelaiPaiement(Number(e.target.value))} title="Délai de paiement">
+                {[0, 30, 45, 60].map((d) => (<option key={d} value={d} className="bg-white">{d === 0 ? 'Comptant' : `${d} j`}</option>))}
+              </select>
+              <button type="submit" className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft md:col-span-1">Ajouter</button>
+            </>
           )}
-          <button type="submit" className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft md:col-span-1">Ajouter</button>
         </form>
+        {importMsg && <p className="mt-2 text-xs text-emerald-600">{importMsg}</p>}
+        <p className="mt-2 text-[11px] text-slate-500">
+          Une charge fixe est reportée sur tous les mois (résultat et trésorerie). Le délai de paiement décale le décaissement dans le plan de trésorerie.
+        </p>
       </Section>
 
       <Section title={`Saisies manuelles (${previsionnels.length})`}>
@@ -340,6 +352,7 @@ export default function RentabilitePage() {
                   <th>Libellé</th>
                   <th className="!text-right">Montant HT</th>
                   <th>Mois</th>
+                  <th>Détail</th>
                   <th></th>
                 </tr>
               </thead>
@@ -351,9 +364,35 @@ export default function RentabilitePage() {
                         {LABEL_TYPE[mv.type]}
                       </span>
                     </td>
-                    <td className="font-medium text-slate-800">{mv.libelle}</td>
-                    <td className="num text-slate-700">{eur(mv.montantHt)}</td>
-                    <td className="text-slate-700">{MOIS[mv.moisIndex]}</td>
+                    <td>
+                      <input
+                        defaultValue={mv.libelle}
+                        onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== mv.libelle) majPrevisionnel(mv.id, { libelle: v }); }}
+                        className="w-40 rounded-lg border border-transparent bg-transparent px-1.5 py-1 text-sm font-medium text-slate-800 hover:border-navy/10 focus:border-brand/50 focus:bg-white focus:outline-none"
+                      />
+                    </td>
+                    <td className="!text-right">
+                      <input
+                        type="number"
+                        defaultValue={mv.montantHt}
+                        onBlur={(e) => { const v = Number(e.target.value) || 0; if (v > 0 && v !== mv.montantHt) majPrevisionnel(mv.id, { montantHt: v }); }}
+                        className="w-24 rounded-lg border border-transparent bg-transparent px-1.5 py-1 text-right text-sm tabular-nums text-slate-700 hover:border-navy/10 focus:border-brand/50 focus:bg-white focus:outline-none"
+                      />
+                    </td>
+                    <td>
+                      <select
+                        value={mv.moisIndex}
+                        onChange={(e) => majPrevisionnel(mv.id, { moisIndex: Number(e.target.value) })}
+                        className="rounded-lg border border-transparent bg-transparent px-1 py-1 text-sm text-slate-700 hover:border-navy/10 focus:border-brand/50 focus:bg-white focus:outline-none"
+                      >
+                        {MOIS.map((m, i) => (<option key={m} value={i}>{m}</option>))}
+                      </select>
+                    </td>
+                    <td className="text-[11px] text-slate-500">
+                      {mv.type === 'facture_a_venir'
+                        ? `Encaissé ${MOIS_COURT[mv.moisEncaissement ?? mv.moisIndex]}`
+                        : `${mv.estFixe ? 'Fixe' : 'Ponctuelle'}${mv.delaiPaiementJours ? ` · +${mv.delaiPaiementJours}j` : ''}`}
+                    </td>
                     <td className="!text-right">
                       <button onClick={() => supprimerPrevisionnel(mv.id)} className="text-slate-600 hover:text-rose-600" aria-label="Supprimer">
                         <Trash2 className="h-4 w-4" />

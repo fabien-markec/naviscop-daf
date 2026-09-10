@@ -95,6 +95,8 @@ function mapPrevisionnel(r: Record<string, unknown>): MouvementPrevisionnel {
     categorie: (r.categorie ?? undefined) as MouvementPrevisionnel['categorie'],
     moisEncaissement: r.mois_encaissement == null ? undefined : n(r.mois_encaissement),
     statut: (r.statut ?? undefined) as MouvementPrevisionnel['statut'],
+    estFixe: r.est_fixe == null ? undefined : Boolean(r.est_fixe),
+    delaiPaiementJours: r.delai_paiement_jours == null ? undefined : n(r.delai_paiement_jours),
   };
 }
 
@@ -390,11 +392,26 @@ export async function ajouterPrevisionnelDb(
       dossier_id: dossierId, type: mv.type, libelle: mv.libelle, montant_ht: mv.montantHt,
       taux_tva: mv.tauxTva, mois_index: mv.moisIndex, categorie: mv.categorie ?? null,
       mois_encaissement: mv.moisEncaissement ?? null, statut: mv.statut ?? null,
+      est_fixe: mv.estFixe ?? null, delai_paiement_jours: mv.delaiPaiementJours ?? null,
     })
     .select('*')
     .single();
   if (error) throw error;
   return mapPrevisionnel(data as Record<string, unknown>);
+}
+
+/** Modifie un mouvement prévisionnel existant (libellé, montant, mois, catégorie...). */
+export async function majPrevisionnelDb(id: string, patch: Partial<MouvementPrevisionnel>): Promise<void> {
+  const map: Record<string, string> = {
+    libelle: 'libelle', montantHt: 'montant_ht', tauxTva: 'taux_tva', moisIndex: 'mois_index',
+    categorie: 'categorie', moisEncaissement: 'mois_encaissement', statut: 'statut',
+    estFixe: 'est_fixe', delaiPaiementJours: 'delai_paiement_jours',
+  };
+  const upd: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(patch)) if (map[k]) upd[map[k]] = v;
+  if (Object.keys(upd).length === 0) return;
+  const { error } = await db().from('previsionnels').update(upd).eq('id', id);
+  if (error) throw error;
 }
 
 export async function supprimerPrevisionnelDb(id: string): Promise<void> {

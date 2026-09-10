@@ -1,71 +1,87 @@
 /**
- * Le cash réellement disponible (pilier 1 de NAVISCOP).
+ * Le cash réellement disponible à la fin du mois (pilier 1 de NAVISCOP).
  *
- * Le solde bancaire montre l'argent présent. Il ne montre pas l'argent utilisable
- * sans danger : une partie est déjà due (TVA, URSSAF, impôts), une autre couvre les
- * charges du mois à venir, la rémunération du dirigeant et une sécurité de trésorerie.
- * Ce module part du solde bancaire et déduit ces engagements pour ne garder que le
- * cash réellement disponible.
+ * Principe (retours Michael) : on part du solde bancaire PRÉVISIONNEL à la fin du mois en
+ * cours, puis on retranche TOUTES les échéances certaines à venir jusqu'à la fin de
+ * l'exercice — pas une moyenne mensuelle. Ce qui reste est le cash réellement disponible :
+ *   solde fin de mois − (TVA + URSSAF + impôt + rémunération + charges fixes) des mois suivants.
  */
 import type { EntreesMoteur } from './types.ts';
 import { calculerPnl } from './pnl.ts';
 import { calculerTresorerie } from './cashflow.ts';
 import { projeterFiscalite } from './profil-fiscal.ts';
 
-/** Une ligne de la cascade (un engagement déduit du solde bancaire). */
+/** Une ligne de la cascade (un engagement à venir déduit du solde bancaire). */
 export interface LigneCashDisponible {
   libelle: string;
   montant: number;
-  /** true = le montant est saisi à la main, false = estimé par le moteur. */
+  /** true = saisi à la main, false = estimé/projeté par le moteur. */
   saisi: boolean;
 }
 
 export interface CashDisponible {
-  /** Solde bancaire à date. */
+  /** Mois de référence (0-11) : « à la fin de ce mois ». */
+  moisReference: number;
+  /** Solde bancaire prévisionnel à la fin du mois de référence. */
   soldeBancaire: number;
-  /** Engagements à déduire (montants positifs). */
+  /** Engagements certains à venir (des mois suivants jusqu'à décembre). */
   deductions: LigneCashDisponible[];
-  /** Total des engagements. */
+  /** Total des engagements à venir. */
   totalEngage: number;
-  /** Cash réellement disponible = solde bancaire − engagements. */
+  /** Cash réellement disponible = solde de fin de mois − engagements à venir. */
   cashDisponible: number;
 }
 
 const r = (n: number) => Math.round(n);
+const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
-export function calculerCashDisponible(entrees: EntreesMoteur, soldeBancaireOverride?: number): CashDisponible {
+/**
+ * @param moisReference mois « en cours » (0-11). Défaut : mois calendaire courant.
+ * @param soldeOverride force le solde bancaire de fin de mois (sinon pris du plan de trésorerie).
+ */
+export function calculerCashDisponible(
+  entrees: EntreesMoteur,
+  moisReference?: number,
+  soldeOverride?: number,
+): CashDisponible {
   const p = entrees.parametrage;
   const pnl = calculerPnl(entrees.pnl);
   const treso = calculerTresorerie(p.soldeInitialTresorerie, entrees.cash);
 
-  // Solde bancaire = position à date (dernier mois actif), ou une position choisie (vue par mois).
-  const soldeBancaire = r(soldeBancaireOverride ?? treso.soldeADate);
-  // Si des charges fixes ont été saisies à la main, elles priment sur l'estimation (charges fixes annuelles / 12).
-  const chargesFixesMois =
+  const moisRef = clamp(moisReference ?? new Date().getMonth(), 0, 11);
+  const soldeBancaire = r(soldeOverride ?? treso.parMois[moisRef].soldeFin);
+  const nbMoisRestants = 11 - moisRef; // mois strictement à venir jusqu'à décembre
+
+  // Fiscalité projetée à venir (somme des mois suivants).
+  const proj = entrees.profilFiscal ? projeterFiscalite(entrees, entrees.profilFiscal) : null;
+  let tvaFutur = 0, urssafFutur = 0, impotFutur = 0;
+  if (proj) {
+    for (let m = moisRef + 1; m <= 11; m++) {
+      tvaFutur += proj.parMois[m].tva;
+      urssafFutur += proj.parMois[m].urssaf;
+      impotFutur += proj.parMois[m].impot;
+    }
+  }
+
+  // Rémunération et charges fixes à venir (mensuel × nombre de mois restants).
+  const remuFutur = (p.objectifRemunerationMensuelle || 0) * nbMoisRestants;
+  const chargesFixesMensuel =
     entrees.chargesFixes && entrees.chargesFixes.length > 0
       ? entrees.chargesFixes.reduce((acc, c) => acc + c.montant, 0)
       : pnl.annuel.chargesFixesTotales / 12;
-
-  // Si un profil fiscal est renseigné, TVA/URSSAF/impôt sont projetés automatiquement
-  // (provision mensuelle moyenne) à partir du CA et des charges. Sinon, valeurs saisies à la main.
-  const proj = entrees.profilFiscal ? projeterFiscalite(entrees, entrees.profilFiscal) : null;
-  const tvaProv = proj ? proj.provisionMensuelle.tva : r(p.tvaAProvisionner ?? 0);
-  const urssafProv = proj ? proj.provisionMensuelle.urssaf : r(p.chargesSocialesAProvisionner ?? 0);
-  const impotProv = proj ? proj.provisionMensuelle.impot : r(p.impotsAProvisionner ?? 0);
+  const chargesFutur = chargesFixesMensuel * nbMoisRestants;
 
   const deductions: LigneCashDisponible[] = [
-    { libelle: 'TVA à provisionner', montant: r(tvaProv), saisi: !proj },
-    { libelle: 'URSSAF / charges sociales', montant: r(urssafProv), saisi: !proj },
-    { libelle: 'Impôts à venir', montant: r(impotProv), saisi: !proj },
-    { libelle: 'Charges fixes du mois à venir', montant: r(chargesFixesMois), saisi: false },
-    { libelle: 'Rémunération minimale dirigeant', montant: r(p.objectifRemunerationMensuelle || 0), saisi: true },
-    { libelle: 'Sécurité de trésorerie', montant: r(p.securiteTresorerieCible ?? 0), saisi: true },
-    { libelle: 'Investissements à venir', montant: r(p.investissementsAProvisionner ?? 0), saisi: true },
-    { libelle: 'Saisonnalité / périodes creuses', montant: r(p.saisonnaliteAProvisionner ?? 0), saisi: true },
+    { libelle: 'TVA à venir', montant: r(tvaFutur), saisi: false },
+    { libelle: 'URSSAF / charges sociales à venir', montant: r(urssafFutur), saisi: false },
+    { libelle: 'Impôts à venir', montant: r(impotFutur), saisi: false },
+    { libelle: 'Rémunération à venir', montant: r(remuFutur), saisi: false },
+    { libelle: 'Charges fixes à venir', montant: r(chargesFutur), saisi: false },
   ].filter((d) => d.montant !== 0);
 
   const totalEngage = deductions.reduce((acc, d) => acc + d.montant, 0);
   return {
+    moisReference: moisRef,
     soldeBancaire,
     deductions,
     totalEngage,

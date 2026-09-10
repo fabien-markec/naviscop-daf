@@ -40,6 +40,29 @@ test('prévisionnel — facture à venir alimente CA et encaissements', () => {
   // base non mutée
 });
 
+test('prévisionnel — charge fixe répétée chaque mois avec délai de paiement', () => {
+  const mv: MouvementPrevisionnel[] = [
+    { id: '1', type: 'charge_prevue', libelle: 'Loyer', montantHt: 1000, tauxTva: 20, moisIndex: 0, categorie: 'autresAchatsChargesExternes', estFixe: true, delaiPaiementJours: 60 },
+  ];
+  const e = fusionnerPrevisionnels(baseVide(), mv);
+  // Résultat : charge répétée sur les 12 mois.
+  assert.equal(e.pnl[0].autresAchatsChargesExternes, 1000);
+  assert.equal(e.pnl[11].autresAchatsChargesExternes, 1000);
+  // Trésorerie : décaissement décalé de 60j (2 mois). Janvier payé en mars.
+  assert.equal(e.cash[0].decaissements, 0);
+  assert.equal(e.cash[2].decaissements, 1200);
+});
+
+test('prévisionnel — charge ponctuelle comptant (rétrocompatible)', () => {
+  const mv: MouvementPrevisionnel[] = [
+    { id: '1', type: 'charge_prevue', libelle: 'Achat', montantHt: 500, tauxTva: 20, moisIndex: 3, categorie: 'achatsMarchandisesMp' },
+  ];
+  const e = fusionnerPrevisionnels(baseVide(), mv);
+  assert.equal(e.pnl[3].achatsMarchandisesMp, 500);
+  assert.equal(e.cash[3].decaissements, 600);
+  assert.equal(e.pnl[4].achatsMarchandisesMp, 0);
+});
+
 test('prévisionnel — un mois clôturé ignore la prévision (réalisé remplace)', () => {
   const mv: MouvementPrevisionnel[] = [
     { id: '1', type: 'facture_a_venir', libelle: 'Devis mars', montantHt: 1000, tauxTva: 20, moisIndex: 2 },

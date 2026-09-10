@@ -72,6 +72,34 @@ export function TresorerieChart({ data }: { data: { mois: string; solde: number 
   );
 }
 
+/** Trésorerie (solde de fin de mois) + rentabilité cumulée, sur le même graphique. */
+export function TresorerieRentabiliteChart({
+  data,
+}: {
+  data: { mois: string; solde: number; resultatCumule: number }[];
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={280}>
+      <ComposedChart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
+        <defs>
+          <linearGradient id="gTreso2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={C.brandSoft} stopOpacity={0.4} />
+            <stop offset="100%" stopColor={C.brandSoft} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid {...gridProps} />
+        <XAxis dataKey="mois" tick={AXIS} tickLine={false} axisLine={false} dy={6} />
+        <YAxis tickFormatter={fmtK} tick={AXIS} tickLine={false} axisLine={false} width={38} />
+        <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} cursor={{ stroke: 'rgba(0,4,40,0.15)' }} formatter={(v: number) => eur(v)} />
+        <ReferenceLine y={0} stroke={C.negatif} strokeDasharray="4 4" strokeOpacity={0.6} />
+        <Legend {...legendProps} />
+        <Area type="monotone" dataKey="solde" name="Trésorerie" stroke={C.brandSoft} strokeWidth={2} fill="url(#gTreso2)" {...noAnim} />
+        <Line type="monotone" dataKey="resultatCumule" name="Rentabilité cumulée" stroke={C.accent} strokeWidth={2} dot={false} {...noAnim} />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
+
 export function FluxChart({
   data,
 }: {

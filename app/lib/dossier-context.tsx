@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import {
   calculerTableauDeBord,
   fusionnerPrevisionnels,
+  appliquerCoutDirigeantIS,
   appliquerBalanceCumulee,
   dernierMoisActif,
   type EntreesMoteur,
@@ -33,6 +34,7 @@ import {
   renommerDossierDb,
   majCreancesDb,
   ajouterPrevisionnelDb,
+  majPrevisionnelDb,
   supprimerPrevisionnelDb,
   ajouterActionDb,
   majStatutActionDb,
@@ -123,6 +125,7 @@ interface DossierContextValue {
   /** Crée un dossier vierge (sans import) avec son identité et son profil fiscal, puis bascule dessus. */
   creerDossierVierge: (nom: string, profil: ProfilFiscal, dateBilan: string) => void;
   ajouterPrevisionnel: (mv: Omit<MouvementPrevisionnel, 'id'>) => void;
+  majPrevisionnel: (id: string, patch: Partial<MouvementPrevisionnel>) => void;
   supprimerPrevisionnel: (id: string) => void;
   ajouterAction: (a: Omit<ActionItem, 'id' | 'statut'>) => void;
   majStatutAction: (id: string, statut: StatutAction) => void;
@@ -216,8 +219,9 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<DossierContextValue>(() => {
     const actif = ws.dossiers.find((d) => d.id === ws.actifId) ?? null;
     const base = actif ? actif.entreesBase : entreesVides();
+    const clot = actif?.moisClotureIndex ?? -1;
     const entrees = actif
-      ? fusionnerPrevisionnels(actif.entreesBase, actif.previsionnels, actif.moisClotureIndex ?? -1)
+      ? appliquerCoutDirigeantIS(fusionnerPrevisionnels(actif.entreesBase, actif.previsionnels, clot), clot)
       : base;
 
     return {
@@ -409,6 +413,11 @@ export function DossierProvider({ children }: { children: React.ReactNode }) {
         } else {
           majActif((d) => ({ ...d, previsionnels: [{ ...mv, id: crypto.randomUUID() }, ...d.previsionnels] }));
         }
+      },
+
+      majPrevisionnel: (idmv, patch) => {
+        majActif((d) => ({ ...d, previsionnels: d.previsionnels.map((m) => (m.id === idmv ? { ...m, ...patch } : m)) }));
+        if (supabaseConfigured) majPrevisionnelDb(idmv, patch).catch((e) => console.error('MAJ prévisionnel échouée', e));
       },
 
       supprimerPrevisionnel: (idmv) => {

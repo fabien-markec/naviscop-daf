@@ -42,7 +42,7 @@ function ChampNombre({
 }
 
 export default function ParametresPage() {
-  const { entrees, majParametrage, majProfilFiscal, profilFiscal, tableauDeBord, reinitialiser, connecte } = useDossier();
+  const { entrees, majParametrage, majProfilFiscal, profilFiscal, majCreances, tableauDeBord, reinitialiser, connecte } = useDossier();
   const p = entrees.parametrage;
   const [profilEnregistre, setProfilEnregistre] = useState(false);
 
@@ -57,8 +57,8 @@ export default function ParametresPage() {
         <div className="space-y-6 lg:col-span-2">
           <Section title="Profil fiscal & social">
             <p className="mb-4 text-xs text-slate-700">
-              Statut juridique, régime fiscal et paramètres URSSAF / impôt / TVA. Quand un profil est renseigné, les provisions
-              TVA, URSSAF et impôt ci-dessous sont calculées automatiquement à partir du chiffre d’affaires et des charges.
+              Statut juridique, régime fiscal et paramètres URSSAF / impôt / TVA. Quand un profil est renseigné, la TVA,
+              l’URSSAF et l’impôt sont calculés automatiquement à partir du chiffre d’affaires et des charges.
             </p>
             <FormulaireProfil
               montrerIdentite={false}
@@ -115,60 +115,13 @@ export default function ParametresPage() {
                 hint="Seuil sous lequel la trésorerie est jugée fragile."
                 onChange={(v) => majParametrage({ moisSecuriteTresorerie: v })}
               />
-            </div>
-          </Section>
-
-          <Section title="Provisions (cash réellement disponible)">
-            <p className="mb-4 text-xs text-slate-700">
-              Les montants déjà dus ou à mettre de côté. Ils sont déduits du solde bancaire pour calculer le cash
-              réellement disponible affiché sur le tableau de bord.
-            </p>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <ChampNombre
-                label="TVA à provisionner"
-                value={p.tvaAProvisionner ?? 0}
-                step={100}
-                suffix="€"
-                onChange={(v) => majParametrage({ tvaAProvisionner: v })}
-              />
-              <ChampNombre
-                label="URSSAF / charges sociales"
-                value={p.chargesSocialesAProvisionner ?? 0}
-                step={100}
-                suffix="€"
-                onChange={(v) => majParametrage({ chargesSocialesAProvisionner: v })}
-              />
-              <ChampNombre
-                label="Impôts à venir"
-                value={p.impotsAProvisionner ?? 0}
-                step={100}
-                suffix="€"
-                hint="IS, CFE, autres impôts à échéance."
-                onChange={(v) => majParametrage({ impotsAProvisionner: v })}
-              />
-              <ChampNombre
-                label="Matelas de sécurité souhaité"
-                value={p.securiteTresorerieCible ?? 0}
+                label="Créances clients"
+                value={entrees.creancesClients ?? 0}
                 step={500}
                 suffix="€"
-                hint="Réserve que vous voulez toujours garder de côté."
-                onChange={(v) => majParametrage({ securiteTresorerieCible: v })}
-              />
-              <ChampNombre
-                label="Investissements à venir"
-                value={p.investissementsAProvisionner ?? 0}
-                step={500}
-                suffix="€"
-                hint="Achats/matériel prévus à mettre de côté."
-                onChange={(v) => majParametrage({ investissementsAProvisionner: v })}
-              />
-              <ChampNombre
-                label="Saisonnalité / périodes creuses"
-                value={p.saisonnaliteAProvisionner ?? 0}
-                step={500}
-                suffix="€"
-                hint="Réserve pour les mois à faible activité."
-                onChange={(v) => majParametrage({ saisonnaliteAProvisionner: v })}
+                hint="Factures émises non encore encaissées."
+                onChange={(v) => majCreances(v)}
               />
             </div>
           </Section>
@@ -176,7 +129,7 @@ export default function ParametresPage() {
           <Section title="Seuils d’alerte">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <ChampNombre
-                label="Objectif de taux de marque"
+                label="Objectif de taux de marge"
                 value={Math.round(p.objectifTauxMarque * 100)}
                 step={1}
                 suffix="% du CA"

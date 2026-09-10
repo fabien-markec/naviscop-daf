@@ -6,8 +6,9 @@ import { MOIS, calculerTableauDeBord, calculerCashDisponible, dernierMoisActif }
 import { useDossier } from '@/lib/dossier-context';
 import { eur, pct } from '@/lib/format';
 import { KpiCard, StatBar, PageHeader, Section, ListeAlertes } from '@/components/ui';
-import { TresorerieChart } from '@/components/charts';
-import { CascadeCash } from '@/components/cash-disponible';
+import { TresorerieRentabiliteChart } from '@/components/charts';
+import { CashDisponibleCard } from '@/components/enveloppes';
+import { ChevronDown } from 'lucide-react';
 
 type VueDashboard = 'aujourdhui' | 'annee' | 'perso';
 
@@ -23,7 +24,7 @@ const STATUT_STYLE: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const { entrees, entreesReel, moisClotureIndex, previsionnels, planActions, chargesFixes, ajouterChargeFixe, supprimerChargeFixe } = useDossier();
+  const { entrees, entreesReel, moisClotureIndex, previsionnels, planActions } = useDossier();
   const [vue, setVue] = useState<VueDashboard>('aujourdhui');
   const [moisPerso, setMoisPerso] = useState(() => dernierMoisActif(entreesReel));
 
@@ -34,9 +35,15 @@ export default function DashboardPage() {
   const moisRef =
     vue === 'annee' ? 11 : vue === 'perso' ? moisPerso : tresorerie.moisADateIndex >= 0 ? tresorerie.moisADateIndex : 11;
   const soldeADate = tresorerie.parMois[moisRef]?.soldeFin ?? kpis.tresorerieDisponible;
-  const cashDisponible = useMemo(() => calculerCashDisponible(entreesVue, soldeADate), [entreesVue, soldeADate]);
+  // Cash réellement disponible « à la fin du mois en cours » (mois calendaire courant).
+  const cashDisponible = useMemo(() => calculerCashDisponible(entreesVue), [entreesVue]);
   const sansPrevision = vue !== 'aujourdhui' && previsionnels.length === 0;
-  const chartData = tresorerie.parMois.map((m, i) => ({ mois: MOIS[i].slice(0, 3), solde: m.soldeFin }));
+  const [voyantsOuverts, setVoyantsOuverts] = useState(false);
+  const chartData = tresorerie.parMois.map((m, i) => ({
+    mois: MOIS[i].slice(0, 3),
+    solde: m.soldeFin,
+    resultatCumule: pnl.resultatCumule[i],
+  }));
 
   // 3 actions prioritaires : celles qui restent à mener (à faire ou en cours).
   const actionsPrioritaires = (planActions ?? [])
@@ -109,7 +116,7 @@ export default function DashboardPage() {
       {/* Bandeau décision */}
       <StatBar
         stats={[
-          { label: `Trésorerie à fin ${MOIS[moisRef].toLowerCase()}`, value: eur(soldeADate), tone: soldeADate < 0 ? 'negative' : 'neutral' },
+          { label: vue === 'annee' ? 'Trésorerie fin d’année' : `Trésorerie à fin ${MOIS[moisRef].toLowerCase()}`, value: eur(soldeADate), tone: soldeADate < 0 ? 'negative' : 'neutral' },
           {
             label: 'Trésorerie à 3 mois',
             value: eur(kpis.tresorerie3Mois),
@@ -126,14 +133,14 @@ export default function DashboardPage() {
 
       {/* Cash réellement disponible (pilier 1) + alertes */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <CascadeCash data={cashDisponible} chargesFixes={chargesFixes} onAjouterCharge={ajouterChargeFixe} onSupprimerCharge={supprimerChargeFixe} />
+        <CashDisponibleCard data={cashDisponible} />
         <Section title="Alertes prioritaires">
           <ListeAlertes alertes={alertes} />
         </Section>
       </div>
 
-      <Section title="Évolution de la trésorerie sur 12 mois">
-        <TresorerieChart data={chartData} />
+      <Section title="Trésorerie et rentabilité sur 12 mois">
+        <TresorerieRentabiliteChart data={chartData} />
       </Section>
 
       {/* Rappel des actions à mener */}
@@ -175,6 +182,22 @@ export default function DashboardPage() {
         )}
       </Section>
 
+      {/* Voyants (gestion + financiers) : repliés par défaut pour apurer le tableau de bord. */}
+      <button
+        onClick={() => setVoyantsOuverts((o) => !o)}
+        className="flex w-full items-center justify-between rounded-2xl border border-navy/10 bg-white/60 px-4 py-3 text-left"
+      >
+        <span className="text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-700">
+          Voyants détaillés (gestion & finances)
+        </span>
+        <span className="flex items-center gap-2 text-xs font-medium text-slate-600">
+          {voyantsOuverts ? 'Masquer' : 'Afficher'}
+          <ChevronDown className={`h-4 w-4 transition-transform ${voyantsOuverts ? 'rotate-180' : ''}`} />
+        </span>
+      </button>
+
+      {voyantsOuverts && (
+      <>
       {/* Voyants de gestion : est-ce que l'activité gagne de l'argent ? */}
       <div>
         <h2 className="mb-3 px-1 text-[13px] font-semibold uppercase tracking-[0.06em] text-slate-700">
@@ -293,6 +316,9 @@ export default function DashboardPage() {
           />
         </div>
       </div>
+
+      </>
+      )}
 
       {/* Où part l'argent + dépendance client */}
       {(topChargesFixes.length > 0 || topClients.length > 0) && (

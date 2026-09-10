@@ -245,7 +245,7 @@ export function FormulaireProfil({
             </>
           )}
           {regime === 'REEL_IS' && (
-            <Champ label="Taux de cotisations sur la rémunération" hint="TNS ≈ 45 %">
+            <Champ label="Taux de cotisations sur la rémunération" hint="TNS ≈ 45 %, assimilé salarié ≈ 80 %">
               <Pourcent value={tauxTns} onChange={setTauxTns} />
             </Champ>
           )}
@@ -260,7 +260,7 @@ export function FormulaireProfil({
         </div>
         {regime === 'REEL_IR' && !csManuel && (
           <div className="mt-4 max-w-xs">
-            <Champ label="Taux de cotisations sur la rémunération" hint="TNS ≈ 45 %">
+            <Champ label="Taux de cotisations sur la rémunération" hint="TNS ≈ 45 %, assimilé salarié ≈ 80 %">
               <Pourcent value={tauxTns} onChange={setTauxTns} />
             </Champ>
           </div>

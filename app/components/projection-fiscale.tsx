@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { projeterFiscalite, type EntreesMoteur, type ProfilFiscal } from '@naviscop/finance-engine';
 import { eur } from '@/lib/format';
 import { Section } from '@/components/ui';
@@ -22,7 +22,7 @@ const LIBELLE_REGIME: Record<string, string> = {
  * Tableau des charges & taxes projetées (URSSAF, impôt, TVA) mois par mois,
  * calculées automatiquement à partir du CA et des charges + du profil fiscal.
  */
-export function ProjectionFiscale({ entrees, profil }: { entrees: EntreesMoteur; profil: ProfilFiscal }) {
+export function ProjectionFiscale({ entrees, profil, sansCadre }: { entrees: EntreesMoteur; profil: ProfilFiscal; sansCadre?: boolean }) {
   const proj = useMemo(() => projeterFiscalite(entrees, profil), [entrees, profil]);
 
   const lignes: { cle: string; label: string; valeurs: number[]; total: number }[] = [
@@ -31,8 +31,12 @@ export function ProjectionFiscale({ entrees, profil }: { entrees: EntreesMoteur;
     { cle: 'tva', label: 'TVA', valeurs: proj.parMois.map((m) => m.tva), total: proj.annuel.tva },
   ].filter((l) => l.total !== 0);
 
+  const Cadre = sansCadre
+    ? ({ children }: { children: ReactNode }) => <div>{children}</div>
+    : ({ children }: { children: ReactNode }) => <Section title="Charges & taxes projetées">{children}</Section>;
+
   return (
-    <Section title="Charges & taxes projetées">
+    <Cadre>
       <p className="mb-3 text-xs text-slate-600">
         {LIBELLE_STATUT[profil.statutJuridique]} · {LIBELLE_REGIME[profil.regimeFiscal]}. URSSAF, impôt et TVA sont projetés
         automatiquement à partir du chiffre d’affaires et des charges saisis.
@@ -76,6 +80,6 @@ export function ProjectionFiscale({ entrees, profil }: { entrees: EntreesMoteur;
         Provision mensuelle moyenne à mettre de côté : {eur(proj.provisionMensuelle.urssaf)} URSSAF ·{' '}
         {eur(proj.provisionMensuelle.impot)} impôt · {eur(proj.provisionMensuelle.tva)} TVA.
       </p>
-    </Section>
+    </Cadre>
   );
 }
