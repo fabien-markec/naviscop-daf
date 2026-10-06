@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Sidebar } from '@/components/sidebar';
 import { AssistantBulle } from '@/components/assistant-bulle';
+import { Tutoriel } from '@/components/tutoriel';
 import { ChoixDossier } from '@/components/choix-dossier';
 import { ModuleDateBilan } from '@/components/date-bilan';
 import { useDossier } from '@/lib/dossier-context';
@@ -31,6 +32,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </main>
       {!bloque && <AssistantBulle />}
+      {!bloque && <Tutoriel />}
     </div>
   );
 }
