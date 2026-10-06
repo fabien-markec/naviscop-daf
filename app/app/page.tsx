@@ -35,8 +35,10 @@ export default function DashboardPage() {
   const moisRef =
     vue === 'annee' ? 11 : vue === 'perso' ? moisPerso : tresorerie.moisADateIndex >= 0 ? tresorerie.moisADateIndex : 11;
   const soldeADate = tresorerie.parMois[moisRef]?.soldeFin ?? kpis.tresorerieDisponible;
-  // Cash réellement disponible « à la fin du mois en cours » (mois calendaire courant).
-  const cashDisponible = useMemo(() => calculerCashDisponible(entreesVue), [entreesVue]);
+  // Cash réellement disponible « à la fin du mois en cours ».
+  // On part TOUJOURS du plan de trésorerie complet (entrees fusionnées), quelle que soit la vue,
+  // pour que le solde bancaire affiché corresponde exactement au plan de trésorerie.
+  const cashDisponible = useMemo(() => calculerCashDisponible(entrees), [entrees]);
   const sansPrevision = vue !== 'aujourdhui' && previsionnels.length === 0;
   const [voyantsOuverts, setVoyantsOuverts] = useState(false);
   const chartData = tresorerie.parMois.map((m, i) => ({
