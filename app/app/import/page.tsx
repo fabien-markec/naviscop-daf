@@ -151,7 +151,7 @@ export default function ImportPage() {
             )}
             <p className="mt-3 text-xs leading-relaxed text-slate-700">
               Une balance cumulée contient les soldes depuis le 1<sup>er</sup> janvier jusqu’au mois choisi. À chaque nouvelle
-              balance, NAVISCOP <strong>fige les mois déjà validés</strong> : seule la différence avec la balance précédente
+              balance, DAF de poche <strong>fige les mois déjà validés</strong> : seule la différence avec la balance précédente
               alimente le nouveau mois. Ainsi, si votre comptable corrige une facture d’un mois passé, cela n’écrase pas votre
               historique, la correction tombe sur le mois en cours.
             </p>

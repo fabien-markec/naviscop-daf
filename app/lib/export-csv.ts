@@ -10,7 +10,7 @@ export function construireCsv(nom: string, tdb: Tdb): string {
   const lignes: string[] = [];
   const L = (...cells: (string | number)[]) => lignes.push(cells.join(';'));
 
-  L(`NAVISCOP - Rapport ${nom}`);
+  L(`DAF de poche - Rapport ${nom}`);
   L('');
 
   L('INDICATEURS CLÉS', 'Valeur');
@@ -47,7 +47,7 @@ export function telechargerCsv(nom: string, contenu: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `NAVISCOP_${nom.replace(/\s+/g, '_')}.csv`;
+  a.download = `DAF-de-poche_${nom.replace(/\s+/g, '_')}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }

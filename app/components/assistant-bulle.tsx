@@ -124,7 +124,7 @@ export function AssistantBulle() {
                 <Sparkles className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-navy">Assistant NAVISCOP</p>
+                <p className="text-sm font-semibold text-navy">Assistant DAF de poche</p>
                 <p className="text-[11px] text-slate-600">{restant} question{restant > 1 ? 's' : ''} restante{restant > 1 ? 's' : ''} ce mois</p>
               </div>
             </div>

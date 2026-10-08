@@ -85,9 +85,9 @@ export function Sidebar() {
         </button>
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-soft text-xs font-bold text-white">
-            N
+            D
           </div>
-          <span className="text-[15px] font-semibold tracking-tight text-navy">NAVISCOP</span>
+          <span className="text-[15px] font-semibold tracking-tight text-navy">DAF de poche</span>
         </div>
         <span className="ml-auto max-w-[45%] truncate text-xs font-medium text-slate-700">{nom}</span>
       </header>
@@ -108,9 +108,9 @@ export function Sidebar() {
       >
         <div className="mb-7 flex items-center gap-2.5 px-2 pt-1">
           <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-brand to-brand-soft text-sm font-bold text-white shadow-[0_4px_14px_-4px_rgba(0,98,184,0.35)]">
-            N
+            D
           </div>
-          <span className="text-[17px] font-semibold tracking-tight text-navy">NAVISCOP</span>
+          <span className="text-[17px] font-semibold tracking-tight text-navy">DAF de poche</span>
           {/* Fermeture — mobile uniquement */}
           <button
             onClick={() => setOpen(false)}

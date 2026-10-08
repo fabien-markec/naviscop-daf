@@ -67,7 +67,7 @@ export default function RapportPage() {
       <div id="rapport" className="rapport space-y-6 rounded-2xl border border-slate-200 bg-white p-8 text-slate-800 print:border-0">
         <header className="flex items-center justify-between border-b border-slate-200 pb-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand">NAVISCOP</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand">DAF de poche</p>
             <h2 className="text-xl font-bold text-slate-900">{nom}</h2>
           </div>
           <p className="text-sm text-slate-700">Rapport du {date}</p>

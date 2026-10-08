@@ -87,9 +87,9 @@ export default function InvitePage() {
       <div className="card w-full max-w-sm p-8">
         <div className="mb-6 flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-[11px] bg-gradient-to-br from-brand to-brand-soft text-sm font-bold text-white">
-            N
+            D
           </div>
-          <span className="text-lg font-semibold tracking-tight text-navy">NAVISCOP</span>
+          <span className="text-lg font-semibold tracking-tight text-navy">DAF de poche</span>
         </div>
 
         {etat.statut === 'chargement' && <p className="text-sm text-slate-700">Vérification du lien…</p>}

@@ -32,7 +32,7 @@ export async function telechargerXlsx(nom: string, tdb: Tdb) {
 
   // --- Feuille 1 : Indicateurs ---
   const indic: (string | number)[][] = [
-    [`NAVISCOP — Rapport ${nom}`],
+    [`DAF de poche — Rapport ${nom}`],
     [],
     ['Indicateur', 'Valeur'],
     ['Chiffre d’affaires HT', pnl.annuel.caHt],
@@ -74,7 +74,7 @@ export async function telechargerXlsx(nom: string, tdb: Tdb) {
   moneyAll(wsC);
   XLSX.utils.book_append_sheet(wb, wsC, 'Compte de résultat');
 
-  XLSX.writeFile(wb, `NAVISCOP_${nom.replace(/\s+/g, '_')}.xlsx`);
+  XLSX.writeFile(wb, `DAF-de-poche_${nom.replace(/\s+/g, '_')}.xlsx`);
 }
 
 type XLSXWs = { '!ref'?: string } & Record<string, { v?: unknown; z?: string }>;

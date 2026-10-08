@@ -12,7 +12,7 @@ const sans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'NAVISCOP — Pilotage financier',
+  title: 'DAF de poche — Pilotage financier',
   description: 'Application de pilotage financier pour DAF externalisé',
 };
 
