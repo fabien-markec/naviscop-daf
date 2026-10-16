@@ -6,7 +6,7 @@
  */
 import type { EntreesMoteur, LignePnlMensuelle, LigneCashMensuelle } from './types.ts';
 
-export type TypePrevisionnel = 'facture_a_venir' | 'charge_prevue' | 'investissement';
+export type TypePrevisionnel = 'facture_a_venir' | 'charge_prevue' | 'investissement' | 'mouvement_bancaire';
 
 export type CategorieCharge =
   | 'achatsMarchandisesMp'
@@ -35,6 +35,8 @@ export interface MouvementPrevisionnel {
   estFixe?: boolean;
   /** Délai de paiement d'une charge en jours (0, 30, 45, 60). Décale le décaissement, pas le résultat. */
   delaiPaiementJours?: number;
+  /** Pour un mouvement bancaire hors compte de résultat : sens du flux de trésorerie. */
+  sensCash?: 'entree' | 'sortie';
 }
 
 /** Convertit un délai de paiement (jours) en décalage de mois pour le décaissement. */
@@ -91,6 +93,13 @@ export function fusionnerPrevisionnels(
       case 'investissement':
         // Décaissement de trésorerie sans impact sur le résultat (immobilisation).
         cash[i].decaissements += ttc;
+        break;
+
+      case 'mouvement_bancaire':
+        // Opération bancaire pure (dividendes, épargne, remboursement d'emprunt, apport,
+        // obtention de prêt…) : touche la trésorerie, jamais le compte de résultat. Pas de TVA.
+        if (mv.sensCash === 'entree') cash[i].encaissements += mv.montantHt;
+        else cash[i].decaissements += mv.montantHt;
         break;
     }
   }

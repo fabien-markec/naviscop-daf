@@ -6,7 +6,7 @@
 import type { EntreesMoteur } from '../types.ts';
 import { MOIS } from '../types.ts';
 import { calculerPnl } from '../pnl.ts';
-import { calculerTresorerie } from '../cashflow.ts';
+import { calculerTresorerie, moisDuSolde } from '../cashflow.ts';
 import { calculerKpis } from '../kpi.ts';
 
 export interface AnalyseDaf {
@@ -26,7 +26,7 @@ function pct(n: number): string {
 
 export function analyserCommeDaf(entrees: EntreesMoteur): AnalyseDaf {
   const pnl = calculerPnl(entrees.pnl);
-  const tresorerie = calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash);
+  const tresorerie = calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash, moisDuSolde(entrees.parametrage.dateSoldeInitial));
   const kpis = calculerKpis(entrees);
   const p = entrees.parametrage;
 

@@ -56,11 +56,13 @@ const CATEGORIES_SAISIE: { valeur: CategorieCharge; label: string }[] = [
 ];
 
 export default function RentabilitePage() {
-  const { entrees, tableauDeBord, previsionnels, ajouterPrevisionnel, supprimerPrevisionnel, majPrevisionnel } = useDossier();
+  const { entrees, entreesReel, majReelMois, tableauDeBord, previsionnels, ajouterPrevisionnel, supprimerPrevisionnel, majPrevisionnel } = useDossier();
   const { pnl } = tableauDeBord;
   const a = pnl.annuel;
   const pnlMensuel = entrees.pnl;
   const postes = entrees.detail?.charges ?? [];
+  // Saisies qui concernent le compte de résultat (hors mouvements bancaires purs, saisis dans Trésorerie).
+  const previsionnelsResultat = previsionnels.filter((mv) => mv.type !== 'mouvement_bancaire');
 
   const [catOuverte, setCatOuverte] = useState<keyof LignePnlMensuelle | null>(null);
   const [posteOuvert, setPosteOuvert] = useState<string | null>(null);
@@ -70,6 +72,7 @@ export default function RentabilitePage() {
   const [libelle, setLibelle] = useState('');
   const [montant, setMontant] = useState(0);
   const [tva, setTva] = useState(20);
+  const [saisiTtc, setSaisiTtc] = useState(false);
   const [moisFact, setMoisFact] = useState(new Date().getMonth());
   const [moisEnc, setMoisEnc] = useState(new Date().getMonth());
   const [statut, setStatut] = useState<'signee' | 'prevue'>('signee');
@@ -77,6 +80,7 @@ export default function RentabilitePage() {
   const [estFixe, setEstFixe] = useState(false);
   const [delaiPaiement, setDelaiPaiement] = useState(0);
   const [importMsg, setImportMsg] = useState('');
+  const [montrerGrilleReel, setMontrerGrilleReel] = useState(false);
 
   const rm = useMemo(() => pnlMensuel.map((m) => resultatMensuel(m)), [pnlMensuel]);
   const cumul = useMemo(() => {
@@ -108,10 +112,13 @@ export default function RentabilitePage() {
   const soumettre = (e: React.FormEvent) => {
     e.preventDefault();
     if (!libelle.trim() || montant <= 0) return;
+    // Le compte de résultat est tenu en HT. Si l'utilisateur saisit un montant TTC,
+    // on le reconvertit en HT (montant / (1 + taux)). Le TTC sert à la trésorerie.
+    const montantHt = saisiTtc ? Math.round((montant / (1 + tva / 100)) * 100) / 100 : montant;
     if (typeSaisie === 'produit') {
-      ajouterPrevisionnel({ type: 'facture_a_venir', libelle: libelle.trim(), montantHt: montant, tauxTva: tva, moisIndex: moisFact, moisEncaissement: moisEnc, statut });
+      ajouterPrevisionnel({ type: 'facture_a_venir', libelle: libelle.trim(), montantHt, tauxTva: tva, moisIndex: moisFact, moisEncaissement: moisEnc, statut });
     } else {
-      ajouterPrevisionnel({ type: 'charge_prevue', libelle: libelle.trim(), montantHt: montant, tauxTva: tva, moisIndex: moisFact, categorie, estFixe, delaiPaiementJours: delaiPaiement });
+      ajouterPrevisionnel({ type: 'charge_prevue', libelle: libelle.trim(), montantHt, tauxTva: tva, moisIndex: moisFact, categorie, estFixe, delaiPaiementJours: delaiPaiement });
     }
     setLibelle('');
     setMontant(0);
@@ -155,6 +162,7 @@ export default function RentabilitePage() {
     facture_a_venir: 'Produit',
     charge_prevue: 'Charge',
     investissement: 'Investissement',
+    mouvement_bancaire: 'Banque',
   };
 
   return (
@@ -277,6 +285,70 @@ export default function RentabilitePage() {
         </div>
       </Section>
 
+      {/* Corriger le compte de résultat réel, mois par mois */}
+      <Section
+        title="Corriger le compte de résultat mois par mois"
+        action={
+          <button
+            onClick={() => setMontrerGrilleReel((v) => !v)}
+            className="rounded-full border border-navy/15 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
+          >
+            {montrerGrilleReel ? 'Masquer' : 'Saisir à la main'}
+          </button>
+        }
+      >
+        {!montrerGrilleReel ? (
+          <p className="text-xs text-slate-700">
+            Ajustez chaque ligne, mois par mois, sur ce qui s’est réellement passé (le réalisé). Exemple : une rémunération de 2 500 € mais seulement 1 000 € en juin. Cliquez sur « Saisir à la main ».
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-navy/10 text-[11px] uppercase tracking-wide text-slate-700">
+                  <th className="sticky left-0 z-10 bg-white py-2 pr-3 text-left font-semibold">Poste (réel)</th>
+                  {MOIS_COURT.map((m) => (<th key={m} className="px-1 py-2 text-right font-semibold">{m}</th>))}
+                </tr>
+              </thead>
+              <tbody>
+                {([
+                  { champ: 'caHt', label: "Chiffre d'affaires HT" },
+                  { champ: 'achatsMarchandisesMp', label: 'Achats consommés' },
+                  { champ: 'autresAchatsChargesExternes', label: 'Charges externes' },
+                  { champ: 'salairesEtCharges', label: 'Salaires et charges' },
+                  { champ: 'impotsEtTaxes', label: 'Impôts et taxes' },
+                  { champ: 'chargesFinancieres', label: 'Charges financières' },
+                  { champ: 'chargesExceptionnelles', label: 'Charges exceptionnelles' },
+                  { champ: 'amortissements', label: 'Amortissements' },
+                ] as { champ: keyof LignePnlMensuelle; label: string }[]).map((l) => (
+                  <tr key={l.champ} className="border-b border-navy/[0.05]">
+                    <td className="sticky left-0 z-10 bg-white py-1.5 pr-3 text-left text-slate-800">{l.label}</td>
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const v = entreesReel.pnl[i][l.champ];
+                      return (
+                        <td key={i} className="px-1 py-1 text-right">
+                          <input
+                            key={`${l.champ}-${i}-${v}`}
+                            type="number"
+                            defaultValue={v || ''}
+                            placeholder="0"
+                            onBlur={(e) => { const nv = Number(e.target.value) || 0; if (nv !== v) majReelMois(i, { [l.champ]: nv }); }}
+                            className="w-16 rounded-md border border-transparent bg-transparent px-1 py-1 text-right text-xs tabular-nums text-slate-700 hover:border-navy/10 focus:border-brand/50 focus:bg-white focus:outline-none"
+                          />
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-2 text-[11px] text-slate-500">
+              Ces montants sont le <b>réalisé</b>. Les produits et charges « à venir » saisis plus bas s’ajoutent par-dessus en prévisionnel. Pensez à régler le « dernier mois clôturé » pour éviter de compter deux fois un mois à la fois réalisé et prévu.
+            </p>
+          </div>
+        )}
+      </Section>
+
       {/* Saisie manuelle : produits et charges */}
       <Section
         title="Ajouter un produit ou une charge"
@@ -302,8 +374,12 @@ export default function RentabilitePage() {
         </div>
         <form onSubmit={soumettre} className="grid grid-cols-1 gap-3 md:grid-cols-12">
           <input className={`${champ} md:col-span-3`} placeholder={typeSaisie === 'produit' ? 'Client / produit' : 'Libellé de la charge'} value={libelle} onChange={(e) => setLibelle(e.target.value)} />
-          <input type="number" className={`${champ} md:col-span-2`} placeholder="Montant HT" value={montant || ''} onChange={(e) => setMontant(Number(e.target.value))} />
-          <select className={`${champ} md:col-span-1`} value={tva} onChange={(e) => setTva(Number(e.target.value))}>
+          <input type="number" className={`${champ} md:col-span-2`} placeholder={saisiTtc ? 'Montant TTC' : 'Montant HT'} value={montant || ''} onChange={(e) => setMontant(Number(e.target.value))} />
+          <select className={`${champ} md:col-span-1`} value={saisiTtc ? 'ttc' : 'ht'} onChange={(e) => setSaisiTtc(e.target.value === 'ttc')} title="Le montant saisi est-il HT ou TTC ? (le compte de résultat est tenu en HT)">
+            <option value="ht" className="bg-white">HT</option>
+            <option value="ttc" className="bg-white">TTC</option>
+          </select>
+          <select className={`${champ} md:col-span-1`} value={tva} onChange={(e) => setTva(Number(e.target.value))} title="Taux de TVA">
             {[0, 5.5, 10, 20].map((t) => (<option key={t} value={t} className="bg-white">{t}%</option>))}
           </select>
           <select className={`${champ} md:col-span-2`} value={moisFact} onChange={(e) => setMoisFact(Number(e.target.value))}>
@@ -336,14 +412,19 @@ export default function RentabilitePage() {
             </>
           )}
         </form>
+        {saisiTtc && montant > 0 && (
+          <p className="mt-2 text-xs text-slate-600">
+            Saisi en TTC : {eur(montant)} → <span className="font-medium text-navy">{eur(Math.round((montant / (1 + tva / 100)) * 100) / 100)} HT</span> retenu au compte de résultat (TVA {tva} %).
+          </p>
+        )}
         {importMsg && <p className="mt-2 text-xs text-emerald-600">{importMsg}</p>}
         <p className="mt-2 text-[11px] text-slate-500">
-          Une charge fixe est reportée sur tous les mois (résultat et trésorerie). Le délai de paiement décale le décaissement dans le plan de trésorerie.
+          Le montant peut être saisi HT ou TTC : le compte de résultat est tenu en HT, la trésorerie en TTC. Une charge fixe est reportée sur tous les mois (résultat et trésorerie). Le délai de paiement décale le décaissement dans le plan de trésorerie.
         </p>
       </Section>
 
-      <Section title={`Saisies manuelles (${previsionnels.length})`}>
-        {previsionnels.length === 0 ? (
+      <Section title={`Saisies manuelles (${previsionnelsResultat.length})`}>
+        {previsionnelsResultat.length === 0 ? (
           <p className="text-sm text-slate-700">Aucune saisie. Ajoutez vos produits (factures à venir) et charges pour affiner la projection.</p>
         ) : (
           <div className="overflow-x-auto">
@@ -359,7 +440,7 @@ export default function RentabilitePage() {
                 </tr>
               </thead>
               <tbody>
-                {previsionnels.map((mv) => (
+                {previsionnelsResultat.map((mv) => (
                   <tr key={mv.id}>
                     <td>
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${mv.type === 'facture_a_venir' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
@@ -391,9 +472,22 @@ export default function RentabilitePage() {
                       </select>
                     </td>
                     <td className="text-[11px] text-slate-500">
-                      {mv.type === 'facture_a_venir'
-                        ? `Encaissé ${MOIS_COURT[mv.moisEncaissement ?? mv.moisIndex]}`
-                        : `${mv.estFixe ? 'Fixe' : 'Ponctuelle'}${mv.delaiPaiementJours ? ` · +${mv.delaiPaiementJours}j` : ''}`}
+                      {mv.type === 'facture_a_venir' ? (
+                        `Encaissé ${MOIS_COURT[mv.moisEncaissement ?? mv.moisIndex]}`
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5">
+                          <select
+                            value={mv.estFixe ? 'fixe' : 'ponctuelle'}
+                            onChange={(e) => majPrevisionnel(mv.id, { estFixe: e.target.value === 'fixe' })}
+                            className="rounded-lg border border-transparent bg-transparent px-1 py-1 text-[11px] text-slate-700 hover:border-navy/10 focus:border-brand/50 focus:bg-white focus:outline-none"
+                            title="Fixe (répétée chaque mois) ou ponctuelle"
+                          >
+                            <option value="ponctuelle">Ponctuelle</option>
+                            <option value="fixe">Fixe</option>
+                          </select>
+                          {mv.delaiPaiementJours ? <span>· +{mv.delaiPaiementJours}j</span> : null}
+                        </span>
+                      )}
                     </td>
                     <td className="!text-right">
                       <button onClick={() => supprimerPrevisionnel(mv.id)} className="text-slate-600 hover:text-rose-600" aria-label="Supprimer">

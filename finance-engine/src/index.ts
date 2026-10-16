@@ -28,7 +28,7 @@ export * from './profil-fiscal.ts';
 
 import type { EntreesMoteur } from './types.ts';
 import { calculerPnl } from './pnl.ts';
-import { calculerTresorerie } from './cashflow.ts';
+import { calculerTresorerie, moisDuSolde } from './cashflow.ts';
 import { calculerKpis } from './kpi.ts';
 import { calculerCashDisponible } from './cash-disponible.ts';
 import { evaluerAlertes } from './alerts.ts';
@@ -37,7 +37,7 @@ import { evaluerAlertes } from './alerts.ts';
 export function calculerTableauDeBord(entrees: EntreesMoteur, moisClotureIndex = -1) {
   return {
     pnl: calculerPnl(entrees.pnl),
-    tresorerie: calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash),
+    tresorerie: calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash, moisDuSolde(entrees.parametrage.dateSoldeInitial)),
     kpis: calculerKpis(entrees),
     cashDisponible: calculerCashDisponible(entrees),
     alertes: evaluerAlertes(entrees, moisClotureIndex),

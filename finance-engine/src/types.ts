@@ -48,6 +48,8 @@ export interface LigneCashMensuelle {
 /** Paramétrage financier du dossier (onglet Paramètres + section 12 du CdC). */
 export interface ParametrageFinancier {
   soldeInitialTresorerie: number;
+  /** Date ISO 'YYYY-MM-DD' à laquelle le solde initial est constaté (démarrage en cours d'année). Défaut : 1er janvier. */
+  dateSoldeInitial?: string;
   objectifCaAnnuel: number;
   objectifRemunerationMensuelle: number;
   /** Nombre de mois de décaissement moyen à garder en sécurité (défaut 2). */

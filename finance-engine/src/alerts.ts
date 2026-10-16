@@ -5,7 +5,7 @@
 import type { EntreesMoteur } from './types.ts';
 import { MOIS } from './types.ts';
 import { calculerPnl } from './pnl.ts';
-import { calculerTresorerie } from './cashflow.ts';
+import { calculerTresorerie, moisDuSolde } from './cashflow.ts';
 import { calculerCashDisponible } from './cash-disponible.ts';
 import { tresorerieApresFiscalite } from './profil-fiscal.ts';
 
@@ -29,7 +29,7 @@ function pct(n: number): string {
 export function evaluerAlertes(entrees: EntreesMoteur, moisClotureIndex = -1): Alerte[] {
   const { parametrage: p } = entrees;
   const pnl = calculerPnl(entrees.pnl);
-  const treso = calculerTresorerie(p.soldeInitialTresorerie, entrees.cash);
+  const treso = calculerTresorerie(p.soldeInitialTresorerie, entrees.cash, moisDuSolde(p.dateSoldeInitial));
   const alertes: Alerte[] = [];
 
   const seuilSecurite = p.moisSecuriteTresorerie * treso.decaissementMensuelMoyen;

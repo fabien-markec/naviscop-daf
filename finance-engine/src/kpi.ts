@@ -3,7 +3,7 @@
  */
 import type { EntreesMoteur } from './types.ts';
 import { calculerPnl } from './pnl.ts';
-import { calculerTresorerie } from './cashflow.ts';
+import { calculerTresorerie, moisDuSolde } from './cashflow.ts';
 
 export interface Kpis {
   /** 1. Cash disponible à date (solde de fin du mois écoulé, approché par le solde initial en début d'exercice). */
@@ -42,7 +42,7 @@ function soldeAHorizon(soldesFin: number[], nbMois: number): number {
 export function calculerKpis(entrees: EntreesMoteur): Kpis {
   const { parametrage: p } = entrees;
   const pnl = calculerPnl(entrees.pnl);
-  const treso = calculerTresorerie(p.soldeInitialTresorerie, entrees.cash);
+  const treso = calculerTresorerie(p.soldeInitialTresorerie, entrees.cash, moisDuSolde(p.dateSoldeInitial));
   const soldesFin = treso.parMois.map((m) => m.soldeFin);
 
   const tmcv = pnl.annuel.tauxMarqueBrute;

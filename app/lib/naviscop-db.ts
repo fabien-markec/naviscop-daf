@@ -35,6 +35,7 @@ function mapParametrage(row: Record<string, unknown>): { parametrage: Parametrag
   return {
     parametrage: {
       soldeInitialTresorerie: n(row.solde_initial_tresorerie),
+      dateSoldeInitial: (row.date_solde_initial as string) ?? undefined,
       objectifCaAnnuel: n(row.objectif_ca_annuel),
       objectifRemunerationMensuelle: n(row.objectif_remuneration_mensuelle),
       moisSecuriteTresorerie: n(row.mois_securite_tresorerie),
@@ -97,6 +98,7 @@ function mapPrevisionnel(r: Record<string, unknown>): MouvementPrevisionnel {
     statut: (r.statut ?? undefined) as MouvementPrevisionnel['statut'],
     estFixe: r.est_fixe == null ? undefined : Boolean(r.est_fixe),
     delaiPaiementJours: r.delai_paiement_jours == null ? undefined : n(r.delai_paiement_jours),
+    sensCash: (r.sens_cash as 'entree' | 'sortie') ?? undefined,
   };
 }
 
@@ -219,6 +221,7 @@ export async function creerDossier(
     s.from('dossier_parametrage').insert({
       dossier_id: id,
       solde_initial_tresorerie: p.soldeInitialTresorerie,
+      date_solde_initial: p.dateSoldeInitial ?? null,
       objectif_ca_annuel: p.objectifCaAnnuel,
       objectif_remuneration_mensuelle: p.objectifRemunerationMensuelle,
       mois_securite_tresorerie: p.moisSecuriteTresorerie,
@@ -258,6 +261,7 @@ export async function supprimerDossier(id: string): Promise<void> {
 export async function majParametrageDb(dossierId: string, patch: Partial<ParametrageFinancier>): Promise<void> {
   const map: Record<string, string> = {
     soldeInitialTresorerie: 'solde_initial_tresorerie',
+    dateSoldeInitial: 'date_solde_initial',
     objectifCaAnnuel: 'objectif_ca_annuel',
     objectifRemunerationMensuelle: 'objectif_remuneration_mensuelle',
     moisSecuriteTresorerie: 'mois_securite_tresorerie',
@@ -393,6 +397,7 @@ export async function ajouterPrevisionnelDb(
       taux_tva: mv.tauxTva, mois_index: mv.moisIndex, categorie: mv.categorie ?? null,
       mois_encaissement: mv.moisEncaissement ?? null, statut: mv.statut ?? null,
       est_fixe: mv.estFixe ?? null, delai_paiement_jours: mv.delaiPaiementJours ?? null,
+      sens_cash: mv.sensCash ?? null,
     })
     .select('*')
     .single();
@@ -405,7 +410,7 @@ export async function majPrevisionnelDb(id: string, patch: Partial<MouvementPrev
   const map: Record<string, string> = {
     libelle: 'libelle', montantHt: 'montant_ht', tauxTva: 'taux_tva', moisIndex: 'mois_index',
     categorie: 'categorie', moisEncaissement: 'mois_encaissement', statut: 'statut',
-    estFixe: 'est_fixe', delaiPaiementJours: 'delai_paiement_jours',
+    estFixe: 'est_fixe', delaiPaiementJours: 'delai_paiement_jours', sensCash: 'sens_cash',
   };
   const upd: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(patch)) if (map[k]) upd[map[k]] = v;

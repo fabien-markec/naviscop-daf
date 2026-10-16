@@ -7,7 +7,7 @@
  *   solde fin de mois − (TVA + URSSAF + impôt + rémunération + charges fixes) des mois suivants.
  */
 import type { EntreesMoteur } from './types.ts';
-import { calculerTresorerie } from './cashflow.ts';
+import { calculerTresorerie, moisDuSolde } from './cashflow.ts';
 import { projeterFiscalite } from './profil-fiscal.ts';
 
 /** Une ligne de la cascade (un engagement à venir déduit du solde bancaire). */
@@ -44,7 +44,7 @@ export function calculerCashDisponible(
   soldeOverride?: number,
 ): CashDisponible {
   const p = entrees.parametrage;
-  const treso = calculerTresorerie(p.soldeInitialTresorerie, entrees.cash);
+  const treso = calculerTresorerie(p.soldeInitialTresorerie, entrees.cash, moisDuSolde(p.dateSoldeInitial));
 
   const moisRef = clamp(moisReference ?? new Date().getMonth(), 0, 11);
   const soldeBancaire = r(soldeOverride ?? treso.parMois[moisRef].soldeFin);

@@ -6,7 +6,7 @@
 import type { EntreesMoteur } from './types.ts';
 import { MOIS } from './types.ts';
 import { calculerPnl, margeBrute } from './pnl.ts';
-import { calculerTresorerie } from './cashflow.ts';
+import { calculerTresorerie, moisDuSolde } from './cashflow.ts';
 import { calculerCashDisponible } from './cash-disponible.ts';
 
 export interface SyntheseMensuelle {
@@ -33,7 +33,7 @@ export function dernierMoisActif(entrees: EntreesMoteur): number {
 
 export function synthetiserMois(entrees: EntreesMoteur, moisIndex: number): SyntheseMensuelle {
   const i = Math.max(0, Math.min(11, moisIndex));
-  const treso = calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash);
+  const treso = calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash, moisDuSolde(entrees.parametrage.dateSoldeInitial));
   const cd = calculerCashDisponible(entrees);
   const m = entrees.pnl[i];
   const caMois = m.caHt;

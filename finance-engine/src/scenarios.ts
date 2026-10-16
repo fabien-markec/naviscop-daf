@@ -5,7 +5,7 @@
  */
 import type { EntreesMoteur, LignePnlMensuelle, LigneCashMensuelle } from './types.ts';
 import { calculerPnl } from './pnl.ts';
-import { calculerTresorerie } from './cashflow.ts';
+import { calculerTresorerie, moisDuSolde } from './cashflow.ts';
 
 export interface HypothesesScenario {
   /** Hausse (ou baisse) de prix en pourcentage, ex 0.1 pour +10 %. */
@@ -49,7 +49,7 @@ export interface LigneScenarioMensuelle {
 
 function projeter(entrees: EntreesMoteur): ResultatScenario {
   const pnl = calculerPnl(entrees.pnl);
-  const treso = calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash);
+  const treso = calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash, moisDuSolde(entrees.parametrage.dateSoldeInitial));
   return {
     resultatNetAnnuel: pnl.annuel.resultatNet,
     soldeFinAnnee: treso.soldeFinAnnee,
@@ -110,7 +110,7 @@ export function appliquerScenario(
   const scenarioR = projeter(scenarioEntrees);
 
   const pnlS = calculerPnl(scenarioEntrees.pnl);
-  const tresoS = calculerTresorerie(scenarioEntrees.parametrage.soldeInitialTresorerie, scenarioEntrees.cash);
+  const tresoS = calculerTresorerie(scenarioEntrees.parametrage.soldeInitialTresorerie, scenarioEntrees.cash, moisDuSolde(scenarioEntrees.parametrage.dateSoldeInitial));
   const parMois: LigneScenarioMensuelle[] = scenarioEntrees.pnl.map((m, i) => ({
     caHt: m.caHt,
     resultatNet: pnlS.parMois[i].resultatNet,

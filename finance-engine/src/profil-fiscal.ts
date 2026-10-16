@@ -12,7 +12,7 @@
  */
 
 import type { EntreesMoteur } from './types.ts';
-import { calculerTresorerie } from './cashflow.ts';
+import { calculerTresorerie, moisDuSolde } from './cashflow.ts';
 
 export type StatutJuridique = 'EI' | 'SARL_EURL' | 'SAS_SASU';
 export type RegimeFiscal = 'MICRO' | 'REEL_IR' | 'REEL_IS';
@@ -224,7 +224,7 @@ export interface TresorerieFiscale {
  */
 export function tresorerieApresFiscalite(entrees: EntreesMoteur, moisClotureIndex = -1): TresorerieFiscale | null {
   if (!entrees.profilFiscal) return null;
-  const treso = calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash);
+  const treso = calculerTresorerie(entrees.parametrage.soldeInitialTresorerie, entrees.cash, moisDuSolde(entrees.parametrage.dateSoldeInitial));
   const proj = projeterFiscalite(entrees, entrees.profilFiscal);
   let cumulFiscal = 0;
   let moisNegatifApres = -1;

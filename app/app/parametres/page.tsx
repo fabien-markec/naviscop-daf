@@ -42,15 +42,15 @@ function ChampNombre({
 }
 
 export default function ParametresPage() {
-  const { entrees, majParametrage, majProfilFiscal, profilFiscal, majCreances, tableauDeBord, reinitialiser, connecte } = useDossier();
+  const { entrees, majParametrage, majProfilFiscal, profilFiscal, majCreances, tableauDeBord, reinitialiser, connecte, exercice } = useDossier();
   const p = entrees.parametrage;
   const [profilEnregistre, setProfilEnregistre] = useState(false);
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Paramétrage"
-        subtitle="Objectifs et seuils du dossier. Les alertes et les KPI se recalculent en direct."
+        title={exercice ? `Paramétrage — exercice ${exercice}` : 'Paramétrage'}
+        subtitle="Objectifs, provisions et seuils. Chaque exercice a son propre paramétrage : changez d'année avec les pastilles de l'exercice dans le menu de gauche. Les alertes et les KPI se recalculent en direct."
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -107,6 +107,20 @@ export default function ParametresPage() {
                 suffix="€"
                 onChange={(v) => majParametrage({ soldeInitialTresorerie: v })}
               />
+              <label className="block">
+                <span className="text-sm text-slate-700">Date du solde initial</span>
+                <div className="mt-1">
+                  <input
+                    type="date"
+                    value={p.dateSoldeInitial ?? ''}
+                    onChange={(e) => majParametrage({ dateSoldeInitial: e.target.value })}
+                    className="w-44 rounded-xl border border-navy/10 bg-white/60 px-3 py-2 text-sm text-navy outline-none focus:border-brand/50"
+                  />
+                </div>
+                <span className="mt-1 block text-xs text-slate-700">
+                  Laissez vide pour janvier. Si vous démarrez en cours d’année, le solde ci-dessus est constaté à cette date.
+                </span>
+              </label>
               <ChampNombre
                 label="Sécurité de trésorerie"
                 value={p.moisSecuriteTresorerie}

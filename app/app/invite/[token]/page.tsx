@@ -98,7 +98,17 @@ export default function InvitePage() {
           <>
             <h1 className="mb-1 text-xl font-semibold text-navy">Lien indisponible</h1>
             <p className="text-sm text-slate-700">{etat.message}</p>
-            <p className="mt-4 text-xs text-slate-600">Demandez un nouveau lien d’accès à votre interlocuteur.</p>
+            <div className="mt-5 rounded-xl border border-brand/20 bg-brand/5 px-4 py-3 text-sm text-slate-800">
+              <p className="font-medium text-navy">Vous avez déjà activé votre accès ?</p>
+              <p className="mt-1 text-slate-700">Ce lien est à usage unique. Si votre compte est déjà créé, connectez-vous directement avec votre email et votre mot de passe.</p>
+              <a
+                href="/"
+                className="mt-3 inline-flex items-center justify-center rounded-full bg-brand px-5 py-2 text-sm font-medium text-white hover:bg-brand-soft"
+              >
+                Se connecter
+              </a>
+            </div>
+            <p className="mt-4 text-xs text-slate-600">Vous n’avez pas encore de compte ou mot de passe oublié ? Demandez un nouveau lien d’accès à votre interlocuteur.</p>
           </>
         )}
 
